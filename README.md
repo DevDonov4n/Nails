@@ -7,6 +7,7 @@ Site institucional responsivo para um estúdio de unhas, desenvolvido com Next.j
 - React
 - TypeScript
 - CSS responsivo com variáveis de tema
+- GSAP + ScrollTrigger para animações de entrada e rolagem
 
 ## Executar localmente
 
@@ -31,6 +32,7 @@ npm run build
 - `src/app/layout.tsx`: layout global, fontes e metadados
 - `src/app/globals.css`: identidade visual e regras responsivas
 - `src/components/`: componentes reutilizáveis de navegação, rodapé e botão
+- `src/components/animations/PageAnimations.tsx`: animações da página inicial com GSAP
 - `src/data/services.ts`: conteúdo inicial dos serviços
 
 ## Antes de publicar
