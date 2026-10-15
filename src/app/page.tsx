@@ -24,7 +24,7 @@ export default function Home() {
                 Um espaço para realçar sua beleza, expressar seu estilo e reservar um tempinho só para você.
               </p>
               <div className="hero-actions">
-                <Button href="#contato">Quero agendar <span aria-hidden="true">↗</span></Button>
+                <Button href="/agendamento">Quero agendar <span aria-hidden="true">↗</span></Button>
                 <a className="text-link" href="#servicos">Conheça os serviços <span aria-hidden="true">↓</span></a>
               </div>
               <div className="hero-note"><span className="note-star" aria-hidden="true">✳</span><span>Delicadeza em cada detalhe<br /><strong>Feito para você se sentir bem.</strong></span></div>
@@ -56,7 +56,7 @@ export default function Home() {
                   <div className="service-top"><span>{service.number}</span><span className="service-symbol" aria-hidden="true">✳</span></div>
                   <h3>{service.name}</h3><p>{service.description}</p>
                   <div className="service-meta"><span>{service.duration}</span><span>{service.priceLabel}</span></div>
-                  <a href="#contato" className="service-link">Tenho interesse <span aria-hidden="true">↗</span></a>
+                  <a href="/agendamento" className="service-link">Agendar serviço <span aria-hidden="true">↗</span></a>
                 </article>
               ))}
             </div>
