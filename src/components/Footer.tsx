@@ -7,7 +7,7 @@ export default function Footer() {
         <a className="back-to-top" href="#inicio">Voltar ao topo ↑</a>
       </div>
       <div className="container footer-bottom">
-        <span>© {new Date().getFullYear()} Nails by Samara.</span>
+        <span>© 2026 Nails by Samara.</span>
         <span>Feito com carinho.</span>
       </div>
     </footer>
