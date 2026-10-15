@@ -1,4 +1,5 @@
 import Button from "@/components/Button";
+import PageAnimations from "@/components/animations/PageAnimations";
 import { services } from "@/data/services";
 
 const portfolioCards = [
@@ -10,6 +11,7 @@ const portfolioCards = [
 export default function Home() {
   return (
     <>
+      <PageAnimations />
       <main>
         <section className="hero" id="inicio">
           <div className="hero-orb hero-orb--one" aria-hidden="true" />
@@ -17,7 +19,7 @@ export default function Home() {
           <div className="container hero-grid">
             <div className="hero-copy">
               <span className="eyebrow"><span className="eyebrow-line" /> SEU MOMENTO DE CUIDADO</span>
-              <h1>Unhas lindas.<br /><em>Você ainda mais.</em></h1>
+              <h1><span className="hero-title-line">Unhas lindas.</span><span className="hero-title-line"><em>Você ainda mais.</em></span></h1>
               <p className="hero-description">
                 Um espaço para realçar sua beleza, expressar seu estilo e reservar um tempinho só para você.
               </p>
