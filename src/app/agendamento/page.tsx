@@ -87,20 +87,20 @@ export default function AgendamentoPage() {
         <div className="booking-heading">
           <p className="eyebrow">NAILS BY SAMARA · RESERVAS</p>
           <h1>Seu momento<br /><em>começa aqui.</em></h1>
-          <p>Escolha o tratamento, encontre um horário livre e reserve sem precisar criar uma conta.</p>
+          <p>Escolha o serviço que deseja, veja os horários disponíveis e solicite seu agendamento. Não precisa criar uma conta: basta informar seus dados para que o salão possa entrar em contato com você.</p>
         </div>
         <aside className="booking-account-promo">
           <span className="booking-promo-icon" aria-hidden="true">✦</span>
           <div>
-            <strong>Que tal facilitar seus próximos agendamentos e aproveitar descontos?</strong>
-            <p>Crie sua conta e fique por dentro das vantagens para clientes.</p>
+            <strong>Quer deixar os próximos agendamentos mais práticos?</strong>
+            <p>Em breve, a área de clientes ajudará você a acompanhar seus horários e conhecer as vantagens disponíveis.</p>
           </div>
-          <Link href="/login">Entrar / Criar conta <span aria-hidden="true">↗</span></Link>
+          <Link href="/cadastro">Conhecer o cadastro <span aria-hidden="true">↗</span></Link>
         </aside>
         <form className="booking-card" onSubmit={submitBooking}>
           <section className="booking-section">
             <span className="booking-step">01</span>
-            <div><h2>Escolha o tratamento</h2><p>Todos os atendimentos têm duração estimada de 1 hora.</p></div>
+            <div><h2>Escolha o tratamento</h2><p>Veja as opções abaixo e selecione o atendimento que prefere. Cada serviço tem duração estimada de uma hora.</p></div>
             <div className="booking-service-options">
               {serviceOptions.map((option) => (
                 <button key={option.id} type="button" className={service === option.id ? "booking-service is-selected" : "booking-service"} onClick={() => setService(option.id)} aria-pressed={service === option.id}>
@@ -111,33 +111,33 @@ export default function AgendamentoPage() {
           </section>
           <section className="booking-section">
             <span className="booking-step">02</span>
-            <div><h2>Onde você prefere?</h2><p>A visita em domicílio tem taxa fixa de mobilidade de R$ 5,00.</p></div>
+            <div><h2>Onde você prefere?</h2><p>Escolha entre atendimento no salão ou em domicílio. Para a visita em casa, há uma taxa fixa de mobilidade de R$ 5,00.</p></div>
             <div className="booking-location-options">
               <label className={location === "SALON" ? "booking-location is-selected" : "booking-location"}><input type="radio" name="location" value="SALON" checked={location === "SALON"} onChange={() => setLocation("SALON")} /><span><strong>No salão</strong><small>Sem taxa de mobilidade</small></span></label>
-              <label className={location === "HOME" ? "booking-location is-selected" : "booking-location"}><input type="radio" name="location" value="HOME" checked={location === "HOME"} onChange={() => setLocation("HOME")} /><span><strong>Em domicílio</strong><small>+ R$ 5,00 de mobilidade</small></span></label>
+              <label className={location === "HOME" ? "booking-location is-selected" : "booking-location"}><input type="radio" name="location" value="HOME" checked={location === "HOME"} onChange={() => setLocation("HOME")} /><span><strong>Em domicílio</strong><small>Acrescenta R$ 5,00 de mobilidade</small></span></label>
             </div>
-            {location === "HOME" && <label className="booking-field">Endereço completo<input required value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Rua, número, bairro e cidade" autoComplete="street-address" /></label>}
+            {location === "HOME" && <label className="booking-field">Endereço completo<input required value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Informe rua, número, bairro e cidade" autoComplete="street-address" /></label>}
           </section>
           <section className="booking-section">
             <span className="booking-step">03</span>
-            <div><h2>Data e horário</h2><p>Segunda a sexta, das 16h às 20h · Sábado e domingo, das 9h às 18h.</p></div>
-            <label className="booking-field">Escolha a data<input type="date" min={minimumDate} value={date} onChange={(e) => setDate(e.target.value)} required /></label>
+            <div><h2>Escolha a data e o horário</h2><p>Selecione o dia desejado e depois escolha um dos horários livres. O atendimento funciona de segunda a sexta, das 16h às 20h, e aos sábados e domingos, das 9h às 18h.</p></div>
+            <label className="booking-field">Data do atendimento<input type="date" min={minimumDate} value={date} onChange={(e) => setDate(e.target.value)} required /></label>
             <div className="booking-slots-label">Horários disponíveis</div>
-            {loadingSlots ? <p className="booking-muted">Consultando horários…</p> : slots.length ? <div className="booking-slots">{slots.map((slot) => <button type="button" key={slot} onClick={() => setTime(slot)} className={time === slot ? "booking-slot is-selected" : "booking-slot"} aria-pressed={time === slot}>{slot}</button>)}</div> : <p className="booking-muted">Não há horários disponíveis nesta data. Experimente outro dia.</p>}
+            {loadingSlots ? <p className="booking-muted">Estamos consultando os horários para essa data. Só um instante, por favor.</p> : slots.length ? <div className="booking-slots">{slots.map((slot) => <button type="button" key={slot} onClick={() => setTime(slot)} className={time === slot ? "booking-slot is-selected" : "booking-slot"} aria-pressed={time === slot}>{slot}</button>)}</div> : <p className="booking-muted">Não encontramos horários livres para esse dia. Você pode escolher outra data para consultar novas opções.</p>}
           </section>
           <section className="booking-section">
             <span className="booking-step">04</span>
-            <div><h2>Seus dados</h2><p>Não precisa de cadastro: só precisamos dessas informações para combinar o atendimento.</p></div>
-            <label className="booking-field">Nome completo<input required minLength={2} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="Como podemos te chamar?" /></label>
-            <label className="booking-field">WhatsApp com DDD<input required type="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} autoComplete="tel" placeholder="(11) 99999-9999" /></label>
+            <div><h2>Seus dados para contato</h2><p>Preencha seu nome e WhatsApp com DDD para que o salão possa identificar sua solicitação e conversar com você sobre a confirmação do atendimento.</p></div>
+            <label className="booking-field">Nome completo<input required minLength={2} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="Informe seu nome e sobrenome" /></label>
+            <label className="booking-field">WhatsApp com DDD<input required type="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} autoComplete="tel" placeholder="Ex.: (11) 99999-9999" /></label>
           </section>
-          <aside className="booking-total"><div><span>Tratamento</span><strong>{money(selectedService.price)}</strong></div><div><span>Mobilidade</span><strong>{money(location === "HOME" ? 5 : 0)}</strong></div><div className="booking-total-final"><span>Total</span><strong>{money(total)}</strong></div></aside>
+          <aside className="booking-total"><div><span>Valor do tratamento</span><strong>{money(selectedService.price)}</strong></div><div><span>Taxa de mobilidade</span><strong>{money(location === "HOME" ? 5 : 0)}</strong></div><div className="booking-total-final"><span>Valor total</span><strong>{money(total)}</strong></div></aside>
           {error && <p className="booking-feedback booking-feedback--error" role="alert">{error}</p>}
           {success && <p className="booking-feedback booking-feedback--success" role="status">{success}</p>}
           <button className="button button--primary booking-submit" type="submit" disabled={sending || loadingSlots}>{sending ? "Enviando solicitação…" : "Solicitar agendamento ↗"}</button>
-          <p className="booking-disclaimer">O horário será registrado como solicitação. A confirmação final deve ser combinada com o salão.</p>
+          <p className="booking-disclaimer">Após enviar, sua solicitação será registrada. O horário ainda precisará ser confirmado pelo salão, para que você tenha certeza de que está tudo combinado.</p>
         </form>
-        <p className="booking-login-prompt">Já tem uma conta? <Link href="/login">Acesse seu login</Link></p>
+        <p className="booking-login-prompt">Já tem uma conta? <Link href="/login">Acesse seu login</Link> quando a área de clientes estiver disponível.</p>
       </div>
     </main>
   );
