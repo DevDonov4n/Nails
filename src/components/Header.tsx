@@ -22,10 +22,9 @@ export default function Header() {
           {navigation.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}
         </nav>
         <div className="header-actions">
-          <Link className="header-account" href="/login">Entrar / Criar conta</Link>
-          <Link className="header-cta" href="/agendamento">
-            Agendar horário <span aria-hidden="true">↗</span>
-          </Link>
+          <Link className="header-account" href="/login">Entrar</Link>
+          <Link className="header-signup" href="/cadastro">Criar conta</Link>
+          <Link className="header-cta" href="/agendamento">Agendar horário <span aria-hidden="true">↗</span></Link>
         </div>
       </div>
     </header>
