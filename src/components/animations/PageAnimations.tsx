@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -8,8 +7,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 export default function PageAnimations() {
-  const root = useRef<HTMLDivElement>(null);
-
   useGSAP(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduceMotion) return;
@@ -89,7 +86,7 @@ export default function PageAnimations() {
       duration: 0.65,
       scrollTrigger: { trigger: ".contact-panel", start: "top 75%", once: true },
     });
-  }, { scope: root });
+  });
 
-  return <div ref={root} className="animation-scope" aria-hidden="true" />;
+  return null;
 }
