@@ -21,9 +21,12 @@ export default function Header() {
         <nav className="main-nav" aria-label="Navegação principal">
           {navigation.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}
         </nav>
-        <Link className="header-cta" href="/agendamento">
-          Agendar horário <span aria-hidden="true">↗</span>
-        </Link>
+        <div className="header-actions">
+          <Link className="header-account" href="/login">Entrar / Criar conta</Link>
+          <Link className="header-cta" href="/agendamento">
+            Agendar horário <span aria-hidden="true">↗</span>
+          </Link>
+        </div>
       </div>
     </header>
   );
