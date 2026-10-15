@@ -20,7 +20,7 @@ export default function LoginPage() {
         <div className="login-monogram" aria-hidden="true">S</div>
         <p className="eyebrow">NAILS BY SAMARA</p>
         <h1>Que bom ter<br /><em>você por aqui.</em></h1>
-        <p className="login-description">Entre na sua conta para acompanhar seus cuidados e agendamentos.</p>
+        <p className="login-description">Acesse sua conta para consultar seus agendamentos e deixar seus próximos atendimentos mais práticos. Preencha seus dados abaixo para continuar.</p>
         <form className="login-form" onSubmit={submit}>
           <label className="booking-field">E-mail
             <input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="voce@email.com" autoComplete="email" />
@@ -37,7 +37,7 @@ export default function LoginPage() {
         <p className="auth-switch">Ainda não tem uma conta? <Link href="/cadastro">Criar conta</Link></p>
         <div className="login-divider"><span>ou</span></div>
         <Link className="button button--secondary booking-submit" href="/agendamento">Agendar sem cadastro</Link>
-        <p className="login-note">O acesso à conta ainda está em preparação. Por enquanto, você pode reservar seu horário sem cadastro.</p>
+        <p className="login-note">O acesso à conta ainda está em preparação. Por enquanto, você pode reservar seu horário sem cadastro. Quando a área de clientes estiver ativa, você poderá usar seus dados para acessar sua conta.</p>
       </section>
     </main>
   );
