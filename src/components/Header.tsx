@@ -1,35 +1,29 @@
 import Link from "next/link";
 
 const navigation = [
-  { label: "Início", href: "#inicio" },
-  { label: "Serviços", href: "#servicos" },
-  { label: "Portfólio", href: "#portfolio" },
-  { label: "Contato", href: "#contato" },
+  { label: "Início", href: "/#inicio" },
+  { label: "Serviços", href: "/#servicos" },
+  { label: "Portfólio", href: "/#portfolio" },
+  { label: "Contato", href: "/#contato" },
 ];
 
 export default function Header() {
   return (
     <header className="site-header">
       <div className="container header-inner">
-        <Link className="brand" href="#inicio" aria-label="Nails by Samara — início">
+        <Link className="brand" href="/" aria-label="Nails by Samara — início">
           <span className="brand-mark" aria-hidden="true">S.</span>
           <span className="brand-copy">
             <span className="brand-name">Nails by Samara</span>
             <span className="brand-caption">BELEZA EM CADA DETALHE</span>
           </span>
         </Link>
-
         <nav className="main-nav" aria-label="Navegação principal">
-          {navigation.map((item) => (
-            <a key={item.href} href={item.href}>
-              {item.label}
-            </a>
-          ))}
+          {navigation.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}
         </nav>
-
-        <a className="header-cta" href="#contato">
+        <Link className="header-cta" href="/agendamento">
           Agendar horário <span aria-hidden="true">↗</span>
-        </a>
+        </Link>
       </div>
     </header>
   );
