@@ -89,6 +89,14 @@ export default function AgendamentoPage() {
           <h1>Seu momento<br /><em>começa aqui.</em></h1>
           <p>Escolha o tratamento, encontre um horário livre e reserve sem precisar criar uma conta.</p>
         </div>
+        <aside className="booking-account-promo">
+          <span className="booking-promo-icon" aria-hidden="true">✦</span>
+          <div>
+            <strong>Que tal facilitar seus próximos agendamentos e aproveitar descontos?</strong>
+            <p>Crie sua conta e fique por dentro das vantagens para clientes.</p>
+          </div>
+          <Link href="/login">Entrar / Criar conta <span aria-hidden="true">↗</span></Link>
+        </aside>
         <form className="booking-card" onSubmit={submitBooking}>
           <section className="booking-section">
             <span className="booking-step">01</span>
