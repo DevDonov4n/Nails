@@ -424,3 +424,61 @@ h2 { margin-bottom: 22px; font-size: clamp(40px, 5vw, 64px); line-height: .98; }
   .login-card { padding: 24px 17px; }
   .login-card h1 { font-size: 37px; }
 }
+
+
+/* Distinct sign-in and sign-up actions and forms */
+.header-actions { gap: 10px; }
+.header-account, .header-signup {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  color: var(--wine);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background .2s ease, border-color .2s ease, color .2s ease;
+}
+.header-account { background: transparent; }
+.header-account:hover { border-color: var(--rose-deep); background: #f8efec; }
+.header-signup { border-color: var(--wine); background: var(--wine); color: white; }
+.header-signup:hover { border-color: #4d2f35; background: #4d2f35; color: white; }
+.auth-card { width: min(520px, 100%); }
+.auth-card--signup { width: min(560px, 100%); }
+.auth-card .booking-back { margin-bottom: 24px; }
+.auth-password-wrap { position: relative; display: flex; min-width: 0; }
+.auth-password-wrap input { padding-right: 78px; }
+.auth-password-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  padding: 0 13px;
+  border: 0;
+  background: transparent;
+  color: var(--wine);
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+}
+.auth-switch { margin: 22px 0 0; color: var(--muted); font-size: 12px; text-align: center; }
+.auth-switch a { color: var(--wine); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.auth-card--signup .login-description { margin-bottom: 20px; }
+.auth-card--signup .login-form .booking-field { margin-top: 12px; }
+.auth-card--signup .login-form .booking-submit { margin-top: 20px; }
+@media (max-width: 900px) {
+  .header-actions { flex-wrap: wrap; gap: 8px; }
+  .header-account, .header-signup { padding-inline: 11px; }
+}
+@media (max-width: 640px) {
+  .header-actions { display: grid; grid-template-columns: 1fr 1fr; width: 100%; gap: 8px; }
+  .header-account, .header-signup { width: 100%; min-height: 38px; padding: 7px 8px; font-size: 10px; }
+  .header-cta { grid-column: 1 / -1; width: 100%; justify-content: center; }
+  .auth-card, .auth-card--signup { width: 100%; }
+  .auth-card--signup { padding: 24px 20px; }
+  .auth-card--signup .login-monogram { margin-bottom: 14px; }
+  .auth-card--signup .login-card h1, .auth-card--signup h1 { font-size: clamp(36px, 9vw, 46px); }
+}
