@@ -1,4 +1,8 @@
-const { createClient } = require("@libsql/client");
+const { loadEnvConfig } = require("@next/env");
+loadEnvConfig(process.cwd());
+
+const { PrismaLibSQL } = require("@prisma/adapter-libsql");
+const { PrismaClient } = require("@prisma/client");
 
 const url = process.env.TURSO_DATABASE_URL;
 const authToken = process.env.TURSO_AUTH_TOKEN;
@@ -7,12 +11,16 @@ if (!url || !authToken) {
   process.exit(1);
 }
 
+const adapter = new PrismaLibSQL({ url, authToken });
+const prisma = new PrismaClient({ adapter });
+
 async function main() {
-  const client = createClient({ url, authToken });
   try {
-    const userTable = await client.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'User'");
-    if (userTable.rows.length === 0) {
-      await client.execute(`CREATE TABLE "User" (
+    const userTable = await prisma.$queryRawUnsafe(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'User'"
+    );
+    if (userTable.length === 0) {
+      await prisma.$executeRawUnsafe(`CREATE TABLE "User" (
         "id" TEXT NOT NULL PRIMARY KEY,
         "name" TEXT NOT NULL,
         "email" TEXT NOT NULL,
@@ -26,21 +34,21 @@ async function main() {
       console.log("Tabela User já existe; preservada.");
     }
 
-    await client.execute('CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email")');
-    await client.execute('CREATE INDEX IF NOT EXISTS "User_whatsapp_idx" ON "User"("whatsapp")');
+    await prisma.$executeRawUnsafe('CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email")');
+    await prisma.$executeRawUnsafe('CREATE INDEX IF NOT EXISTS "User_whatsapp_idx" ON "User"("whatsapp")');
 
-    const columns = await client.execute('PRAGMA table_info("Booking")');
-    if (!columns.rows.some((column) => column.name === "userId")) {
-      await client.execute('ALTER TABLE "Booking" ADD COLUMN "userId" TEXT REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE');
+    const columns = await prisma.$queryRawUnsafe('PRAGMA table_info("Booking")');
+    if (!columns.some((column) => column.name === "userId")) {
+      await prisma.$executeRawUnsafe('ALTER TABLE "Booking" ADD COLUMN "userId" TEXT REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE');
       console.log("Coluna Booking.userId adicionada; agendamentos existentes preservados.");
     } else {
       console.log("Coluna Booking.userId já existe; preservada.");
     }
 
-    await client.execute('CREATE INDEX IF NOT EXISTS "Booking_userId_startAt_idx" ON "Booking"("userId", "startAt")');
+    await prisma.$executeRawUnsafe('CREATE INDEX IF NOT EXISTS "Booking_userId_startAt_idx" ON "Booking"("userId", "startAt")');
     console.log("Migração de contas de clientes aplicada com sucesso.");
   } finally {
-    client.close();
+    await prisma.$disconnect();
   }
 }
 
