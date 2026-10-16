@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 
 // Deliberately does not auto-link legacy bookings by phone alone.
 // A future verified-OTP flow can safely call an equivalent linking operation.
