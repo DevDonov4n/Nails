@@ -59,11 +59,10 @@ export async function getCurrentUser() {
   const [payload, signature] = token.split(".");
   if (!payload || !signature) return null;
 
-  const expected = Buffer.from(sign(payload));
-  const received = Buffer.from(signature);
-  if (expected.length !== received.length || !timingSafeEqual(expected, received)) return null;
-
   try {
+    const expected = Buffer.from(sign(payload));
+    const received = Buffer.from(signature);
+    if (expected.length !== received.length || !timingSafeEqual(expected, received)) return null;
     const data = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as { sub?: unknown; exp?: unknown };
     if (typeof data.sub !== "string" || typeof data.exp !== "number" || data.exp <= Math.floor(Date.now() / 1000)) return null;
     return await prisma.user.findUnique({
