@@ -24,6 +24,8 @@ export async function POST(request: NextRequest) {
   if (password.length < 8 || password.length > 128) return NextResponse.json({ error: "A senha deve ter entre 8 e 128 caracteres." }, { status: 400 });
 
   try {
+    // Validate session configuration before creating the account to avoid a half-completed registration.
+    createSessionToken("configuration-check");
     const existing = await prisma.user.findUnique({ where: { email }, select: { id: true } });
     if (existing) return NextResponse.json({ error: "Já existe uma conta com esse e-mail. Entre ou use outro endereço." }, { status: 409 });
 
