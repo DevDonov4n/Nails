@@ -6,7 +6,6 @@ import styles from "./NailPolishScroll.module.css";
 const POLISH_COLOR = "#a90f25";
 const POLISH_HIGHLIGHT = "#f06b78";
 const TRAIL_WIDTH_DESKTOP = 7;
-const TRAIL_WIDTH_MOBILE = 2.5;
 const ZIGZAG_AMPLITUDE = 0.39;
 const CURVE_COUNT = 7;
 const TRAIL_OPACITY = 0.28;
