@@ -14,13 +14,14 @@ type HeaderUser = { name: string; email: string };
 
 export default function Header() {
   const [user, setUser] = useState<HeaderUser | null>(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   useEffect(() => {
     let active = true;
     fetch("/api/auth/me", { cache: "no-store" })
       .then((response) => response.json())
-      .then((data) => { if (active) setUser(data.user ?? null); })
-      .catch(() => { if (active) setUser(null); });
+      .then((data) => { if (active) { setUser(data.user ?? null); setSessionChecked(true); } })
+      .catch(() => { if (active) { setUser(null); setSessionChecked(true); } });
     return () => { active = false; };
   }, []);
 
@@ -44,7 +45,7 @@ export default function Header() {
           {navigation.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}
         </nav>
         <div className="header-actions">
-          {user ? (
+          {!sessionChecked ? <span className="header-session-placeholder" aria-hidden="true" /> : user ? (
             <div className="header-user-actions">
               <Link className="header-account" href="/minha-conta">Olá, {user.name.split(" ")[0]}</Link>
               <button className="header-signup header-logout" type="button" onClick={logout}>Sair</button>
