@@ -103,7 +103,7 @@ export default function AgendamentoPage() {
           <span className="booking-promo-icon" aria-hidden="true">✦</span>
           <div>
             <strong>Quer deixar os próximos agendamentos mais práticos?</strong>
-            <p>Em breve, a área de clientes ajudará você a acompanhar seus horários e conhecer as vantagens disponíveis.</p>
+            <p>Na sua área de cliente, você poderá acompanhar os agendamentos vinculados à sua conta e o progresso da fidelidade.</p>
           </div>
           <Link href="/cadastro">Conhecer o cadastro <span aria-hidden="true">↗</span></Link>
         </aside>
@@ -147,7 +147,7 @@ export default function AgendamentoPage() {
           <button className="button button--primary booking-submit" type="submit" disabled={sending || loadingSlots}>{sending ? "Enviando solicitação…" : "Solicitar agendamento ↗"}</button>
           <p className="booking-disclaimer">Após enviar, sua solicitação será registrada. O horário ainda precisará ser confirmado pelo salão, para que você tenha certeza de que está tudo combinado.</p>
         </form>
-        <p className="booking-login-prompt">Já tem uma conta? <Link href="/login">Acesse seu login</Link> quando a área de clientes estiver disponível.</p>
+        <p className="booking-login-prompt">Já tem uma conta? <Link href="/login">Acesse seu login</Link> para acompanhar os agendamentos associados a ela.</p>
       </div>
     </main>
   );
