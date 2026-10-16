@@ -27,13 +27,27 @@ export default function AgendamentoPage() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [accountLoading, setAccountLoading] = useState(true);
+  const [loggedIn, setLoggedIn] = useState(false);
 
   const selectedService = useMemo(() => serviceOptions.find((item) => item.id === service)!, [service]);
   const total = selectedService.price + (location === "HOME" ? 5 : 0);
   useEffect(() => {
+    let active = true;
+    fetch("/api/auth/me", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data) => {
+        if (!active || !data.user) return;
+        setLoggedIn(true);
+        setName(data.user.name ?? "");
+        setWhatsapp(data.user.whatsapp ?? "");
+      })
+      .catch(() => { /* Permite agendamento como visitante se a consulta de sessão falhar. */ })
+      .finally(() => { if (active) setAccountLoading(false); });
     const today = dateValue(new Date());
     setDate(today);
     setMinimumDate(today);
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
@@ -97,16 +111,16 @@ export default function AgendamentoPage() {
         <div className="booking-heading">
           <p className="eyebrow">NAILS BY SAMARA · RESERVAS</p>
           <h1>Seu momento<br /><em>começa aqui.</em></h1>
-          <p>Escolha o serviço que deseja, veja os horários disponíveis e solicite seu agendamento. Não precisa criar uma conta: basta informar seus dados para que o salão possa entrar em contato com você.</p>
+          <p>Escolha o serviço que deseja, veja os horários disponíveis e solicite seu agendamento. {loggedIn ? "Seus dados de contato serão usados automaticamente pela sua conta." : "Você pode agendar como visitante ou entrar na sua conta para agilizar o processo."}</p>
         </div>
-        <aside className="booking-account-promo">
+        {!loggedIn && <aside className="booking-account-promo">
           <span className="booking-promo-icon" aria-hidden="true">✦</span>
           <div>
             <strong>Quer deixar os próximos agendamentos mais práticos?</strong>
             <p>Na sua área de cliente, você poderá acompanhar os agendamentos vinculados à sua conta e o progresso da fidelidade.</p>
           </div>
           <Link href="/cadastro">Conhecer o cadastro <span aria-hidden="true">↗</span></Link>
-        </aside>
+        </aside>}
         <form className="booking-card" onSubmit={submitBooking}>
           <section className="booking-section">
             <span className="booking-step">01</span>
@@ -137,9 +151,8 @@ export default function AgendamentoPage() {
           </section>
           <section className="booking-section">
             <span className="booking-step">04</span>
-            <div><h2>Seus dados para contato</h2><p>Preencha seu nome e WhatsApp com DDD para que o salão possa identificar sua solicitação e conversar com você sobre a confirmação do atendimento.</p></div>
-            <label className="booking-field">Nome completo<input required minLength={2} maxLength={120} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="Informe seu nome e sobrenome" /></label>
-            <label className="booking-field">WhatsApp com DDD<input required type="tel" maxLength={20} value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} autoComplete="tel" placeholder="Ex.: (11) 99999-9999" /></label>
+            <div><h2>{loggedIn ? "Dados da sua conta" : "Seus dados para contato"}</h2><p>{loggedIn ? "Vamos usar o nome e WhatsApp cadastrados na sua conta. Não é necessário preenchê-los novamente." : "Preencha seu nome e WhatsApp com DDD para que o salão possa identificar sua solicitação e conversar com você sobre a confirmação do atendimento."}</p></div>
+            {accountLoading ? <p className="booking-muted" role="status">Conferindo sua conta...</p> : loggedIn ? <div className="booking-account-details"><p><strong>Nome:</strong> {name}</p><p><strong>WhatsApp:</strong> {whatsapp}</p><small>Para alterar esses dados, atualize seu cadastro antes de agendar.</small></div> : <><label className="booking-field">Nome completo<input required minLength={2} maxLength={120} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="Informe seu nome e sobrenome" /></label><label className="booking-field">WhatsApp com DDD<input required type="tel" maxLength={20} value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} autoComplete="tel" placeholder="Ex.: (11) 99999-9999" /></label></> }
           </section>
           <aside className="booking-total"><div><span>Valor do tratamento</span><strong>{money(selectedService.price)}</strong></div><div><span>Taxa de mobilidade</span><strong>{money(location === "HOME" ? 5 : 0)}</strong></div><div className="booking-total-final"><span>Valor total</span><strong>{money(total)}</strong></div></aside>
           {error && <p className="booking-feedback booking-feedback--error" role="alert">{error}</p>}
@@ -147,7 +160,7 @@ export default function AgendamentoPage() {
           <button className="button button--primary booking-submit" type="submit" disabled={sending || loadingSlots}>{sending ? "Enviando solicitação…" : "Solicitar agendamento ↗"}</button>
           <p className="booking-disclaimer">Após enviar, sua solicitação será registrada. O horário ainda precisará ser confirmado pelo salão, para que você tenha certeza de que está tudo combinado.</p>
         </form>
-        <p className="booking-login-prompt">Já tem uma conta? <Link href="/login">Acesse seu login</Link> para acompanhar os agendamentos associados a ela.</p>
+        {!loggedIn && <p className="booking-login-prompt">Já tem uma conta? <Link href="/login">Acesse seu login</Link> para agilizar seus próximos agendamentos.</p>}
       </div>
     </main>
   );
