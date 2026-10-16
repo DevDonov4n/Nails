@@ -25,6 +25,19 @@ enum BookingStatus {
   COMPLETED
 }
 
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  whatsapp     String
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  bookings     Booking[]
+
+  @@index([whatsapp])
+}
+
 model Booking {
   id              String          @id @default(cuid())
   customerName    String
@@ -38,8 +51,11 @@ model Booking {
   servicePrice    Int
   mobilityFee     Int             @default(0)
   totalPrice      Int
+  userId          String?
+  user            User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
   @@index([startAt, status])
+  @@index([userId, startAt])
 }
