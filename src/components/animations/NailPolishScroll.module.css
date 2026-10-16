@@ -1,6 +1,6 @@
 .layer {
   position: fixed;
-  z-index: 0;
+  z-index: 2;
   inset: 0;
   overflow: clip;
   pointer-events: none;
@@ -13,15 +13,15 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  opacity: 0.45;
+  opacity: 0.42;
 }
 .object {
   position: absolute;
-  top: 28%;
-  left: 7%;
-  width: clamp(58px, 6.5vw, 88px);
+  top: 25%;
+  left: 50%;
+  width: clamp(54px, 5.4vw, 76px);
   aspect-ratio: 240 / 310;
-  opacity: 0.13;
+  opacity: 0.16;
   transform: translate(-50%, -50%);
   transform-style: preserve-3d;
   will-change: left, top, transform;
@@ -35,11 +35,10 @@
   transform-style: preserve-3d;
 }
 @media (max-width: 767px) {
-  .layer { opacity: 0.8; }
-  .object { width: 42px; opacity: 0.1; }
-  .trail { opacity: 0.28; }
+  .object { width: 40px; opacity: 0.12; }
+  .trail { opacity: 0.25; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .object { left: 5%; top: 82%; width: 42px; opacity: 0.08; transform: translate(-50%, -50%); }
-  .trail { opacity: 0.1; }
+  .object { left: 50%; top: 25%; width: 40px; opacity: 0.08; transform: translate(-50%, -50%); }
+  .trail { opacity: 0.08; }
 }
