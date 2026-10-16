@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import NailPolishScroll from "@/components/animations/NailPolishScroll";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -24,8 +25,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="pt-BR">
       <body className={`${dmSans.variable} ${cormorant.variable}`}>
+        <NailPolishScroll />
         <Header />
-        {children}
+        <div className="site-content">{children}</div>
         <Footer />
       </body>
     </html>
