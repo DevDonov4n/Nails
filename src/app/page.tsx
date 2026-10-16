@@ -32,7 +32,7 @@ export default function Home() {
             <div className="hero-visual" aria-label="Ilustração abstrata em tons rosados que representa beleza e cuidado">
               <div className="visual-ring visual-ring--outer" />
               <div className="visual-ring visual-ring--inner" />
-              <div className="hero-flower" aria-hidden="true"><span>NC</span></div>
+              <div className="hero-flower" aria-hidden="true"><span data-polish-start>NC</span></div>
               <div className="visual-stamp"><span>NAILS</span><span className="stamp-star">PIC</span><span>BY SAMARA</span></div>
               <div className="visual-caption"><span>BELEZA NATURAL</span><span>·</span><span>ESTILO ÚNICO</span></div>
             </div>
