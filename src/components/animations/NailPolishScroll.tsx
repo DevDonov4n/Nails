@@ -1,158 +1,183 @@
 "use client";
 
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useEffect, useRef } from "react";
 import styles from "./NailPolishScroll.module.css";
 
 const POLISH_COLOR = "#a90f25";
-const BRUSH_OPACITY = 0.1;
-const SCROLL_SMOOTHING = 1;
+const POLISH_HIGHLIGHT = "#f06b78";
+const TRAIL_WIDTH_DESKTOP = 7;
+const TRAIL_WIDTH_MOBILE = 2.5;
+const ZIGZAG_AMPLITUDE = 0.39;
+const CURVE_COUNT = 7;
+const TRAIL_OPACITY = 0.28;
 const MOBILE_BREAKPOINT = 768;
+const LERP_SPEED = 0.16;
+const DEBUG_PATH = process.env.NEXT_PUBLIC_NAIL_POLISH_DEBUG === "true";
 
-gsap.registerPlugin(useGSAP, ScrollTrigger);
+type Point = { x: number; y: number };
+const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
+
+function pathFromPoints(points: Point[]) {
+  if (points.length < 2) return "";
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 1; i < points.length; i++) {
+    const a = points[i - 1], b = points[i];
+    const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+    d += ` Q ${a.x} ${a.y} ${mid.x} ${mid.y}`;
+    if (i === points.length - 1) d += ` T ${b.x} ${b.y}`;
+  }
+  return d;
+}
 
 export default function NailPolishScroll() {
-  const enabled = process.env.NEXT_PUBLIC_NAIL_POLISH_SCROLL !== "false";
+  const svgRef = useRef<SVGSVGElement>(null);
+  const pathRef = useRef<SVGPathElement>(null);
+  const shineRef = useRef<SVGPathElement>(null);
+  const brushRef = useRef<SVGGElement>(null);
+  const debugRef = useRef<SVGGElement>(null);
 
-  useGSAP(() => {
-    if (!enabled) return;
+  useEffect(() => {
+    if (process.env.NEXT_PUBLIC_NAIL_POLISH_SCROLL === "false") return;
+    const svg = svgRef.current, path = pathRef.current, shine = shineRef.current, brush = brushRef.current;
+    const debug = debugRef.current;
+    const startEl = document.querySelector<HTMLElement>("[data-polish-start]");
+    const endEl = document.querySelector<HTMLElement>("[data-polish-end]");
+    if (!svg || !path || !shine || !brush || !startEl || !endEl) return;
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const mobile = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`).matches;
-    const object = document.querySelector<HTMLElement>("[data-nail-polish-object]");
-    const trail = document.querySelector<SVGPathElement>("[data-nail-polish-trail]");
-    const logo = document.querySelector<HTMLElement>(".hero-visual");
-    if (!object || !trail || !logo || reduceMotion) return;
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let points: Point[] = [], length = 0, startY = 0, endY = 1;
+    let progress = 0, target = 0, raf = 0, mobile = window.innerWidth < MOBILE_BREAKPOINT;
 
-    const trailLength = trail.getTotalLength();
-    gsap.set(trail, { strokeDasharray: trailLength, strokeDashoffset: trailLength });
-
-    const getStops = () => {
-      const logoRect = logo.getBoundingClientRect();
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      const edge = mobile ? Math.max(26, width * 0.075) : Math.max(54, width * 0.09);
-      const startX = logoRect.left + logoRect.width * 0.53;
-      const startY = logoRect.top + logoRect.height * 0.48;
-
-      // Fixed viewport positions make the brush travel with the scroll,
-      // while the final stop appears beside the footer as the page ends.
-      return [
-        { x: startX, y: startY, rotation: -22 },
-        { x: width - edge, y: height * 0.28, rotation: 18 },
-        { x: edge, y: height * 0.42, rotation: -18 },
-        { x: width - edge, y: height * 0.56, rotation: 17 },
-        { x: edge, y: height * 0.69, rotation: -16 },
-        { x: width - edge, y: height * 0.79, rotation: 15 },
-        { x: edge, y: height * 0.86, rotation: -10 },
-      ];
+    const setBrush = (x: number, y: number, angle: number, opacity: number) => {
+      brush.setAttribute("transform", `translate(${x} ${y}) rotate(${angle})`);
+      brush.style.opacity = String(opacity);
     };
 
-    let stops = getStops();
-    const placeAtStop = (stop: (typeof stops)[number]) => ({
-      left: stop.x,
-      top: stop.y,
-      xPercent: -50,
-      yPercent: -50,
-      rotation: stop.rotation,
-    });
+    const rebuild = () => {
+      mobile = window.innerWidth < MOBILE_BREAKPOINT;
+      const width = Math.max(document.documentElement.scrollWidth, window.innerWidth);
+      const height = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+      svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+      svg.setAttribute("width", String(width));
+      svg.setAttribute("height", String(height));
+      svg.style.width = `${width}px`;
+      svg.style.height = `${height}px`;
 
-    gsap.set(object, placeAtStop(stops[0]));
+      const sr = startEl.getBoundingClientRect(), er = endEl.getBoundingClientRect();
+      const start = { x: sr.left + scrollX + sr.width / 2, y: sr.top + scrollY + sr.height / 2 };
+      const end = { x: er.left + scrollX + er.width * 0.78, y: er.top + scrollY + Math.min(42, er.height * 0.35) };
+      startY = start.y; endY = Math.max(start.y + 1, end.y);
 
-    const timeline = gsap.timeline({
-      scrollTrigger: {
-        trigger: document.documentElement,
-        start: "top top",
-        end: "bottom bottom",
-        scrub: SCROLL_SMOOTHING,
-        invalidateOnRefresh: true,
-        onRefresh: () => {
-          stops = getStops();
-          gsap.set(object, placeAtStop(stops[0]));
-        },
-      },
-    });
-
-    stops.slice(1).forEach((stop) => {
-      timeline.to(object, {
-        ...placeAtStop(stop),
-        duration: 1,
-        ease: "sine.inOut",
+      const sections = Array.from(document.querySelectorAll<HTMLElement>("main section"))
+        .filter(s => { const y = s.getBoundingClientRect().top + scrollY + s.offsetHeight * .5; return y > start.y + 60 && y < end.y - 50; });
+      const gutter = mobile ? Math.max(14, width * .035) : Math.max(30, width * .045);
+      const left = gutter, right = width - gutter;
+      const raw: Point[] = [start];
+      sections.forEach((section, i) => {
+        const rect = section.getBoundingClientRect();
+        const container = section.querySelector<HTMLElement>(".container");
+        const cr = container?.getBoundingClientRect();
+        let x = i % 2 === 0 ? right : left;
+        if (cr) {
+          const freeLeft = cr.left, freeRight = width - (cr.left + cr.width);
+          if (i % 2 === 0 && freeRight > 18) x = width - Math.min(freeRight * .55, gutter + 16);
+          else if (i % 2 !== 0 && freeLeft > 18) x = Math.min(freeLeft * .55, gutter + 16);
+          else x = i % 2 === 0 ? width - gutter : gutter;
+        } else x = i % 2 === 0 ? width - gutter : gutter;
+        const amplitude = width * ZIGZAG_AMPLITUDE;
+        x = clamp(x, mobile ? 12 : Math.min(amplitude * .12, gutter), width - (mobile ? 12 : Math.min(amplitude * .12, gutter)));
+        raw.push({ x, y: rect.top + scrollY + section.offsetHeight * (i % 2 === 0 ? .28 : .72) });
       });
-    });
+      raw.push({ x: clamp(end.x, left, right), y: end.y });
+      points = raw.length > CURVE_COUNT + 2
+        ? [raw[0], ...Array.from({ length: CURVE_COUNT }, (_, i) => raw[Math.round((i + 1) * (raw.length - 1) / (CURVE_COUNT + 1))]), raw[raw.length - 1]]
+        : raw;
 
-    timeline.to(trail, { strokeDashoffset: 0, ease: "none", duration: stops.length - 1 }, 0);
-
-    const refresh = () => ScrollTrigger.refresh();
-    window.addEventListener("resize", refresh);
-    ScrollTrigger.refresh();
-
-    return () => {
-      window.removeEventListener("resize", refresh);
-      timeline.scrollTrigger?.kill();
-      timeline.kill();
+      const d = pathFromPoints(points);
+      path.setAttribute("d", d); shine.setAttribute("d", d);
+      length = path.getTotalLength();
+      path.style.strokeDasharray = String(length); shine.style.strokeDasharray = String(length);
+      path.style.strokeDashoffset = String(length * (motion.matches ? .72 : 1));
+      shine.style.strokeDashoffset = String(length * (motion.matches ? .72 : 1));
+      if (motion.matches) brush.style.opacity = "0";
+      if (debug) {
+        debug.replaceChildren();
+        if (DEBUG_PATH) points.forEach((p, i) => {
+          const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          dot.setAttribute("cx", String(p.x)); dot.setAttribute("cy", String(p.y));
+          dot.setAttribute("r", i === 0 || i === points.length - 1 ? "7" : "4");
+          dot.setAttribute("fill", i === 0 ? "#198754" : i === points.length - 1 ? "#0d6efd" : "#ff8c00");
+          debug.appendChild(dot);
+        });
+      }
+      setBrush(start.x, start.y, -18, 0);
+      schedule();
     };
-  }, { dependencies: [enabled], revertOnUpdate: true });
 
-  if (!enabled) return null;
+    const draw = () => {
+      raf = 0;
+      if (document.hidden) return;
+      const raw = clamp((scrollY + innerHeight * .5 - startY) / Math.max(1, endY - startY), 0, 1);
+      target = motion.matches ? 0 : raw;
+      progress += (target - progress) * (motion.matches ? 1 : LERP_SPEED);
+      const drawn = length * progress;
+      path.style.strokeDashoffset = String(length - drawn);
+      shine.style.strokeDashoffset = String(length - drawn);
+      if (!motion.matches && length > 0 && !mobile) {
+        const p = path.getPointAtLength(drawn);
+        const ahead = path.getPointAtLength(Math.min(length, drawn + Math.max(2, length * .002)));
+        const angle = Math.atan2(ahead.y - p.y, ahead.x - p.x) * 180 / Math.PI;
+        const fade = clamp(progress * 10, 0, 1) * clamp((1 - progress) * 10, 0, 1);
+        setBrush(p.x, p.y, angle + Math.sin(progress * Math.PI * 8) * 2, fade);
+      }
+      if (Math.abs(target - progress) > .001) schedule();
+    };
+    function schedule() { if (!raf && !document.hidden) raf = requestAnimationFrame(draw); }
+    const onScroll = () => { if (!motion.matches) schedule(); };
+    const onVisibility = () => { if (document.hidden && raf) cancelAnimationFrame(raf); else schedule(); };
+    const onMotion = () => rebuild();
 
-  return (
-    <div className={styles.layer} aria-hidden="true">
-      <svg className={styles.trail} viewBox="0 0 100 100" preserveAspectRatio="none">
-        <path
-          data-nail-polish-trail
-          d="M 52 24 C 70 28, 91 25, 91 30 S 10 38, 8 43 S 90 52, 91 57 S 10 64, 8 70 S 90 78, 91 83 S 20 88, 8 94"
-          fill="none"
-          stroke={POLISH_COLOR}
-          strokeWidth="0.38"
-          strokeLinecap="round"
-          opacity={BRUSH_OPACITY}
-          vectorEffect="non-scaling-stroke"
-        />
-      </svg>
+    rebuild();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", rebuild, { passive: true });
+    window.addEventListener("orientationchange", rebuild, { passive: true });
+    window.addEventListener("load", rebuild, { once: true });
+    document.addEventListener("visibilitychange", onVisibility);
+    motion.addEventListener("change", onMotion);
+    const observer = new ResizeObserver(rebuild);
+    observer.observe(document.body); observer.observe(document.documentElement);
+    document.fonts?.ready.then(() => { if (document.body.isConnected) rebuild(); });
+    return () => {
+      window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", rebuild);
+      window.removeEventListener("orientationchange", rebuild); window.removeEventListener("load", rebuild);
+      document.removeEventListener("visibilitychange", onVisibility); motion.removeEventListener("change", onMotion);
+      observer.disconnect(); if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
 
-      <div className={styles.object} data-nail-polish-object>
-        <svg className={styles.artwork} viewBox="0 0 240 310">
-          <defs>
-            <linearGradient id="polish-glass" x1="0" x2="1" y1="0" y2="1">
-              <stop offset="0%" stopColor="#f4d7d5" />
-              <stop offset="45%" stopColor="#a75c65" />
-              <stop offset="100%" stopColor="#57252e" />
-            </linearGradient>
-            <linearGradient id="polish-red" x1="0" x2="1" y1="0" y2="1">
-              <stop offset="0%" stopColor="#f34252" />
-              <stop offset="48%" stopColor={POLISH_COLOR} />
-              <stop offset="100%" stopColor="#5e0615" />
-            </linearGradient>
-            <linearGradient id="polish-metal" x1="0" x2="1">
-              <stop offset="0%" stopColor="#b7a3a0" />
-              <stop offset="45%" stopColor="#fff2e9" />
-              <stop offset="100%" stopColor="#9d8582" />
-            </linearGradient>
-            <filter id="polish-shadow" x="-40%" y="-30%" width="180%" height="180%">
-              <feDropShadow dx="0" dy="12" stdDeviation="9" floodColor="#613c43" floodOpacity=".2" />
-            </filter>
-          </defs>
-          <g filter="url(#polish-shadow)">
-            <path d="M 128 142 C 151 132 173 147 176 172 L 185 229 C 187 247 174 260 156 257 C 138 254 127 244 125 226 L 117 172 C 114 157 117 147 128 142 Z" fill="#e5b8b3" stroke="#fff4ee" strokeWidth="2" />
-            <path d="M 130 151 C 149 141 166 153 169 173 L 178 225 C 180 238 171 248 157 246 C 144 244 136 236 134 223 L 126 173 C 124 163 124 155 130 151 Z" fill="url(#polish-red)" />
-            <path d="M 132 157 C 139 154 143 160 145 171 L 153 213" fill="none" stroke="#ffb0b3" strokeWidth="3" strokeLinecap="round" opacity=".72" />
-            <g transform="rotate(-24 92 151)">
-              <rect x="70" y="122" width="48" height="95" rx="10" fill="url(#polish-glass)" stroke="#f8e4df" strokeWidth="1.5" />
-              <rect x="75" y="145" width="38" height="58" rx="6" fill="url(#polish-red)" opacity=".9" />
-              <path d="M 80 132 L 80 155" stroke="#fff8f0" strokeWidth="3" strokeLinecap="round" opacity=".7" />
-              <rect x="78" y="91" width="32" height="43" rx="4" fill="url(#polish-metal)" />
-              <path d="M 85 96 L 85 127" stroke="#fffaf4" strokeWidth="2" opacity=".8" />
-              <rect x="82" y="45" width="24" height="53" rx="5" fill="url(#polish-red)" />
-              <rect x="89" y="51" width="3" height="39" rx="1.5" fill="#ffb5ba" opacity=".8" />
-              <path d="M 91 96 C 91 113 112 125 128 148" fill="none" stroke="#4e1720" strokeWidth="4" strokeLinecap="round" />
-              <path d="M 91 96 C 91 113 112 125 128 148" fill="none" stroke="#c51b31" strokeWidth="2.5" strokeLinecap="round" />
-            </g>
-            <circle cx="132" cy="149" r="3" fill="#ffb6b9" opacity=".8" />
-          </g>
-        </svg>
-      </div>
-    </div>
-  );
+  if (process.env.NEXT_PUBLIC_NAIL_POLISH_SCROLL === "false") return null;
+  return <div className={styles.layer} aria-hidden="true">
+    <svg ref={svgRef} className={styles.svg} xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="polish-glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#fff0ed"/><stop offset="38%" stopColor="#d9a1a4"/><stop offset="70%" stopColor="#a90f25"/><stop offset="100%" stopColor="#4e0b19"/></linearGradient>
+        <linearGradient id="polish-metal" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#8c7777"/><stop offset="48%" stopColor="#fff8f2"/><stop offset="100%" stopColor="#a28b8b"/></linearGradient>
+      </defs>
+      <path ref={pathRef} className={styles.trail} fill="none" stroke={POLISH_COLOR} strokeWidth={TRAIL_WIDTH_DESKTOP} strokeLinecap="round" strokeLinejoin="round" opacity={TRAIL_OPACITY}/>
+      <path ref={shineRef} className={styles.highlight} fill="none" stroke={POLISH_HIGHLIGHT} strokeWidth="2" strokeLinecap="round" opacity=".65"/>
+      <g ref={debugRef} className={styles.debug}/>
+      <g ref={brushRef} className={styles.brush} opacity="0">
+        <g transform="translate(-18 -34)">
+          <ellipse cx="18" cy="31" rx="18" ry="29" fill="#6d1724" opacity=".14"/>
+          <rect x="3" y="20" width="30" height="38" rx="7" fill="url(#polish-glass)" stroke="#fff1ed" strokeWidth="1.2"/>
+          <rect x="6" y="28" width="24" height="24" rx="4" fill={POLISH_COLOR} opacity=".82"/>
+          <path d="M9 24 Q11 22 12 26 V47" stroke="#fff8f1" strokeWidth="2.5" strokeLinecap="round" opacity=".78" fill="none"/>
+          <rect x="8" y="8" width="20" height="15" rx="3" fill="url(#polish-metal)"/>
+          <rect x="10" y="-9" width="16" height="19" rx="3" fill="url(#polish-glass)" stroke="#fff1ed" strokeWidth=".8"/>
+          <path d="M18 9 C18 2 19 -6 22 -14" stroke="#5a2630" strokeWidth="3" strokeLinecap="round" fill="none"/>
+          <path d="M18 9 C18 2 19 -6 22 -14" stroke={POLISH_COLOR} strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+          <path d="M22 -14 Q18 -20 23 -24 Q28 -20 22 -14" fill={POLISH_COLOR}/>
+        </g>
+      </g>
+    </svg>
+  </div>;
 }
