@@ -530,3 +530,5 @@ h2 { margin-bottom: 22px; font-size: clamp(40px, 5vw, 64px); line-height: .98; }
   .account-booking-meta { grid-column: 2; justify-items: start; }
   .header-user-actions { gap: 8px; }
 }
+
+.header-session-placeholder { display: inline-block; width: 104px; height: 16px; }
