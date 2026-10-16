@@ -2,6 +2,7 @@ import { BookingLocation, BookingService } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { calculatePrice, isWithinBusinessHours, parseLocalDateTime, APPOINTMENT_MINUTES } from "@/lib/booking";
 import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
 
 const services = new Set<BookingService>(["HAND", "FOOT", "BOTH"]);
 const locations = new Set<BookingLocation>(["SALON", "HOME"]);
@@ -47,6 +48,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Esse horário está fora do expediente. Seg–sex: 16h–20h; sáb–dom: 9h–18h." }, { status: 400 });
   }
 
+  const user = await getCurrentUser();
+  if (user && digits !== user.whatsapp.replace(/\\D/g, "")) {
+    return NextResponse.json({ error: "O WhatsApp do agendamento deve corresponder ao número cadastrado na sua conta." }, { status: 400 });
+  }
+
   const price = calculatePrice(service, location);
   try {
     const booking = await prisma.$transaction(async (tx) => {
@@ -62,8 +68,9 @@ export async function POST(request: NextRequest) {
 
       return tx.booking.create({
         data: {
-          customerName: name,
-          whatsapp,
+          customerName: user?.name ?? name,
+          whatsapp: user?.whatsapp ?? whatsapp,
+          userId: user?.id,
           address: location === "HOME" ? address : null,
           service,
           location,
