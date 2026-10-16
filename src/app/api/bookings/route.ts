@@ -19,8 +19,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Dados inválidos." }, { status: 400 });
   }
 
-  const name = typeof body.name === "string" ? body.name.trim() : "";
-  const whatsapp = typeof body.whatsapp === "string" ? body.whatsapp.trim() : "";
+  const user = await getCurrentUser();
+  const name = user?.name ?? (typeof body.name === "string" ? body.name.trim() : "");
+  const whatsapp = user?.whatsapp ?? (typeof body.whatsapp === "string" ? body.whatsapp.trim() : "");
   const digits = whatsapp.replace(/\D/g, "");
   const address = typeof body.address === "string" ? body.address.trim() : "";
   const service = body.service as BookingService;
@@ -48,10 +49,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Esse horário está fora do expediente. Seg–sex: 16h–20h; sáb–dom: 9h–18h." }, { status: 400 });
   }
 
-  const user = await getCurrentUser();
-  if (user && digits !== user.whatsapp.replace(/\D/g, "")) {
-    return NextResponse.json({ error: "O WhatsApp do agendamento deve corresponder ao número cadastrado na sua conta." }, { status: 400 });
-  }
 
   const price = calculatePrice(service, location);
   try {
