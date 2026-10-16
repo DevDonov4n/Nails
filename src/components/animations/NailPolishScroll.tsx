@@ -5,11 +5,9 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import styles from "./NailPolishScroll.module.css";
 
-// Ajustes rápidos da animação.
 const POLISH_COLOR = "#a90f25";
-const BRUSH_OPACITY = 0.12;
-const SCROLL_SMOOTHING = 1.2;
-const DESKTOP_SIDE_INSET = 7; // distância da margem em vw
+const BRUSH_OPACITY = 0.1;
+const SCROLL_SMOOTHING = 1;
 const MOBILE_BREAKPOINT = 768;
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -24,15 +22,44 @@ export default function NailPolishScroll() {
     const mobile = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`).matches;
     const object = document.querySelector<HTMLElement>("[data-nail-polish-object]");
     const trail = document.querySelector<SVGPathElement>("[data-nail-polish-trail]");
-    if (!object || !trail || reduceMotion) return;
+    const logo = document.querySelector<HTMLElement>(".hero-visual");
+    if (!object || !trail || !logo || reduceMotion) return;
 
-    // O traço cresce e recua com o progresso nativo do scroll.
     const trailLength = trail.getTotalLength();
     gsap.set(trail, { strokeDasharray: trailLength, strokeDashoffset: trailLength });
 
-    const leftSide = mobile ? "5%" : `${DESKTOP_SIDE_INSET}%`;
-    const rightSide = mobile ? "95%" : `${100 - DESKTOP_SIDE_INSET}%`;
-    gsap.set(object, { left: leftSide, top: "28%", xPercent: -50, yPercent: -50, rotation: 0, rotationY: 0 });
+    const getStops = () => {
+      const logoRect = logo.getBoundingClientRect();
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const edge = mobile ? Math.max(26, width * 0.075) : Math.max(54, width * 0.09);
+      const startX = logoRect.left + logoRect.width * 0.53;
+      const startY = logoRect.top + logoRect.height * 0.48;
+
+      // Fixed viewport positions make the brush travel with the scroll,
+      // while the final stop appears beside the footer as the page ends.
+      return [
+        { x: startX, y: startY, rotation: -22 },
+        { x: width - edge, y: height * 0.28, rotation: 18 },
+        { x: edge, y: height * 0.42, rotation: -18 },
+        { x: width - edge, y: height * 0.56, rotation: 17 },
+        { x: edge, y: height * 0.69, rotation: -16 },
+        { x: width - edge, y: height * 0.79, rotation: 15 },
+        { x: edge, y: height * 0.86, rotation: -10 },
+      ];
+    };
+
+    let stops = getStops();
+    const placeAtStop = (stop: (typeof stops)[number]) => ({
+      left: stop.x,
+      top: stop.y,
+      xPercent: -50,
+      yPercent: -50,
+      rotation: stop.rotation,
+    });
+
+    gsap.set(object, placeAtStop(stops[0]));
+
     const timeline = gsap.timeline({
       scrollTrigger: {
         trigger: document.documentElement,
@@ -40,21 +67,29 @@ export default function NailPolishScroll() {
         end: "bottom bottom",
         scrub: SCROLL_SMOOTHING,
         invalidateOnRefresh: true,
+        onRefresh: () => {
+          stops = getStops();
+          gsap.set(object, placeAtStop(stops[0]));
+        },
       },
     });
 
-    // Move apenas entre as margens; a peça não atravessa o texto.
-    timeline
-      .to(object, { left: rightSide, top: "34%", rotation: 7, rotationY: 8, duration: 1, ease: "sine.inOut" })
-      .to(object, { left: leftSide, top: "62%", rotation: -6, rotationY: -7, duration: 1, ease: "sine.inOut" })
-      .to(object, { left: rightSide, top: "72%", rotation: 5, rotationY: 6, duration: 1, ease: "sine.inOut" })
-      .to(object, { left: leftSide, top: "38%", rotation: -5, rotationY: -6, duration: 1, ease: "sine.inOut" })
-      .to(object, { left: rightSide, top: "58%", rotation: 6, rotationY: 7, duration: 1, ease: "sine.inOut" })
-      .to(object, { left: leftSide, top: "72%", rotation: -4, rotationY: -5, duration: 1, ease: "sine.inOut" });
+    stops.slice(1).forEach((stop) => {
+      timeline.to(object, {
+        ...placeAtStop(stop),
+        duration: 1,
+        ease: "sine.inOut",
+      });
+    });
 
-    timeline.to(trail, { strokeDashoffset: 0, ease: "none", duration: 6 }, 0);
+    timeline.to(trail, { strokeDashoffset: 0, ease: "none", duration: stops.length - 1 }, 0);
+
+    const refresh = () => ScrollTrigger.refresh();
+    window.addEventListener("resize", refresh);
+    ScrollTrigger.refresh();
 
     return () => {
+      window.removeEventListener("resize", refresh);
       timeline.scrollTrigger?.kill();
       timeline.kill();
     };
@@ -67,10 +102,10 @@ export default function NailPolishScroll() {
       <svg className={styles.trail} viewBox="0 0 100 100" preserveAspectRatio="none">
         <path
           data-nail-polish-trail
-          d="M 7 4 C 12 10, 28 13, 38 19 S 70 27, 91 34 S 68 45, 35 52 S 20 67, 63 73 S 84 88, 93 97"
+          d="M 52 24 C 70 28, 91 25, 91 30 S 10 38, 8 43 S 90 52, 91 57 S 10 64, 8 70 S 90 78, 91 83 S 20 88, 8 94"
           fill="none"
           stroke={POLISH_COLOR}
-          strokeWidth="0.42"
+          strokeWidth="0.38"
           strokeLinecap="round"
           opacity={BRUSH_OPACITY}
           vectorEffect="non-scaling-stroke"
@@ -100,11 +135,9 @@ export default function NailPolishScroll() {
             </filter>
           </defs>
           <g filter="url(#polish-shadow)">
-            {/* Unha em perspectiva com brilho de esmalte. */}
             <path d="M 128 142 C 151 132 173 147 176 172 L 185 229 C 187 247 174 260 156 257 C 138 254 127 244 125 226 L 117 172 C 114 157 117 147 128 142 Z" fill="#e5b8b3" stroke="#fff4ee" strokeWidth="2" />
             <path d="M 130 151 C 149 141 166 153 169 173 L 178 225 C 180 238 171 248 157 246 C 144 244 136 236 134 223 L 126 173 C 124 163 124 155 130 151 Z" fill="url(#polish-red)" />
             <path d="M 132 157 C 139 154 143 160 145 171 L 153 213" fill="none" stroke="#ffb0b3" strokeWidth="3" strokeLinecap="round" opacity=".72" />
-            {/* Frasco facetado, tampa e pincel. */}
             <g transform="rotate(-24 92 151)">
               <rect x="70" y="122" width="48" height="95" rx="10" fill="url(#polish-glass)" stroke="#f8e4df" strokeWidth="1.5" />
               <rect x="75" y="145" width="38" height="58" rx="6" fill="url(#polish-red)" opacity=".9" />
