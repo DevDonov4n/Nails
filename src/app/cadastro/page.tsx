@@ -1,20 +1,37 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function CadastroPage() {
+  const router = useRouter();
+  const [sending, setSending] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (sending) return;
     const form = new FormData(event.currentTarget);
-    if (form.get("password") !== form.get("confirmPassword")) {
+    const password = String(form.get("password") ?? "");
+    if (password !== String(form.get("confirmPassword") ?? "")) {
       setMessage("As senhas não coincidem. Confira os dois campos de senha e tente novamente.");
       return;
     }
-    setMessage("A criação de contas ainda não está ativada. Seus dados não foram enviados nem salvos.");
+    setSending(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: form.get("name"), email: form.get("email"), whatsapp: form.get("whatsapp"), password }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Não foi possível criar a conta.");
+      router.replace("/minha-conta");
+      router.refresh();
+    } catch (reason) {
+      setMessage(reason instanceof Error ? reason.message : "Não foi possível criar a conta. Tente novamente.");
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -44,11 +61,11 @@ export default function CadastroPage() {
           <label className="booking-field">Confirmar senha
             <input name="confirmPassword" type={showPassword ? "text" : "password"} required minLength={8} placeholder="Digite novamente a mesma senha" autoComplete="new-password" />
           </label>
-          <button className="button button--primary booking-submit" type="submit">Criar minha conta <span aria-hidden="true">↗</span></button>
+          <button className="button button--primary booking-submit" type="submit" disabled={sending}>{sending ? "Criando conta…" : "Criar minha conta"} <span aria-hidden="true">↗</span></button>
           {message && <p className="booking-feedback" role="status">{message}</p>}
         </form>
         <p className="auth-switch">Já tem uma conta? <Link href="/login">Entrar</Link></p>
-        <p className="login-note">O cadastro ainda não está ativado, então os dados preenchidos não serão armazenados. Estamos preparando essa área para você.</p>
+        <p className="login-note">Sua senha será armazenada de forma protegida. Ao criar a conta, você poderá consultar os agendamentos feitos enquanto estiver autenticado.</p>
       </section>
     </main>
   );
