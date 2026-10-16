@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAvailableSlots, isValidCalendarDate } from "@/lib/booking";
 
-export const dynamic = "force-dynamic";
-
 export async function GET(request: NextRequest) {
   const date = request.nextUrl.searchParams.get("date") ?? "";
   if (!isValidCalendarDate(date)) {
