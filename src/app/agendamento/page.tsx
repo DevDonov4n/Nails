@@ -14,8 +14,8 @@ const money = (value: number) => value.toLocaleString("pt-BR", { style: "currenc
 const dateValue = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
 export default function AgendamentoPage() {
-  const [date, setDate] = useState("");
-  const [minimumDate, setMinimumDate] = useState("");
+  const [date, setDate] = useState(() => dateValue(new Date()));
+  const [minimumDate] = useState(() => dateValue(new Date()));
   const [time, setTime] = useState("");
   const [slots, setSlots] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -44,9 +44,6 @@ export default function AgendamentoPage() {
       })
       .catch(() => { /* Permite agendamento como visitante se a consulta de sessão falhar. */ })
       .finally(() => { if (active) setAccountLoading(false); });
-    const today = dateValue(new Date());
-    setDate(today);
-    setMinimumDate(today);
     return () => { active = false; };
   }, []);
 
@@ -54,7 +51,7 @@ export default function AgendamentoPage() {
     if (!date) return;
     let active = true;
     const controller = new AbortController();
-    setLoadingSlots(true);
+    queueMicrotask(() => { if (active) setLoadingSlots(true); });
     setTime("");
     setError("");
     setSuccess("");
