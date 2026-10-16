@@ -33,30 +33,33 @@ export default function AgendamentoPage() {
 
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
     setLoadingSlots(true);
     setTime("");
     setError("");
-    fetch(`/api/availability?date=${date}`, { cache: "no-store" })
+    setSuccess("");
+    fetch(`/api/availability?date=${encodeURIComponent(date)}`, { cache: "no-store", signal: controller.signal })
       .then(async (response) => {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error ?? "Não foi possível consultar os horários.");
-        if (active) setSlots(data.slots as string[]);
+        if (active) setSlots(Array.isArray(data.slots) ? data.slots.filter((slot: unknown) => typeof slot === "string") : []);
       })
       .catch((reason: unknown) => {
-        if (active) {
+        if (active && !(reason instanceof DOMException && reason.name === "AbortError")) {
           setSlots([]);
           setError(reason instanceof Error ? reason.message : "Erro ao consultar horários.");
         }
       })
       .finally(() => { if (active) setLoadingSlots(false); });
-    return () => { active = false; };
+    return () => { active = false; controller.abort(); };
   }, [date]);
 
   async function submitBooking(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (sending) return;
     setError("");
     setSuccess("");
-    if (!time) {
+    if (!time || !slots.includes(time)) {
       setError("Escolha um horário disponível antes de continuar.");
       return;
     }
@@ -69,10 +72,11 @@ export default function AgendamentoPage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Não foi possível solicitar o agendamento.");
-      setSuccess(`${data.message} Código: ${data.booking.id}. Total: ${money(total)}.`);
+      setSuccess(`${data.message} Código: ${data.booking.id}. Total: ${data.booking.totalPriceLabel ?? money(total)}.`);
       setTime("");
-      const refreshed = await fetch(`/api/availability?date=${date}`, { cache: "no-store" }).then((r) => r.json());
-      setSlots(refreshed.slots ?? []);
+      const refreshedResponse = await fetch(`/api/availability?date=${encodeURIComponent(date)}`, { cache: "no-store" });
+      const refreshed = await refreshedResponse.json();
+      if (refreshedResponse.ok && Array.isArray(refreshed.slots)) setSlots(refreshed.slots);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Ocorreu um erro inesperado.");
     } finally {
@@ -116,20 +120,20 @@ export default function AgendamentoPage() {
               <label className={location === "SALON" ? "booking-location is-selected" : "booking-location"}><input type="radio" name="location" value="SALON" checked={location === "SALON"} onChange={() => setLocation("SALON")} /><span><strong>No salão</strong><small>Sem taxa de mobilidade</small></span></label>
               <label className={location === "HOME" ? "booking-location is-selected" : "booking-location"}><input type="radio" name="location" value="HOME" checked={location === "HOME"} onChange={() => setLocation("HOME")} /><span><strong>Em domicílio</strong><small>Acrescenta R$ 5,00 de mobilidade</small></span></label>
             </div>
-            {location === "HOME" && <label className="booking-field">Endereço completo<input required value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Informe rua, número, bairro e cidade" autoComplete="street-address" /></label>}
+            {location === "HOME" && <label className="booking-field">Endereço completo<input required maxLength={300} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Informe rua, número, bairro e cidade" autoComplete="street-address" /></label>}
           </section>
           <section className="booking-section">
             <span className="booking-step">03</span>
             <div><h2>Escolha a data e o horário</h2><p>Selecione o dia desejado e depois escolha um dos horários livres. O atendimento funciona de segunda a sexta, das 16h às 20h, e aos sábados e domingos, das 9h às 18h.</p></div>
             <label className="booking-field">Data do atendimento<input type="date" min={minimumDate} value={date} onChange={(e) => setDate(e.target.value)} required /></label>
             <div className="booking-slots-label">Horários disponíveis</div>
-            {loadingSlots ? <p className="booking-muted">Estamos consultando os horários para essa data. Só um instante, por favor.</p> : slots.length ? <div className="booking-slots">{slots.map((slot) => <button type="button" key={slot} onClick={() => setTime(slot)} className={time === slot ? "booking-slot is-selected" : "booking-slot"} aria-pressed={time === slot}>{slot}</button>)}</div> : <p className="booking-muted">Não encontramos horários livres para esse dia. Você pode escolher outra data para consultar novas opções.</p>}
+            {loadingSlots ? <p className="booking-muted" role="status">Estamos consultando os horários para essa data. Só um instante, por favor.</p> : slots.length ? <div className="booking-slots">{slots.map((slot) => <button type="button" key={slot} onClick={() => setTime(slot)} className={time === slot ? "booking-slot is-selected" : "booking-slot"} aria-pressed={time === slot}>{slot}</button>)}</div> : <p className="booking-muted">Não encontramos horários livres para esse dia. Você pode escolher outra data para consultar novas opções.</p>}
           </section>
           <section className="booking-section">
             <span className="booking-step">04</span>
             <div><h2>Seus dados para contato</h2><p>Preencha seu nome e WhatsApp com DDD para que o salão possa identificar sua solicitação e conversar com você sobre a confirmação do atendimento.</p></div>
-            <label className="booking-field">Nome completo<input required minLength={2} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="Informe seu nome e sobrenome" /></label>
-            <label className="booking-field">WhatsApp com DDD<input required type="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} autoComplete="tel" placeholder="Ex.: (11) 99999-9999" /></label>
+            <label className="booking-field">Nome completo<input required minLength={2} maxLength={120} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="Informe seu nome e sobrenome" /></label>
+            <label className="booking-field">WhatsApp com DDD<input required type="tel" maxLength={20} value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} autoComplete="tel" placeholder="Ex.: (11) 99999-9999" /></label>
           </section>
           <aside className="booking-total"><div><span>Valor do tratamento</span><strong>{money(selectedService.price)}</strong></div><div><span>Taxa de mobilidade</span><strong>{money(location === "HOME" ? 5 : 0)}</strong></div><div className="booking-total-final"><span>Valor total</span><strong>{money(total)}</strong></div></aside>
           {error && <p className="booking-feedback booking-feedback--error" role="alert">{error}</p>}
