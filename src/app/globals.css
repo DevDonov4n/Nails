@@ -574,3 +574,11 @@ h2 { margin-bottom: 22px; font-size: clamp(40px, 5vw, 64px); line-height: .98; }
   .booking-account-details { padding: 15px; }
   .booking-account-details p strong { min-width: 70px; }
 }
+
+
+/* Keep decorative scroll artwork behind every readable page section. */
+.site-content,
+.site-footer {
+  position: relative;
+  z-index: 1;
+}
