@@ -32,8 +32,8 @@ export default function Home() {
             <div className="hero-visual" aria-label="Ilustração abstrata em tons rosados que representa beleza e cuidado">
               <div className="visual-ring visual-ring--outer" />
               <div className="visual-ring visual-ring--inner" />
-              <div className="hero-flower" aria-hidden="true"><span>✳</span></div>
-              <div className="visual-stamp"><span>NAILS</span><span className="stamp-star">✳</span><span>BY SAMARA</span></div>
+              <div className="hero-flower" aria-hidden="true"><span>NC</span></div>
+              <div className="visual-stamp"><span>NAILS</span><span className="stamp-star">PIC</span><span>BY SAMARA</span></div>
               <div className="visual-caption"><span>BELEZA NATURAL</span><span>·</span><span>ESTILO ÚNICO</span></div>
             </div>
           </div>
@@ -56,7 +56,7 @@ export default function Home() {
                   <div className="service-top"><span>{service.number}</span><span className="service-symbol" aria-hidden="true">✳</span></div>
                   <h3>{service.name}</h3><p>{service.description}</p>
                   <div className="service-meta"><span>{service.duration} aproximadamente</span><span>{service.priceLabel}</span></div>
-                  <a href="/agendamento" className="service-link">Escolher este serviço <span aria-hidden="true">↗</span></a>
+                  <a href="/agendamento" className="service-link">Escolher este serviço</a>
                 </article>
               ))}
             </div>
@@ -74,7 +74,7 @@ export default function Home() {
 
         <section className="contact section-pad" id="contato">
           <div className="container contact-panel">
-            <div className="contact-decoration" aria-hidden="true">✳</div>
+            
             <p className="eyebrow">VAMOS MARCAR SEU MOMENTO?</p>
             <h2>Você merece esse<br /><em>tempo para você.</em></h2>
             <p>Quer saber qual serviço combina melhor com o que você procura? Consulte os horários disponíveis, tire suas dúvidas e veja os detalhes do atendimento antes de reservar.</p>
