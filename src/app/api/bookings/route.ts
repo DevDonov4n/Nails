@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
   }
 
   const user = await getCurrentUser();
-  if (user && digits !== user.whatsapp.replace(/\\D/g, "")) {
+  if (user && digits !== user.whatsapp.replace(/\D/g, "")) {
     return NextResponse.json({ error: "O WhatsApp do agendamento deve corresponder ao número cadastrado na sua conta." }, { status: 400 });
   }
 
