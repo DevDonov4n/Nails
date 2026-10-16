@@ -3,8 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { calculatePrice, isWithinBusinessHours, parseLocalDateTime, APPOINTMENT_MINUTES } from "@/lib/booking";
 import { prisma } from "@/lib/prisma";
 
-export const dynamic = "force-dynamic";
-
 const services = new Set<BookingService>(["HAND", "FOOT", "BOTH"]);
 const locations = new Set<BookingLocation>(["SALON", "HOME"]);
 
@@ -51,9 +49,6 @@ export async function POST(request: NextRequest) {
 
   const price = calculatePrice(service, location);
   try {
-    // Keep this as a single database transaction. If the configured LibSQL adapter
-    // does not support this transaction mode, the request fails safely rather than
-    // returning a false success.
     const booking = await prisma.$transaction(async (tx) => {
       const conflict = await tx.booking.findFirst({
         where: {
