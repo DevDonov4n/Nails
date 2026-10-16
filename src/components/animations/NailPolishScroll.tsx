@@ -7,9 +7,9 @@ import styles from "./NailPolishScroll.module.css";
 
 // Ajustes rápidos da animação.
 const POLISH_COLOR = "#a90f25";
-const BRUSH_OPACITY = 0.24;
-const SCROLL_SMOOTHING = 0.8;
-const ZIGZAG_AMPLITUDE = 38; // vw a partir do centro
+const BRUSH_OPACITY = 0.12;
+const SCROLL_SMOOTHING = 1.2;
+const DESKTOP_SIDE_INSET = 7; // distância da margem em vw
 const MOBILE_BREAKPOINT = 768;
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -30,8 +30,9 @@ export default function NailPolishScroll() {
     const trailLength = trail.getTotalLength();
     gsap.set(trail, { strokeDasharray: trailLength, strokeDashoffset: trailLength });
 
-    const amplitude = mobile ? 43 : ZIGZAG_AMPLITUDE;
-    const side = (direction: number) => direction * amplitude;
+    const leftSide = mobile ? "5%" : `${DESKTOP_SIDE_INSET}%`;
+    const rightSide = mobile ? "95%" : `${100 - DESKTOP_SIDE_INSET}%`;
+    gsap.set(object, { left: leftSide, top: "28%", xPercent: -50, yPercent: -50, rotation: 0, rotationY: 0 });
     const timeline = gsap.timeline({
       scrollTrigger: {
         trigger: document.documentElement,
@@ -42,14 +43,14 @@ export default function NailPolishScroll() {
       },
     });
 
-    // Alterna as margens a cada trecho da página; rotação suave dá profundidade.
+    // Move apenas entre as margens; a peça não atravessa o texto.
     timeline
-      .to(object, { x: `${side(-1)}vw`, y: "-35vh", rotation: -12, rotationY: -18, duration: 1, ease: "sine.inOut" })
-      .to(object, { x: `${side(1)}vw`, y: "-10vh", rotation: 9, rotationY: 16, duration: 1, ease: "sine.inOut" })
-      .to(object, { x: `${side(-1)}vw`, y: "17vh", rotation: -8, rotationY: -14, duration: 1, ease: "sine.inOut" })
-      .to(object, { x: `${side(1)}vw`, y: "38vh", rotation: 12, rotationY: 18, duration: 1, ease: "sine.inOut" })
-      .to(object, { x: `${side(-1)}vw`, y: "8vh", rotation: -10, rotationY: -16, duration: 1, ease: "sine.inOut" })
-      .to(object, { x: `${side(1)}vw`, y: "-28vh", rotation: 8, rotationY: 14, duration: 1, ease: "sine.inOut" });
+      .to(object, { left: rightSide, top: "34%", rotation: 7, rotationY: 8, duration: 1, ease: "sine.inOut" })
+      .to(object, { left: leftSide, top: "62%", rotation: -6, rotationY: -7, duration: 1, ease: "sine.inOut" })
+      .to(object, { left: rightSide, top: "72%", rotation: 5, rotationY: 6, duration: 1, ease: "sine.inOut" })
+      .to(object, { left: leftSide, top: "38%", rotation: -5, rotationY: -6, duration: 1, ease: "sine.inOut" })
+      .to(object, { left: rightSide, top: "58%", rotation: 6, rotationY: 7, duration: 1, ease: "sine.inOut" })
+      .to(object, { left: leftSide, top: "72%", rotation: -4, rotationY: -5, duration: 1, ease: "sine.inOut" });
 
     timeline.to(trail, { strokeDashoffset: 0, ease: "none", duration: 6 }, 0);
 
