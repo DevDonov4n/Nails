@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 const navigation = [
   { label: "Início", href: "/#inicio" },
@@ -7,7 +10,26 @@ const navigation = [
   { label: "Contato", href: "/#contato" },
 ];
 
+type HeaderUser = { name: string; email: string };
+
 export default function Header() {
+  const [user, setUser] = useState<HeaderUser | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/auth/me", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data) => { if (active) setUser(data.user ?? null); })
+      .catch(() => { if (active) setUser(null); });
+    return () => { active = false; };
+  }, []);
+
+  async function logout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setUser(null);
+    window.location.assign("/");
+  }
+
   return (
     <header className="site-header">
       <div className="container header-inner">
@@ -22,8 +44,17 @@ export default function Header() {
           {navigation.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}
         </nav>
         <div className="header-actions">
-          <Link className="header-account" href="/login">Entrar</Link>
-          <Link className="header-signup" href="/cadastro">Criar conta</Link>
+          {user ? (
+            <div className="header-user-actions">
+              <Link className="header-account" href="/minha-conta">Olá, {user.name.split(" ")[0]}</Link>
+              <button className="header-signup header-logout" type="button" onClick={logout}>Sair</button>
+            </div>
+          ) : (
+            <>
+              <Link className="header-account" href="/login">Entrar</Link>
+              <Link className="header-signup" href="/cadastro">Criar conta</Link>
+            </>
+          )}
           <Link className="header-cta" href="/agendamento">Agendar horário <span aria-hidden="true">↗</span></Link>
         </div>
       </div>
