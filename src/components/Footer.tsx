@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="site-footer">
+    <footer className="site-footer" data-polish-end>
       <div className="container footer-inner">
         <a className="footer-brand" href="#inicio">Nails by Samara<span>.</span></a>
         <p>Um momento só seu, com beleza em cada detalhe.</p>
