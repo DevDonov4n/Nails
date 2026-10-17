@@ -1,5 +1,7 @@
 "use client";
 
+import "./admin.css";
+
 import { FormEvent, useEffect, useState } from "react";
 
 export default function AdminPage() {
