@@ -27,7 +27,8 @@ export default function Home() {
                 <Button href="/agendamento">Quero agendar <span aria-hidden="true">↗</span></Button>
                 <a className="text-link" href="#servicos">Conheça os serviços <span aria-hidden="true">↓</span></a>
               </div>
-              <div className="hero-note"><span className="note-star" aria-hidden="true">✳</span><span>Delicadeza em cada detalhe<br /><strong>Um tempo especial para você se cuidar.</strong></span></div>
+              <div className="hero-note">
+                <span>Delicadeza em cada detalhe<br /><strong>Um tempo especial para você se cuidar.</strong></span></div>
             </div>
             <div className="hero-visual" aria-label="Ilustração abstrata em tons rosados que representa beleza e cuidado">
               <div className="visual-ring visual-ring--outer" />
@@ -37,7 +38,7 @@ export default function Home() {
               <div className="visual-caption"><span>BELEZA NATURAL</span><span>·</span><span>ESTILO ÚNICO</span></div>
             </div>
           </div>
-          <div className="hero-bottom container"><span>01 — CUIDADO</span><span>02 — BELEZA</span><span>03 — AUTOESTIMA</span></div>
+          <div className="hero-bottom container"></div>
         </section>
 
         <section className="intro section-pad">
@@ -53,7 +54,7 @@ export default function Home() {
             <div className="service-grid">
               {services.map((service) => (
                 <article className="service-card" key={service.number}>
-                  <div className="service-top"><span>{service.number}</span><span className="service-symbol" aria-hidden="true">✳</span></div>
+                  <div className="service-top"></div>
                   <h3>{service.name}</h3><p>{service.description}</p>
                   <div className="service-meta"><span>{service.duration} aproximadamente</span><span>{service.priceLabel}</span></div>
                   <a href="/agendamento" className="service-link">Escolher este serviço</a>
@@ -67,7 +68,7 @@ export default function Home() {
           <div className="container">
             <div className="section-heading"><div><p className="eyebrow">INSPIRAÇÃO PARA VOCÊ</p><h2>Pequenos detalhes,<br /><em>grande personalidade.</em></h2></div><p className="section-description">Gosta de unhas discretas ou prefere um pouco mais de cor? Veja algumas ideias para encontrar o estilo que combina com você. Esta galeria é ilustrativa e poderá receber fotos dos trabalhos reais assim que estiverem disponíveis.</p></div>
             <div className="portfolio-grid">
-              {portfolioCards.map((card) => <article className="portfolio-card" key={card.number}><div className={`portfolio-art ${card.style}`}><div className="nail-shape nail-shape--one" /><div className="nail-shape nail-shape--two" /><div className="nail-shape nail-shape--three" /><span className="art-sparkle" aria-hidden="true">✳</span></div><div className="portfolio-info"><span>{card.number} / INSPIRAÇÃO</span><h3>{card.title}</h3><p>{card.detail}</p></div></article>)}
+              {portfolioCards.map((card) => <article className="portfolio-card" key={card.number}><div className={`portfolio-art ${card.style}`}><div className="nail-shape nail-shape--one" /><div className="nail-shape nail-shape--two" /><div className="nail-shape nail-shape--three" /></div><div className="portfolio-info"><span>{card.number} / INSPIRAÇÃO</span><h3>{card.title}</h3><p>{card.detail}</p></div></article>)}
             </div>
           </div>
         </section>
