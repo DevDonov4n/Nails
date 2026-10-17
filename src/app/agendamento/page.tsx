@@ -14,8 +14,8 @@ const money = (value: number) => value.toLocaleString("pt-BR", { style: "currenc
 const dateValue = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
 export default function AgendamentoPage() {
-  const [date, setDate] = useState(() => dateValue(new Date()));
-  const [minimumDate] = useState(() => dateValue(new Date()));
+  const [date, setDate] = useState("");
+  const [minimumDate, setMinimumDate] = useState("");
   const [time, setTime] = useState("");
   const [slots, setSlots] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -32,6 +32,12 @@ export default function AgendamentoPage() {
 
   const selectedService = useMemo(() => serviceOptions.find((item) => item.id === service)!, [service]);
   const total = selectedService.price + (location === "HOME" ? 5 : 0);
+  useEffect(() => {
+    const today = dateValue(new Date());
+    setMinimumDate(today);
+    setDate((currentDate) => currentDate || today);
+  }, []);
+
   useEffect(() => {
     let active = true;
     fetch("/api/auth/me", { cache: "no-store" })
