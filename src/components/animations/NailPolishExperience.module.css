@@ -1,156 +1,39 @@
 .experience {
   position: relative;
   z-index: 0;
-  height: 190svh;
-  background:
-    radial-gradient(ellipse at 50% 35%, rgb(255 226 231 / 85%) 0%, transparent 48%),
-    linear-gradient(145deg, #fffaf8 0%, #f7e8e7 56%, #fffaf8 100%);
+  height: 175svh;
   color: #56343b;
+  background: radial-gradient(ellipse at 50% 40%, rgb(255 226 231 / 75%) 0%, transparent 48%), linear-gradient(145deg, #fffaf8 0%, #f7e8e7 56%, #fffaf8 100%);
 }
-.sticky {
-  position: sticky;
-  top: 0;
-  height: 100svh;
-  min-height: 520px;
-  overflow: hidden;
-  isolation: isolate;
-}
-.canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-.intro {
-  position: absolute;
-  z-index: 1;
-  top: 12%;
-  left: 50%;
-  width: min(90%, 720px);
-  transform: translateX(-50%);
-  text-align: center;
-  pointer-events: none;
-}
-.kicker {
-  display: inline-block;
-  margin-bottom: 18px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .22em;
-}
-.intro p {
-  margin: 0;
-  font-family: var(--font-cormorant), Georgia, serif;
-  font-size: clamp(44px, 7vw, 84px);
-  line-height: .95;
-  letter-spacing: -.045em;
-}
+.sticky { position: sticky; top: 0; height: 100svh; min-height: 480px; overflow: hidden; isolation: isolate; }
+.intro { position: absolute; z-index: 2; top: 8%; left: 50%; width: min(90%, 720px); transform: translateX(-50%); text-align: center; pointer-events: none; }
+.kicker { display: inline-block; margin-bottom: 18px; font-size: 10px; font-weight: 700; letter-spacing: .22em; }
+.intro h2 { margin: 0; font-family: var(--font-cormorant), Georgia, serif; font-size: clamp(42px, 7vw, 76px); line-height: .95; letter-spacing: -.045em; font-weight: 400; }
 .intro em { color: #a90f35; font-weight: 400; }
-.scrollHint {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 26px;
-  font-size: 9px;
-  letter-spacing: .16em;
-}
+.scrollHint { display: inline-flex; align-items: center; gap: 10px; margin-top: 22px; font-size: 9px; letter-spacing: .16em; }
 .scrollHint span { font-size: 17px; }
-.phrases {
-  position: absolute;
-  z-index: 2;
-  right: max(7%, calc((100% - 1100px) / 2));
-  bottom: 18%;
-  width: min(42%, 390px);
-  min-height: 90px;
-  text-align: right;
-  pointer-events: none;
-}
-.phrases p {
-  position: absolute;
-  inset: 0;
-  margin: 0;
-  color: #9d1734;
-  font-family: var(--font-cormorant), Georgia, serif;
-  font-size: clamp(34px, 5.3vw, 68px);
-  font-style: italic;
-  line-height: 1;
-  opacity: 0;
-}
-.progress {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background: rgb(169 15 53 / 10%);
-}
+.scene { position: absolute; top: 23%; left: 50%; width: min(65vw, 440px); height: 66%; transform: translateX(-50%); overflow: visible; pointer-events: none; }
+.bottle, .brush, .nail { transform-box: fill-box; transform-origin: center; will-change: transform, opacity; }
+.brush, .nail { opacity: 0; }
+.phrases { position: absolute; z-index: 2; right: max(7%, calc((100% - 1100px) / 2)); bottom: 15%; width: min(42%, 390px); min-height: 80px; text-align: right; pointer-events: none; }
+.phrases p { position: absolute; inset: 0; margin: 0; color: #9d1734; font-family: var(--font-cormorant), Georgia, serif; font-size: clamp(34px, 5.3vw, 68px); font-style: italic; line-height: 1; opacity: 0; will-change: transform, opacity; }
+.progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: rgb(169 15 53 / 10%); }
 .progress span { display: block; width: 100%; height: 100%; transform: scaleX(0); transform-origin: left; background: #a90f35; }
 @media (max-width: 640px) {
-  .experience { height: 165svh; }
-  .sticky { min-height: 480px; }
-  .intro { top: 10%; width: calc(100% - 34px); }
-  .kicker { font-size: 8px; letter-spacing: .15em; }
-  .intro p { font-size: clamp(42px, 12vw, 62px); }
-  .scrollHint { margin-top: 18px; font-size: 8px; }
-  .phrases { right: 7%; bottom: 15%; width: 86%; }
-  .phrases p { font-size: clamp(38px, 11vw, 56px); }
+  .experience { height: 160svh; }
+  .sticky { min-height: 460px; }
+  .intro { top: 8%; width: calc(100% - 28px); }
+  .kicker { font-size: 8px; letter-spacing: .14em; }
+  .intro h2 { font-size: clamp(40px, 11vw, 58px); }
+  .scrollHint { margin-top: 16px; font-size: 8px; }
+  .scene { top: 27%; width: min(94vw, 390px); height: 58%; }
+  .phrases { right: 7%; bottom: 9%; width: 86%; }
+  .phrases p { font-size: clamp(36px, 10vw, 52px); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .experience { height: auto; min-height: 72svh; }
-  .sticky { position: relative; min-height: 72svh; }
+  .experience { height: auto; min-height: 68svh; }
+  .sticky { position: relative; min-height: 68svh; }
+  .scene { top: 28%; height: 55%; }
   .scrollHint { display: none; }
-}
-
-.fallbackBottle {
-  position: absolute;
-  z-index: 0;
-  top: 55%;
-  left: 50%;
-  width: clamp(130px, 23vw, 210px);
-  height: clamp(220px, 34vw, 300px);
-  transform: translate(-50%, -50%);
-  filter: drop-shadow(0 22px 24px rgb(105 38 54 / 18%));
-  pointer-events: none;
-}
-.fallbackCap {
-  position: absolute;
-  z-index: 2;
-  top: 0;
-  left: 37%;
-  width: 26%;
-  height: 29%;
-  border-radius: 8px 8px 3px 3px;
-  background: linear-gradient(90deg, #2b2025, #6d4b54 45%, #2b2025);
-}
-.fallbackNeck {
-  position: absolute;
-  top: 24%;
-  left: 32%;
-  width: 36%;
-  height: 13%;
-  border-radius: 5px;
-  background: linear-gradient(90deg, #9d183a, #f3a7b6 48%, #9d183a);
-}
-.fallbackBody {
-  position: absolute;
-  top: 32%;
-  left: 7%;
-  display: flex;
-  width: 86%;
-  height: 65%;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  border: 1px solid rgb(255 255 255 / 75%);
-  border-radius: 25px 25px 34px 34px;
-  background: linear-gradient(105deg, #8f1535 0%, #c42a50 25%, #e97891 48%, #a31b3c 78%, #7e102e 100%);
-  box-shadow: inset 9px 0 12px rgb(255 255 255 / 18%), inset -8px 0 10px rgb(55 0 16 / 16%);
-  color: #fff0f2;
-}
-.fallbackBody span { font-family: Georgia, serif; font-size: clamp(18px, 3vw, 26px); letter-spacing: .15em; }
-.fallbackBody small { font-size: 7px; letter-spacing: .24em; }
-@media (max-width: 640px) {
-  .fallbackBottle { top: 57%; width: 128px; height: 218px; }
+  .bottle, .brush, .nail, .phrases p { will-change: auto; }
 }
