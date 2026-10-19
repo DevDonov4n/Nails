@@ -35,16 +35,11 @@ export default function Home() {
               <div className="visual-stamp"><span>NAILS</span><span className="stamp-star">PIC</span><span>BY SAMARA</span></div>
               <div className="visual-caption"><span>BELEZA NATURAL</span><span>·</span><span>ESTILO ÚNICO</span></div>
             </div>
-          </div>
+          </div>  
           <div className="hero-bottom container" />
         </section>
 
-        <section className="intro section-pad">
-          <div className="container intro-grid">
-            <p className="eyebrow">OLÁ, SEJA BEM-VINDA</p>
-            <div><h2>Seu estilo, suas regras.<br /><em>Seu momento.</em></h2><p className="section-description">Cuidar das unhas também é cuidar de você. Seja para manter aquele visual clássico, experimentar uma cor nova ou simplesmente tirar um tempo da correria, vamos escolher juntas o cuidado que combina com seu gosto e sua rotina. Você será recebida com atenção e carinho em cada etapa.</p></div>
-          </div>
-        </section>
+        
 
         <section className="services section-pad" id="servicos">
           <div className="container">
