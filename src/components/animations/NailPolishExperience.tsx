@@ -42,10 +42,11 @@ export default function NailPolishExperience() {
       const progress = clamp(-rect.top / range);
       const bottle = bottleRef.current;
       const brush = brushRef.current;
-      const paintProgress = clamp((progress - 0.12) / 0.72);
+      const rawPaintProgress = clamp((progress - 0.05) / 0.9);
+      const paintProgress = rawPaintProgress * rawPaintProgress * (3 - 2 * rawPaintProgress);
 
       if (bottle) {
-        const opacity = progress > 0.88 ? clamp((1 - progress) / 0.12) : 1;
+        const opacity = progress > 0.94 ? clamp((1 - progress) / 0.06) : 1;
         bottle.style.opacity = String(opacity);
         bottle.style.transform = reducedMotion ? "none" : `translateY(${Math.sin(progress * Math.PI) * -7}px)`;
       }
@@ -57,7 +58,7 @@ export default function NailPolishExperience() {
         const point = pointOnPath(paintProgress);
         const next = pointOnPath(Math.min(1, paintProgress + 0.015));
         const angle = Math.atan2(next.y - point.y, next.x - point.x) * (180 / Math.PI) + 90;
-        brush.style.opacity = progress > 0.1 && progress < 0.9 ? "1" : "0";
+        brush.style.opacity = progress > 0.04 && progress < 0.97 ? "1" : "0";
         brush.setAttribute("transform", `translate(${point.x} ${point.y}) rotate(${reducedMotion ? 0 : angle})`);
       }
 
