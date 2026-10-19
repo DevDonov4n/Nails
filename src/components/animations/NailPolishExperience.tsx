@@ -1,224 +1,135 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import * as THREE from "three";
-import anime from "animejs";
 import styles from "./NailPolishExperience.module.css";
 
-const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
+const clamp = (value: number) => Math.min(1, Math.max(0, value));
 
 export default function NailPolishExperience() {
   const sectionRef = useRef<HTMLElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const bottleRef = useRef<HTMLDivElement>(null);
+  const bottleRef = useRef<SVGGElement>(null);
+  const brushRef = useRef<SVGGElement>(null);
+  const nailRef = useRef<SVGGElement>(null);
+  const polishRef = useRef<SVGPathElement>(null);
   const phraseRefs = useRef<(HTMLParagraphElement | null)[]>([]);
+  const progressRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const section = sectionRef.current;
-    const canvas = canvasRef.current;
-    if (!section || !canvas) return;
+    if (!section) return;
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let renderer: THREE.WebGLRenderer;
-    try {
-      renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-    } catch (error) {
-      // WebGL can be disabled or blocked by the browser/GPU. Keep the experience usable
-      // with a CSS-rendered bottle instead of crashing the entire page.
-      console.warn("Nail polish 3D is unavailable; using the CSS fallback.", error);
-      canvas.style.display = "none";
-      const fallbackBottle = section.querySelector<HTMLElement>("[data-nail-fallback]");
-      if (fallbackBottle) fallbackBottle.hidden = false;
-
-      const updateFallback = () => {
-        const rect = section.getBoundingClientRect();
-        const range = Math.max(1, section.offsetHeight - window.innerHeight);
-        const progress = clamp(-rect.top / range);
-        if (fallbackBottle && !reducedMotion) {
-          fallbackBottle.style.transform = `translate(-50%, calc(-50% + ${progress * 26}px)) rotate(${Math.sin(progress * Math.PI * 5) * 4}deg)`;
-          fallbackBottle.style.opacity = String(progress > 0.82 ? clamp((0.98 - progress) / 0.16) : 1);
-        }
-        phraseRefs.current.forEach((element, index) => {
-          if (!element) return;
-          const start = 0.12 + index * 0.24;
-          element.style.opacity = String(clamp((progress - start) / 0.1) * clamp((start + 0.23 - progress) / 0.1));
-        });
-      };
-      const onFallbackScroll = () => updateFallback();
-      const fallbackObserver = new ResizeObserver(updateFallback);
-      fallbackObserver.observe(section);
-      window.addEventListener("scroll", onFallbackScroll, { passive: true });
-      window.addEventListener("resize", updateFallback, { passive: true });
-      const entranceFallback = anime({
-        targets: bottleRef.current,
-        opacity: [0, 1],
-        translateY: [22, 0],
-        duration: reducedMotion ? 0 : 900,
-        easing: "easeOutCubic",
-      });
-      updateFallback();
-      return () => {
-        entranceFallback.pause();
-        fallbackObserver.disconnect();
-        window.removeEventListener("scroll", onFallbackScroll);
-        window.removeEventListener("resize", updateFallback);
-      };
-    }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.8));
-    renderer.setClearColor(0x000000, 0);
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
-    camera.position.set(0, 0.25, 8);
-
-    scene.add(new THREE.HemisphereLight(0xfff2f3, 0x6b2639, 2.1));
-    const keyLight = new THREE.DirectionalLight(0xffffff, 3.2);
-    keyLight.position.set(-3, 4, 6);
-    scene.add(keyLight);
-    const rimLight = new THREE.PointLight(0xf58eaa, 16, 12);
-    rimLight.position.set(3, 1, 3);
-    scene.add(rimLight);
-
-    const bottle = new THREE.Group();
-    scene.add(bottle);
-    const glass = new THREE.MeshPhysicalMaterial({
-      color: 0xb81e45, metalness: 0.08, roughness: 0.18, transmission: 0.12,
-      thickness: 0.6, clearcoat: 1, clearcoatRoughness: 0.12,
-    });
-    const bottleBody = new THREE.Mesh(new THREE.CylinderGeometry(0.82, 0.72, 1.9, 48, 1), glass);
-    bottleBody.position.y = -0.42;
-    bottle.add(bottleBody);
-    const shoulder = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.82, 0.42, 48), glass);
-    shoulder.position.y = 0.72;
-    bottle.add(shoulder);
-    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.31, 0.34, 0.35, 40), glass);
-    neck.position.y = 1.08;
-    bottle.add(neck);
-    const capMaterial = new THREE.MeshStandardMaterial({ color: 0x39242b, roughness: 0.25, metalness: 0.35 });
-    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.3, 0.95, 40), capMaterial);
-    cap.position.y = 1.72;
-    bottle.add(cap);
-    const capBand = new THREE.Mesh(new THREE.CylinderGeometry(0.305, 0.305, 0.09, 40), new THREE.MeshStandardMaterial({ color: 0xe6c5c5, metalness: 0.75, roughness: 0.22 }));
-    capBand.position.y = 1.3;
-    bottle.add(capBand);
-
-    const label = new THREE.Mesh(new THREE.PlaneGeometry(1.18, 0.55), new THREE.MeshBasicMaterial({ color: 0xffe9eb }));
-    label.position.set(0, -0.45, 0.79);
-    bottle.add(label);
-
-    const brush = new THREE.Group();
-    scene.add(brush);
-    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.07, 1.5, 16), capMaterial);
-    handle.position.y = 0.8;
-    brush.add(handle);
-    const bristles = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.12, 0.42, 20), new THREE.MeshStandardMaterial({ color: 0xa90f35, roughness: 0.45 }));
-    bristles.position.y = -0.15;
-    brush.add(bristles);
-    brush.visible = false;
-
-    const nail = new THREE.Group();
-    scene.add(nail);
-    const nailMaterial = new THREE.MeshPhysicalMaterial({ color: 0xf4b4bd, roughness: 0.22, clearcoat: 1, clearcoatRoughness: 0.12 });
-    const nailBase = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 1.3, 8, 24), nailMaterial);
-    nailBase.scale.set(0.72, 1, 0.22);
-    nailBase.rotation.z = -0.28;
-    nail.add(nailBase);
-    const polish = new THREE.Mesh(new THREE.CapsuleGeometry(0.34, 1.23, 8, 24), new THREE.MeshPhysicalMaterial({ color: 0xb51e42, roughness: 0.2, clearcoat: 1 }));
-    polish.scale.set(0.72, 1, 0.23);
-    polish.rotation.z = -0.28;
-    polish.position.z = 0.025;
-    nail.add(polish);
-    nail.visible = false;
-    nail.position.set(1.2, -0.1, 0);
-
-    const resize = () => {
-      const width = Math.max(1, section.clientWidth);
-      const height = Math.max(1, section.clientHeight);
-      renderer.setSize(width, height, false);
-      camera.aspect = width / height;
-      camera.position.z = width < 600 ? 9.2 : 8;
-      camera.updateProjectionMatrix();
-    };
-
-    const phraseAnimations = phraseRefs.current.map((element) => element ? anime({
-      targets: element, opacity: [0, 1], translateY: [18, 0], duration: 1, autoplay: false, easing: "linear",
-    }) : null);
+    let frame = 0;
 
     const update = () => {
+      frame = 0;
       const rect = section.getBoundingClientRect();
       const range = Math.max(1, section.offsetHeight - window.innerHeight);
       const progress = clamp(-rect.top / range);
-      if (!reducedMotion) {
-        bottle.rotation.y = progress * 1.1;
-        bottle.rotation.z = Math.sin(progress * Math.PI) * 0.08;
-        bottle.position.y = progress < 0.48 ? progress * 0.6 : 0.28 - (progress - 0.48) * 0.45;
-        bottle.scale.setScalar(progress > 0.72 ? 1 - (progress - 0.72) * 1.2 : 1);
-        cap.position.y = 1.72 + (progress > 0.18 ? Math.min(0.9, (progress - 0.18) * 2.5) : 0);
-        brush.visible = progress > 0.22 && progress < 0.94;
-        brush.position.set(0.25 + Math.sin(progress * Math.PI * 5) * 0.65, 1.5 - progress * 3.5, 0.5);
-        brush.rotation.z = Math.sin(progress * Math.PI * 5) * 0.5;
-        nail.visible = progress > 0.64;
-        nail.rotation.z = progress > 0.64 ? (progress - 0.64) * 0.7 : 0;
-        nail.scale.setScalar(progress > 0.64 ? 0.8 + Math.min(0.3, (progress - 0.64) * 0.7) : 0.8);
+      const bottle = bottleRef.current;
+      const brush = brushRef.current;
+      const nail = nailRef.current;
+      const polish = polishRef.current;
+
+      if (bottle) {
+        const bottleOpacity = progress > 0.42 ? clamp((0.56 - progress) / 0.14) : 1;
+        bottle.style.opacity = String(bottleOpacity);
+        bottle.style.transform = reducedMotion ? "translate(0 0)" : `translate(0 ${progress * 16}px) rotate(${Math.sin(progress * Math.PI * 2) * 2}deg)`;
       }
-      phraseAnimations.forEach((animation, index) => {
-        if (!animation) return;
-        const start = 0.12 + index * 0.24;
-        animation.seek(clamp((progress - start) / 0.18) * animation.duration);
-        const element = phraseRefs.current[index];
-        if (element) element.style.opacity = String(clamp((progress - start) / 0.1) * clamp((start + 0.23 - progress) / 0.1));
+
+      const brushProgress = clamp((progress - 0.16) / 0.58);
+      if (brush) {
+        const x = 205 + Math.sin(brushProgress * Math.PI * 4) * 65;
+        const y = 160 + brushProgress * 300;
+        brush.style.opacity = progress > 0.13 && progress < 0.82 ? "1" : "0";
+        brush.style.transform = reducedMotion ? "translate(0 0)" : `translate(${x - 205}px, ${y - 160}px) rotate(${Math.sin(brushProgress * Math.PI * 4) * 10}deg)`;
+      }
+
+      const nailProgress = clamp((progress - 0.48) / 0.36);
+      if (nail) {
+        nail.style.opacity = String(nailProgress);
+        nail.style.transform = reducedMotion ? "translate(0 0)" : `translate(0 ${(1 - nailProgress) * 22}px) scale(${0.94 + nailProgress * 0.06})`;
+      }
+      if (polish) polish.style.strokeDashoffset = String(1 - nailProgress);
+
+      phraseRefs.current.forEach((element, index) => {
+        if (!element) return;
+        const start = 0.2 + index * 0.22;
+        const opacity = clamp((progress - start) / 0.08) * clamp((start + 0.2 - progress) / 0.08);
+        element.style.opacity = String(opacity);
+        element.style.transform = reducedMotion ? "none" : `translateY(${(1 - opacity) * 12}px)`;
       });
-      if (bottleRef.current) bottleRef.current.style.opacity = String(progress > 0.82 ? clamp((0.98 - progress) / 0.16) : 1);
-      renderer.render(scene, camera);
+
+      if (progressRef.current) progressRef.current.style.transform = `scaleX(${progress})`;
     };
 
-    const onScroll = () => update();
-    const observer = new ResizeObserver(() => { resize(); update(); });
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    };
+    const observer = new ResizeObserver(onScroll);
     observer.observe(section);
-    resize();
-    update();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", resize, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    update();
 
-    const entrance = anime({ targets: bottleRef.current, opacity: [0, 1], translateY: [22, 0], duration: reducedMotion ? 0 : 900, easing: "easeOutCubic" });
     return () => {
-      entrance.pause();
-      phraseAnimations.forEach((animation) => animation?.pause());
+      if (frame) window.cancelAnimationFrame(frame);
       observer.disconnect();
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", resize);
-      renderer.dispose();
-      scene.traverse((object) => {
-        if (object instanceof THREE.Mesh) {
-          object.geometry.dispose();
-          const materials = Array.isArray(object.material) ? object.material : [object.material];
-          materials.forEach((material) => material.dispose());
-        }
-      });
+      window.removeEventListener("resize", onScroll);
     };
   }, []);
 
   return (
     <section ref={sectionRef} className={styles.experience} aria-label="Experiência visual de esmaltação">
       <div className={styles.sticky}>
-        <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
-        <div className={styles.fallbackBottle} data-nail-fallback hidden aria-hidden="true">
-          <span className={styles.fallbackCap} />
-          <span className={styles.fallbackNeck} />
-          <span className={styles.fallbackBody}><span>NAILS</span><small>BY SAMARA</small></span>
-        </div>
-        <div ref={bottleRef} className={styles.intro}>
+        <div className={styles.intro}>
           <span className={styles.kicker}>NAILS BY SAMARA · AUTOCUIDADO</span>
-          <p>Um toque de cor.<br /><em>Um momento seu.</em></p>
+          <h2>Um toque de cor.<br /><em>Um momento seu.</em></h2>
           <span className={styles.scrollHint}>CONTINUE DESCENDO <span aria-hidden="true">↓</span></span>
         </div>
+
+        <svg className={styles.scene} viewBox="0 0 420 520" role="img" aria-label="Frasco de esmalte, pincel e unha sendo pintada" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <linearGradient id="bottle-glass" x1="0" x2="1">
+              <stop offset="0" stopColor="#8f1535" />
+              <stop offset=".32" stopColor="#d64f70" />
+              <stop offset=".56" stopColor="#f39aaa" />
+              <stop offset="1" stopColor="#85112f" />
+            </linearGradient>
+            <linearGradient id="cap-shine" x1="0" x2="1">
+              <stop offset="0" stopColor="#302229" />
+              <stop offset=".5" stopColor="#795762" />
+              <stop offset="1" stopColor="#2b2025" />
+            </linearGradient>
+          </defs>
+          <g ref={bottleRef} className={styles.bottle}>
+            <rect x="177" y="72" width="66" height="88" rx="8" fill="url(#cap-shine)" />
+            <rect x="171" y="151" width="78" height="13" rx="3" fill="#e6c5c5" />
+            <path d="M174 161 L246 161 L246 184 Q246 198 260 211 Q278 228 278 252 L278 332 Q278 356 254 356 L166 356 Q142 356 142 332 L142 252 Q142 228 160 211 Q174 198 174 184 Z" fill="url(#bottle-glass)" stroke="#fff4f5" strokeWidth="3" />
+            <path d="M159 244 Q159 224 178 214 L178 326 Q178 339 190 342" fill="none" stroke="#fff" strokeOpacity=".34" strokeWidth="8" strokeLinecap="round" />
+            <rect x="159" y="264" width="102" height="55" rx="3" fill="#fff0f1" fillOpacity=".94" />
+            <text x="210" y="287" textAnchor="middle" fill="#9d1734" fontSize="14" letterSpacing="3" fontFamily="Georgia,serif">NAILS</text>
+            <text x="210" y="303" textAnchor="middle" fill="#9d1734" fontSize="6" letterSpacing="2">BY SAMARA</text>
+          </g>
+          <g ref={nailRef} className={styles.nail}>
+            <path d="M142 432 C137 414 147 398 163 393 C180 388 194 402 196 421 L205 464 Q207 480 191 484 L166 490 Q150 491 147 474 Z" fill="#f2c7c9" stroke="#d99da5" strokeWidth="2" />
+            <path ref={polishRef} d="M151 430 C148 416 155 405 166 402 C178 400 187 411 189 426 L198 462 Q200 473 188 477 L169 481 Q158 482 156 470 Z" fill="#b51e42" stroke="#b51e42" strokeWidth="2" pathLength="1" strokeDasharray="1" strokeDashoffset="1" />
+            <path d="M160 418 Q164 410 171 412" fill="none" stroke="#fff" strokeOpacity=".7" strokeWidth="3" strokeLinecap="round" />
+          </g>
+          <g ref={brushRef} className={styles.brush}>
+            <rect x="197" y="126" width="16" height="125" rx="5" fill="url(#cap-shine)" />
+            <path d="M197 248 L213 248 L210 287 Q205 296 200 287 Z" fill="#a90f35" />
+            <path d="M201 279 L209 279" stroke="#f4a5b6" strokeWidth="2" strokeLinecap="round" />
+          </g>
+        </svg>
+
         <div className={styles.phrases} aria-live="polite">
           <p ref={(node) => { phraseRefs.current[0] = node; }}>Delicada.</p>
           <p ref={(node) => { phraseRefs.current[1] = node; }}>Bem cuidada.</p>
           <p ref={(node) => { phraseRefs.current[2] = node; }}>Elegante.</p>
         </div>
-        <div className={styles.progress} aria-hidden="true"><span /></div>
+        <div className={styles.progress} aria-hidden="true"><span ref={progressRef} /></div>
       </div>
     </section>
   );
