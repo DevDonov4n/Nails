@@ -58,7 +58,7 @@ export default function NailPolishExperience() {
         const next = pointOnPath(Math.min(1, paintProgress + 0.015));
         const angle = Math.atan2(next.y - point.y, next.x - point.x) * (180 / Math.PI) + 90;
         brush.style.opacity = progress > 0.04 && progress < 0.88 ? "1" : "0";
-        brush.style.transform = reducedMotion ? `translate(${point.x}px, ${point.y}px) rotate(0deg)` : `translate(${point.x}px, ${point.y}px) rotate(${angle}deg)`;
+        brush.setAttribute("transform", `translate(${point.x} ${point.y}) rotate(${reducedMotion ? 0 : angle})`);
       }
 
       phraseRefs.current.forEach((element, index) => {
@@ -120,7 +120,7 @@ export default function NailPolishExperience() {
             </g>
 
             <path d="M560 42 C560 83 587 94 632 105 S730 111 720 128 S590 130 560 148 S600 178 649 188 S739 208 720 224 S625 221 595 218 S617 248 650 270 S675 305 700 322"
-              fill="none" stroke="#ed1726" strokeWidth="27" strokeLinecap="round" strokeLinejoin="round" opacity=".98" />
+              fill="none" stroke="#f7a2ac" strokeWidth="27" strokeLinecap="round" strokeLinejoin="round" opacity=".42" />
             <path ref={paintRef}
               d="M560 42 C560 83 587 94 632 105 S730 111 720 128 S590 130 560 148 S600 178 649 188 S739 208 720 224 S625 221 595 218 S617 248 650 270 S675 305 700 322"
               fill="none" stroke="#ed1726" strokeWidth="27" strokeLinecap="round" strokeLinejoin="round" pathLength="1" />
@@ -136,9 +136,9 @@ export default function NailPolishExperience() {
             </g>
           </svg>
           <div className={styles.phrases} aria-live="polite">
-            <p ref={(node) => { phraseRefs.current[0] = node; }}>frase 1</p>
-            <p ref={(node) => { phraseRefs.current[1] = node; }}>frase 2</p>
-            <p ref={(node) => { phraseRefs.current[2] = node; }}>frase 3</p>
+            <p ref={(node) => { phraseRefs.current[0] = node; }}>Delicada.</p>
+            <p ref={(node) => { phraseRefs.current[1] = node; }}>Bem cuidada.</p>
+            <p ref={(node) => { phraseRefs.current[2] = node; }}>Elegante.</p>
           </div>
         </div>
         <div className={styles.progress} aria-hidden="true"><span ref={progressRef} /></div>
