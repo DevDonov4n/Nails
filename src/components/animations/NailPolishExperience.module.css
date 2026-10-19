@@ -1,7 +1,7 @@
 .experience {
   position: relative;
   z-index: 0;
-  height: 175svh;
+  height: 210svh;
   color: #56343b;
   background: radial-gradient(ellipse at 50% 45%, rgb(255 226 231 / 65%) 0%, transparent 48%), linear-gradient(145deg, #fffaf8 0%, #f7e8e7 56%, #fffaf8 100%);
 }
@@ -25,7 +25,7 @@
 .progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: rgb(169 15 53 / 10%); }
 .progress span { display: block; width: 100%; height: 100%; transform: scaleX(0); transform-origin: left; background: #a90f35; }
 @media (max-width: 700px) {
-  .experience { height: 155svh; }
+  .experience { height: 190svh; }
   .sticky { min-height: 480px; }
   .intro { top: 7%; width: calc(100% - 28px); }
   .kicker { font-size: 8px; letter-spacing: .13em; }
