@@ -19,7 +19,51 @@ export default function NailPolishExperience() {
     if (!section || !canvas) return;
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    } catch (error) {
+      // WebGL can be disabled or blocked by the browser/GPU. Keep the experience usable
+      // with a CSS-rendered bottle instead of crashing the entire page.
+      console.warn("Nail polish 3D is unavailable; using the CSS fallback.", error);
+      canvas.style.display = "none";
+      const fallbackBottle = section.querySelector<HTMLElement>("[data-nail-fallback]");
+      if (fallbackBottle) fallbackBottle.hidden = false;
+
+      const updateFallback = () => {
+        const rect = section.getBoundingClientRect();
+        const range = Math.max(1, section.offsetHeight - window.innerHeight);
+        const progress = clamp(-rect.top / range);
+        if (fallbackBottle && !reducedMotion) {
+          fallbackBottle.style.transform = `translate(-50%, calc(-50% + ${progress * 26}px)) rotate(${Math.sin(progress * Math.PI * 5) * 4}deg)`;
+          fallbackBottle.style.opacity = String(progress > 0.82 ? clamp((0.98 - progress) / 0.16) : 1);
+        }
+        phraseRefs.current.forEach((element, index) => {
+          if (!element) return;
+          const start = 0.12 + index * 0.24;
+          element.style.opacity = String(clamp((progress - start) / 0.1) * clamp((start + 0.23 - progress) / 0.1));
+        });
+      };
+      const onFallbackScroll = () => updateFallback();
+      const fallbackObserver = new ResizeObserver(updateFallback);
+      fallbackObserver.observe(section);
+      window.addEventListener("scroll", onFallbackScroll, { passive: true });
+      window.addEventListener("resize", updateFallback, { passive: true });
+      const entranceFallback = anime({
+        targets: bottleRef.current,
+        opacity: [0, 1],
+        translateY: [22, 0],
+        duration: reducedMotion ? 0 : 900,
+        easing: "easeOutCubic",
+      });
+      updateFallback();
+      return () => {
+        entranceFallback.pause();
+        fallbackObserver.disconnect();
+        window.removeEventListener("scroll", onFallbackScroll);
+        window.removeEventListener("resize", updateFallback);
+      };
+    }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.8));
     renderer.setClearColor(0x000000, 0);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -159,6 +203,11 @@ export default function NailPolishExperience() {
     <section ref={sectionRef} className={styles.experience} aria-label="Experiência visual de esmaltação">
       <div className={styles.sticky}>
         <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
+        <div className={styles.fallbackBottle} data-nail-fallback hidden aria-hidden="true">
+          <span className={styles.fallbackCap} />
+          <span className={styles.fallbackNeck} />
+          <span className={styles.fallbackBody}><span>NAILS</span><small>BY SAMARA</small></span>
+        </div>
         <div ref={bottleRef} className={styles.intro}>
           <span className={styles.kicker}>NAILS BY SAMARA · AUTOCUIDADO</span>
           <p>Um toque de cor.<br /><em>Um momento seu.</em></p>
