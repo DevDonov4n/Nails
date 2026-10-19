@@ -66,7 +66,7 @@ export default function NailPolishExperience() {
         const drawnLength = pathLength * timeline.progress();
         const point = paint.getPointAtLength(Math.min(pathLength, drawnLength));
         const next = paint.getPointAtLength(Math.min(pathLength, drawnLength + 1.5));
-        const angle = Math.atan2(next.y - point.y, next.x - point.x) * (180 / Math.PI) + 90;
+        const angle = Math.atan2(next.y - point.y, next.x - point.x) * (180 / Math.PI);
         gsap.set(brush, {
           x: point.x,
           y: point.y,
@@ -167,7 +167,7 @@ export default function NailPolishExperience() {
             <path ref={paintRef} d={PAINT_PATH} fill="none" stroke="#ed1742" strokeWidth="25" strokeLinecap="round" strokeLinejoin="round" />
 
             <g ref={brushRef} className={styles.brush} transform="translate(450 205)">
-              <g transform="translate(-8 -44) rotate(-30)">
+              <g transform="translate(0 -96)">
                 <rect x="-16" y="-5" width="32" height="59" rx="4" fill="url(#cap-shine)" stroke="#3d383d" strokeWidth="2" />
                 <path d="M-9 1 L-9 45" stroke="#fff" strokeOpacity=".2" strokeWidth="2" />
                 <rect x="-6" y="51" width="12" height="13" rx="2" fill="#ff1672" />
