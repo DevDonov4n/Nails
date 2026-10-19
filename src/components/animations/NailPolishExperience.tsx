@@ -42,10 +42,10 @@ export default function NailPolishExperience() {
       const progress = clamp(-rect.top / range);
       const bottle = bottleRef.current;
       const brush = brushRef.current;
-      const paintProgress = clamp((progress - 0.06) / 0.78);
+      const paintProgress = clamp((progress - 0.12) / 0.72);
 
       if (bottle) {
-        const opacity = progress > 0.82 ? clamp((1 - progress) / 0.18) : 1;
+        const opacity = progress > 0.88 ? clamp((1 - progress) / 0.12) : 1;
         bottle.style.opacity = String(opacity);
         bottle.style.transform = reducedMotion ? "none" : `translateY(${Math.sin(progress * Math.PI) * -7}px)`;
       }
@@ -57,14 +57,14 @@ export default function NailPolishExperience() {
         const point = pointOnPath(paintProgress);
         const next = pointOnPath(Math.min(1, paintProgress + 0.015));
         const angle = Math.atan2(next.y - point.y, next.x - point.x) * (180 / Math.PI) + 90;
-        brush.style.opacity = progress > 0.04 && progress < 0.88 ? "1" : "0";
+        brush.style.opacity = progress > 0.1 && progress < 0.9 ? "1" : "0";
         brush.setAttribute("transform", `translate(${point.x} ${point.y}) rotate(${reducedMotion ? 0 : angle})`);
       }
 
       phraseRefs.current.forEach((element, index) => {
         if (!element) return;
-        const start = 0.12 + index * 0.27;
-        const opacity = clamp((progress - start) / 0.09) * clamp((start + 0.24 - progress) / 0.09);
+        const start = 0.2 + index * 0.25;
+        const opacity = clamp((progress - start) / 0.12) * clamp((start + 0.22 - progress) / 0.12);
         element.style.opacity = String(opacity);
         element.style.transform = reducedMotion ? "none" : `translateY(${(1 - opacity) * 10}px)`;
       });
@@ -97,7 +97,7 @@ export default function NailPolishExperience() {
         </div>
 
         <div className={styles.stage}>
-          <svg className={styles.scene} viewBox="0 0 900 400" role="img" aria-label="Frascos de esmalte e pincel pintando uma linha em zigue-zague" preserveAspectRatio="xMidYMid meet">
+          <svg className={styles.scene} viewBox="0 0 900 400" role="img" aria-label="Um frasco de esmalte, etapas ilustradas de rolagem e um pincel pintando em zigue-zague" preserveAspectRatio="xMidYMid meet">
             <defs>
               <linearGradient id="polish-glass" x1="0" x2="1">
                 <stop offset="0" stopColor="#f51b6d" /><stop offset=".5" stopColor="#ff4d91" /><stop offset="1" stopColor="#cc0752" />
@@ -108,17 +108,25 @@ export default function NailPolishExperience() {
             </defs>
 
             <g ref={bottleRef} className={styles.bottle}>
-              {[80, 260, 410].map((x) => (
-                <g key={x} transform={`translate(${x} 0)`}>
-                  <path d="M-31 313 Q-30 284 -13 276 L13 276 Q30 284 31 313 L31 345 L-31 345 Z" fill="#ffb4d1" opacity=".85" />
-                  <path d="M-29 312 Q-29 286 -11 277 L11 277 Q29 286 29 312 L23 331 Q0 344 -23 331 Z" fill="url(#polish-glass)" />
-                  <path d="M-15 286 Q-5 278 3 284 Q17 293 12 315 Q9 326 -1 328" fill="none" stroke="#ff91bd" strokeWidth="4" strokeLinecap="round" opacity=".7" />
-                  <rect x="-16" y="214" width="32" height="63" rx="4" fill="url(#cap-shine)" />
-                  <path d="M-10 219 L-4 219 L-4 270" fill="none" stroke="#ffffff" strokeOpacity=".22" strokeWidth="2" />
-                </g>
-              ))}
-            </g>
+              <g transform="translate(105 0)">
+                <path d="M-31 313 Q-30 284 -13 276 L13 276 Q30 284 31 313 L31 345 L-31 345 Z" fill="#ffb4d1" opacity=".85" />
+                <path d="M-29 312 Q-29 286 -11 277 L11 277 Q29 286 29 312 L23 331 Q0 344 -23 331 Z" fill="url(#polish-glass)" />
+                <path d="M-15 286 Q-5 278 3 284 Q17 293 12 315 Q9 326 -1 328" fill="none" stroke="#ff91bd" strokeWidth="4" strokeLinecap="round" opacity=".7" />
+                <rect x="-16" y="214" width="32" height="63" rx="4" fill="url(#cap-shine)" />
+                <path d="M-10 219 L-4 219 L-4 270" fill="none" stroke="#ffffff" strokeOpacity=".22" strokeWidth="2" />
+              </g>            </g>
 
+            <g className={styles.steps} aria-hidden="true">
+              <path d="M145 320 H222 M211 311 L222 320 L211 329" fill="none" stroke="#171416" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+              <text x="181" y="286" textAnchor="middle">Scroll</text>
+              <text x="181" y="306" textAnchor="middle">down</text>
+              <path d="M290 320 H367 M356 311 L367 320 L356 329" fill="none" stroke="#171416" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+              <text x="328" y="286" textAnchor="middle">Scroll</text>
+              <text x="328" y="306" textAnchor="middle">down</text>
+              <path d="M435 320 H500 M489 311 L500 320 L489 329" fill="none" stroke="#171416" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+              <text x="465" y="286" textAnchor="middle">Scroll</text>
+              <text x="465" y="306" textAnchor="middle">down</text>
+            </g>
             <path d="M560 42 C560 83 587 94 632 105 S730 111 720 128 S590 130 560 148 S600 178 649 188 S739 208 720 224 S625 221 595 218 S617 248 650 270 S675 305 700 322"
               fill="none" stroke="#f7a2ac" strokeWidth="27" strokeLinecap="round" strokeLinejoin="round" opacity=".42" />
             <path ref={paintRef}
