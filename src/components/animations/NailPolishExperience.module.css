@@ -1,0 +1,103 @@
+.experience {
+  position: relative;
+  z-index: 0;
+  height: 190svh;
+  background:
+    radial-gradient(ellipse at 50% 35%, rgb(255 226 231 / 85%) 0%, transparent 48%),
+    linear-gradient(145deg, #fffaf8 0%, #f7e8e7 56%, #fffaf8 100%);
+  color: #56343b;
+}
+.sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  min-height: 520px;
+  overflow: hidden;
+  isolation: isolate;
+}
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.intro {
+  position: absolute;
+  z-index: 1;
+  top: 12%;
+  left: 50%;
+  width: min(90%, 720px);
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+}
+.kicker {
+  display: inline-block;
+  margin-bottom: 18px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .22em;
+}
+.intro p {
+  margin: 0;
+  font-family: var(--font-cormorant), Georgia, serif;
+  font-size: clamp(44px, 7vw, 84px);
+  line-height: .95;
+  letter-spacing: -.045em;
+}
+.intro em { color: #a90f35; font-weight: 400; }
+.scrollHint {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 26px;
+  font-size: 9px;
+  letter-spacing: .16em;
+}
+.scrollHint span { font-size: 17px; }
+.phrases {
+  position: absolute;
+  z-index: 2;
+  right: max(7%, calc((100% - 1100px) / 2));
+  bottom: 18%;
+  width: min(42%, 390px);
+  min-height: 90px;
+  text-align: right;
+  pointer-events: none;
+}
+.phrases p {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  color: #9d1734;
+  font-family: var(--font-cormorant), Georgia, serif;
+  font-size: clamp(34px, 5.3vw, 68px);
+  font-style: italic;
+  line-height: 1;
+  opacity: 0;
+}
+.progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: rgb(169 15 53 / 10%);
+}
+.progress span { display: block; width: 100%; height: 100%; transform: scaleX(0); transform-origin: left; background: #a90f35; }
+@media (max-width: 640px) {
+  .experience { height: 165svh; }
+  .sticky { min-height: 480px; }
+  .intro { top: 10%; width: calc(100% - 34px); }
+  .kicker { font-size: 8px; letter-spacing: .15em; }
+  .intro p { font-size: clamp(42px, 12vw, 62px); }
+  .scrollHint { margin-top: 18px; font-size: 8px; }
+  .phrases { right: 7%; bottom: 15%; width: 86%; }
+  .phrases p { font-size: clamp(38px, 11vw, 56px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .experience { height: auto; min-height: 72svh; }
+  .sticky { position: relative; min-height: 72svh; }
+  .scrollHint { display: none; }
+}
