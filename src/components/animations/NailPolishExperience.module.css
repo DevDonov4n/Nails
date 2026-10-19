@@ -101,3 +101,56 @@
   .sticky { position: relative; min-height: 72svh; }
   .scrollHint { display: none; }
 }
+
+.fallbackBottle {
+  position: absolute;
+  z-index: 0;
+  top: 55%;
+  left: 50%;
+  width: clamp(130px, 23vw, 210px);
+  height: clamp(220px, 34vw, 300px);
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 22px 24px rgb(105 38 54 / 18%));
+  pointer-events: none;
+}
+.fallbackCap {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 37%;
+  width: 26%;
+  height: 29%;
+  border-radius: 8px 8px 3px 3px;
+  background: linear-gradient(90deg, #2b2025, #6d4b54 45%, #2b2025);
+}
+.fallbackNeck {
+  position: absolute;
+  top: 24%;
+  left: 32%;
+  width: 36%;
+  height: 13%;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #9d183a, #f3a7b6 48%, #9d183a);
+}
+.fallbackBody {
+  position: absolute;
+  top: 32%;
+  left: 7%;
+  display: flex;
+  width: 86%;
+  height: 65%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid rgb(255 255 255 / 75%);
+  border-radius: 25px 25px 34px 34px;
+  background: linear-gradient(105deg, #8f1535 0%, #c42a50 25%, #e97891 48%, #a31b3c 78%, #7e102e 100%);
+  box-shadow: inset 9px 0 12px rgb(255 255 255 / 18%), inset -8px 0 10px rgb(55 0 16 / 16%);
+  color: #fff0f2;
+}
+.fallbackBody span { font-family: Georgia, serif; font-size: clamp(18px, 3vw, 26px); letter-spacing: .15em; }
+.fallbackBody small { font-size: 7px; letter-spacing: .24em; }
+@media (max-width: 640px) {
+  .fallbackBottle { top: 57%; width: 128px; height: 218px; }
+}
