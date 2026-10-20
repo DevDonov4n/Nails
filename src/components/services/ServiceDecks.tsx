@@ -61,7 +61,7 @@ export default function ServiceDecks() {
   useGSAP(() => {
     reducedMotion.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reducedMotion.current || !sectionRef.current) return;
-    const decks = gsap.utils.toArray<HTMLElement>(sectionRef.current.querySelectorAll("[data-service-deck]"));
+    const decks = gsap.utils.toArray<HTMLElement>(sectionRef.current.querySelectorAll("[data-service-deck] .deckStage"));
     gsap.fromTo(decks,
       { autoAlpha: 0, y: 24 },
       {
