@@ -66,7 +66,7 @@ export default function NailInspirationDeck() {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [expanded]);
+  }, [expanded, closeModal]);
 
   useEffect(() => {
     if (!expanded || !modalRef.current || !panelRef.current) return;
