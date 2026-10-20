@@ -1,6 +1,7 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
+import { createPortal } from "react-dom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { services, type SalonService } from "@/data/services";
 import styles from "./ServiceDecks.module.css";
@@ -126,6 +127,7 @@ export default function ServiceDecks() {
 
   const openModal = useCallback((service: SalonService, trigger: HTMLButtonElement) => {
     if (closingTimer.current !== null) window.clearTimeout(closingTimer.current);
+    closingTimer.current = null;
     lastFocusedDeck.current = trigger;
     setSelected(service);
     setModalMounted(true);
@@ -139,8 +141,9 @@ export default function ServiceDecks() {
     closingTimer.current = window.setTimeout(() => {
       setModalMounted(false);
       setSelected(null);
+      setPausedByService({});
       closingTimer.current = null;
-      lastFocusedDeck.current?.focus();
+      lastFocusedDeck.current?.focus({ preventScroll: true });
     }, reducedMotionRef.current ? 0 : 320);
   }, []);
 
@@ -215,7 +218,9 @@ export default function ServiceDecks() {
                 onClick={(event) => openModal(service, event.currentTarget)}
                 onPointerEnter={() => setDeckPaused(service.id, true)}
                 onPointerLeave={() => setDeckPaused(service.id, false)}
-                onFocus={() => setDeckPaused(service.id, true)}
+                onFocus={(event) => {
+                  if (event.currentTarget.matches(":focus-visible")) setDeckPaused(service.id, true);
+                }}
                 onBlur={(event) => {
                   if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
                     setDeckPaused(service.id, false);
@@ -237,7 +242,7 @@ export default function ServiceDecks() {
                       data-offset={Math.min(offset, VISIBLE_CARDS - 1)}
                       aria-hidden={offset !== 0}
                       inert={offset !== 0}
-                      hidden={!visible}
+                      data-hidden={visible ? "false" : "true"}
                       style={{ zIndex: works.length - offset }}
                     >
                       <span className={styles.cardPhoto}>
@@ -254,7 +259,6 @@ export default function ServiceDecks() {
                     </span>
                   );
                 })}
-                <span className={styles.deckHint}>TOQUE PARA VER OS TRABALHOS</span>
               </button>
 
               <div className={styles.serviceDetails}>
@@ -273,7 +277,7 @@ export default function ServiceDecks() {
         })}
       </div>
 
-      {modalMounted && selected && (
+      {modalMounted && selected && createPortal(
         <div
           className={`${styles.modalBackdrop} ${modalVisible ? styles.modalOpen : ""}`}
           onClick={(event) => {
@@ -322,7 +326,8 @@ export default function ServiceDecks() {
               ))}
             </div>
           </section>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );
