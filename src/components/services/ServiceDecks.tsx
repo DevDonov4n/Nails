@@ -39,11 +39,11 @@ const workByService: Record<SalonService["id"], Work[]> = {
   BOTH: [hands[0], feet[0], hands[1], feet[1], hands[2], feet[2], hands[3], hands[4]],
 };
 
-const VISIBLE_CARDS = 4;
+const VISIBLE_CARDS = 3;
 const AUTOPLAY_MS = 2000;
 const STAGGER_MS = 650;
 const CARD_TRANSITION_MS = 620;
-const ROTATION_DEG = 3;
+const ROTATION_DEG = 2.5;
 
 export default function ServiceDecks() {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -229,12 +229,12 @@ export default function ServiceDecks() {
                         hidden={!visible}
                         style={{
                           "--offset": Math.min(offset, VISIBLE_CARDS - 1),
-                          "--rotation": (Math.min(offset, VISIBLE_CARDS - 1) - 1.5) * ROTATION_DEG,
+                          "--rotation": (Math.min(offset, VISIBLE_CARDS - 1) - 1) * ROTATION_DEG,
                           zIndex: works.length - offset,
                         } as React.CSSProperties}
                       >
                         <span className={styles.cardPhoto}>
-                          <Image src={work.image} alt={`Trabalho de ${work.category.toLowerCase()}`} fill priority={serviceIndex === 0 && offset === 0} sizes="(max-width: 767px) 60vw, (max-width: 1023px) 26vw, 300px" />
+                          <Image src={work.image} alt={`Trabalho de ${work.category.toLowerCase()}`} fill priority={serviceIndex === 0 && offset === 0} sizes="(max-width: 768px) 28vw, 200px" />
                           <span className={styles.cardShade} aria-hidden="true" />
                           <span className={styles.cardLabel}>{work.label}</span>
                         </span>
