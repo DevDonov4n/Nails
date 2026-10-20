@@ -21,7 +21,7 @@ const PHRASES = [
 const PHRASE_ANTICIPATION = 0.05;
 const PHRASE_SIDE_OFFSET = 22;
 const PHRASE_FADE_PROGRESS = 0.05;
-const DEBUG_MARKER_COUNT = 480;
+const DEBUG_MARKER_COUNT = 12;
 
 type CurveApex = { progress: number; x: number; y: number; side: "left" | "right" };
 
@@ -109,8 +109,9 @@ export default function NailPolishExperience() {
       });
       markerRefs.current.forEach((marker, index) => {
         const apex = apexes[index];
-        if (!marker || !apex) return;
-        marker.setAttribute("transform", `translate(${apex.x} ${apex.y})`);
+        if (!marker) return;
+        marker.setAttribute("display", apex ? "inline" : "none");
+        if (apex) marker.setAttribute("transform", `translate(${apex.x} ${apex.y})`);
       });
     };
 
