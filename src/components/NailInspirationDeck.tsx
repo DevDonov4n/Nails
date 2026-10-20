@@ -203,12 +203,34 @@ export default function NailInspirationDeck() {
 
       <div
         className={styles.deckStage}
+        style={{
+          position: "relative",
+          width: "min(100%, 680px)",
+          height: "clamp(340px, 39vw, 490px)",
+          minWidth: 0,
+          marginInline: "auto",
+          overflow: "clip",
+          isolation: "isolate",
+        }}
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
         <button
           ref={deckRef}
           className={styles.deck}
+          style={{
+            position: "relative",
+            display: "block",
+            width: "100%",
+            maxWidth: "100%",
+            height: "100%",
+            margin: 0,
+            padding: 0,
+            overflow: "clip",
+            border: 0,
+            background: "transparent",
+            isolation: "isolate",
+          }}
           type="button"
           onClick={openModal}
           onFocus={() => setPaused(true)}
@@ -228,6 +250,13 @@ export default function NailInspirationDeck() {
                 style={{
                   "--offset": Math.min(offset, VISIBLE_CARDS - 1),
                   "--depth": Math.min(offset, VISIBLE_CARDS - 1),
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  width: "min(100%, clamp(180px, 22vw, 320px))",
+                  maxWidth: "320px",
+                  aspectRatio: "5 / 7",
+                  boxSizing: "border-box",
                   zIndex: works.length - offset,
                 } as React.CSSProperties}
                 data-front={offset === 0 ? "true" : "false"}
@@ -235,13 +264,34 @@ export default function NailInspirationDeck() {
                 inert={index !== active}
                 hidden={!visible}
               >
-                <span className={styles.photoFrame}>
+                <span
+                  className={styles.photoFrame}
+                  style={{
+                    position: "relative",
+                    display: "block",
+                    width: "100%",
+                    height: "100%",
+                    minWidth: 0,
+                    minHeight: 0,
+                    overflow: "hidden",
+                  }}
+                >
                   <Image
                     src={work.image}
                     alt={work.title}
                     fill
                     priority={index === active}
                     sizes="(max-width: 768px) 60vw, 320px"
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      width: "100%",
+                      height: "100%",
+                      maxWidth: "100%",
+                      maxHeight: "100%",
+                      objectFit: "cover",
+                      objectPosition: "center",
+                    }}
                   />
                   <span className={styles.photoShade} aria-hidden="true" />
                   <span className={styles.categoryLabel}>{work.category === "maos" ? "Mão" : "Pé"}</span>
