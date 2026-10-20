@@ -1,8 +1,8 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
-import { createPortal } from "react-dom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { services, type SalonService } from "@/data/services";
 import styles from "./ServiceDecks.module.css";
 
@@ -70,9 +70,12 @@ export default function ServiceDecks() {
   const lastFocusedDeck = useRef<HTMLButtonElement | null>(null);
   const closingTimer = useRef<number | null>(null);
 
-  activeRef.current = activeByService;
-  pausedRef.current = pausedByService;
-  selectedRef.current = selected;
+  // Sincroniza os refs depois do commit (acessar ref.current durante o render é erro no React 19).
+  useEffect(() => {
+    activeRef.current = activeByService;
+    pausedRef.current = pausedByService;
+    selectedRef.current = selected;
+  }, [activeByService, pausedByService, selected]);
 
   const setDeckPaused = useCallback((id: string, paused: boolean) => {
     setPausedByService((current) => ({ ...current, [id]: paused }));
@@ -126,8 +129,10 @@ export default function ServiceDecks() {
   );
 
   const openModal = useCallback((service: SalonService, trigger: HTMLButtonElement) => {
-    if (closingTimer.current !== null) window.clearTimeout(closingTimer.current);
-    closingTimer.current = null;
+    if (closingTimer.current !== null) {
+      window.clearTimeout(closingTimer.current);
+      closingTimer.current = null; // CORREÇÃO: evita timer "travado" bloqueando o próximo fechamento
+    }
     lastFocusedDeck.current = trigger;
     setSelected(service);
     setModalMounted(true);
@@ -141,8 +146,10 @@ export default function ServiceDecks() {
     closingTimer.current = window.setTimeout(() => {
       setModalMounted(false);
       setSelected(null);
-      setPausedByService({});
       closingTimer.current = null;
+      // CORREÇÃO: libera todos os baralhos antes de devolver o foco,
+      // para o autoplay não ficar parado após fechar o modal.
+      setPausedByService({});
       lastFocusedDeck.current?.focus({ preventScroll: true });
     }, reducedMotionRef.current ? 0 : 320);
   }, []);
@@ -210,7 +217,7 @@ export default function ServiceDecks() {
           const active = activeByService[service.id] ?? 0;
 
           return (
-            <article className={styles.serviceCard} key={service.id}>
+            <article className={styles.serviceCard} key={service.id} data-service-card>
               <button
                 type="button"
                 className={styles.deckButton}
@@ -219,7 +226,10 @@ export default function ServiceDecks() {
                 onPointerEnter={() => setDeckPaused(service.id, true)}
                 onPointerLeave={() => setDeckPaused(service.id, false)}
                 onFocus={(event) => {
-                  if (event.currentTarget.matches(":focus-visible")) setDeckPaused(service.id, true);
+                  // CORREÇÃO: só pausa por foco quando é navegação por teclado.
+                  if (event.currentTarget.matches(":focus-visible")) {
+                    setDeckPaused(service.id, true);
+                  }
                 }}
                 onBlur={(event) => {
                   if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
@@ -240,12 +250,13 @@ export default function ServiceDecks() {
                       data-front={offset === 0 ? "true" : "false"}
                       data-leaving={offset === 0 && leavingByService[service.id] ? "true" : "false"}
                       data-offset={Math.min(offset, VISIBLE_CARDS - 1)}
+                      // CORREÇÃO: data-hidden (animável) no lugar de hidden (display: none)
+                      data-hidden={visible ? "false" : "true"}
                       aria-hidden={offset !== 0}
                       inert={offset !== 0}
-                      data-hidden={visible ? "false" : "true"}
                       style={{ zIndex: works.length - offset }}
                     >
-                      <span className={styles.cardPhoto}>
+                      <span className={styles.cardPhoto} style={{ position: "relative" }}>
                         <Image
                           src={work.image}
                           alt=""
@@ -277,6 +288,7 @@ export default function ServiceDecks() {
         })}
       </div>
 
+      {/* CORREÇÃO: modal em portal, para o position: fixed não depender dos ancestrais */}
       {modalMounted && selected && createPortal(
         <div
           className={`${styles.modalBackdrop} ${modalVisible ? styles.modalOpen : ""}`}
@@ -313,7 +325,7 @@ export default function ServiceDecks() {
             <div className={styles.modalGrid}>
               {modalWorks.map((work) => (
                 <article className={styles.modalWork} key={work.id}>
-                  <div className={styles.modalPhoto}>
+                  <div className={styles.modalPhoto} style={{ position: "relative" }}>
                     <Image
                       src={work.image}
                       alt={`Trabalho de ${work.category.toLowerCase()}`}

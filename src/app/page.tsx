@@ -1,7 +1,6 @@
 import Button from "@/components/Button";
 import PageAnimations from "@/components/animations/PageAnimations";
 import NailPolishExperience from "@/components/animations/NailPolishExperience";
-import NailInspirationDeck from "@/components/NailInspirationDeck";
 import ServiceDecks from "@/components/services/ServiceDecks";
 
 export default function Home() {
@@ -43,15 +42,8 @@ export default function Home() {
 
         <section className="services section-pad" id="servicos">
           <div className="container">
-            <div className="section-heading"><div><p className="eyebrow">CUIDADO COM INTENÇÃO</p><h2>Um cuidado para<br /><em>cada versão de você.</em></h2></div><p className="section-description">Escolha o atendimento que deseja e consulte os valores com tranquilidade. Cada serviço tem duração estimada de uma hora, para que você possa se organizar e aproveitar seu momento sem pressa.</p></div>
+            <div className="section-heading"><div><p className="eyebrow">CUIDADO COM INTENÇÃO</p><h2>Um cuidado para<br /><em>cada versão de você.</em></h2></div><p className="section-description">Escolha o atendimento que deseja e consulte os valores com tranquilidade. Cada serviço tem duração estimada de uma hora, para que você possa se organizar e aproveitar seu momento sem pressa. Toque em um baralho para ver todos os trabalhos daquela categoria.</p></div>
             <ServiceDecks />
-          </div>
-        </section>
-
-        <section className="portfolio section-pad" id="portfolio">
-          <div className="container">
-            <div className="section-heading"><div><p className="eyebrow">INSPIRAÇÃO PARA VOCÊ</p><h2>Pequenos detalhes,<br /><em>grande personalidade.</em></h2></div><p className="section-description">Explore uma seleção de inspirações. As artes são provisórias e poderão ser substituídas pelos prints reais das publicações do Instagram.</p></div>
-            <NailInspirationDeck />
           </div>
         </section>
 

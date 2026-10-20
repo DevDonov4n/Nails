@@ -33,7 +33,7 @@ export default function NailPolishExperience() {
   const capRef = useRef<SVGGElement>(null);
   const brushRef = useRef<SVGGElement>(null);
   const paintRef = useRef<SVGPathElement>(null);
-  const guideRef = useRef<SVGPathElement>(null);
+  const hintRef = useRef<HTMLSpanElement>(null);
   const phraseRefs = useRef<(HTMLParagraphElement | null)[]>([]);
   const markerRefs = useRef<(SVGGElement | null)[]>([]);
   const progressRef = useRef<HTMLSpanElement>(null);
@@ -45,8 +45,12 @@ export default function NailPolishExperience() {
     const stage = stageRef.current;
     const paint = paintRef.current;
     const brush = brushRef.current;
-    const guide = guideRef.current;
-    if (!section || !scene || !stage || !paint || !brush || !guide) return;
+    if (!section || !scene || !stage || !paint || !brush) return;
+
+    // A área fixa começa logo abaixo do header, cuja altura muda por breakpoint.
+    const headerHeight = () => document.querySelector<HTMLElement>(".site-header")?.getBoundingClientRect().height ?? 82;
+    const applyHeaderHeight = () => section.style.setProperty("--header-h", `${Math.round(headerHeight())}px`);
+    applyHeaderHeight();
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const debug = new URLSearchParams(window.location.search).get("debug") === "1";
@@ -145,7 +149,6 @@ export default function NailPolishExperience() {
     };
 
     gsap.set(paint, { strokeDasharray: pathLength, strokeDashoffset: pathLength });
-    gsap.set(guide, { strokeDasharray: pathLength, strokeDashoffset: 0 });
     gsap.set(phraseElements, { autoAlpha: 0, y: 8 });
     gsap.set(brush, { autoAlpha: 0 });
     gsap.set([bottleRef.current, capRef.current], { autoAlpha: 1 });
@@ -166,18 +169,20 @@ export default function NailPolishExperience() {
     const timeline = gsap.timeline({
       scrollTrigger: {
         trigger: section,
-        start: "top top",
+        start: () => `top ${Math.round(headerHeight())}px`,
         end: "bottom bottom",
-        scrub: 0.5,
+        scrub: 0.8,
         invalidateOnRefresh: true,
       },
       onUpdate: () => renderPaint(paintProgress.value),
     });
 
     timeline
+      // A dica "role para descobrir" some assim que o scroll começa.
+      .to(hintRef.current, { autoAlpha: 0, y: -6, duration: 0.05, ease: "power1.out" }, 0)
       // 1 → 2: lift the cap vertically while the bottle remains visible.
       .to(capRef.current, { y: -20, duration: 0.08, ease: "power2.inOut" }, 0)
-      // 2 → 3: show the pale guide before the brush begins painting.
+      // 2 → 3: a tampa termina de subir (sem trilha-guia visível).
       .to(capRef.current, { y: -38, duration: 0.07, ease: "power2.out" }, 0.08)
       // 3 → 4: tilt the removed cap/brush assembly toward the path.
       .to(capRef.current, { rotation: -10, x: 28, duration: 0.08, ease: "power1.inOut" }, 0.15)
@@ -207,6 +212,7 @@ export default function NailPolishExperience() {
     }
 
     const refreshLayout = () => {
+      applyHeaderHeight();
       apexes = detectApexes();
       placePhrases();
       ScrollTrigger.refresh();
@@ -215,6 +221,9 @@ export default function NailPolishExperience() {
     const onResize = () => refreshLayout();
     window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", onResize);
+    const header = document.querySelector<HTMLElement>(".site-header");
+    const headerObserver = header && typeof ResizeObserver !== "undefined" ? new ResizeObserver(onResize) : null;
+    if (header) headerObserver?.observe(header);
     document.fonts?.ready.then(refreshLayout);
     window.addEventListener("load", refreshLayout, { once: true });
     ScrollTrigger.refresh();
@@ -222,6 +231,7 @@ export default function NailPolishExperience() {
     return () => {
       window.removeEventListener("resize", onResize);
       window.removeEventListener("orientationchange", onResize);
+      headerObserver?.disconnect();
       timeline.scrollTrigger?.kill();
       timeline.kill();
     };
@@ -233,10 +243,10 @@ export default function NailPolishExperience() {
         <div className={styles.intro}>
           <span className={styles.kicker}>NAILS BY SAMARA · AUTOCUIDADO</span>
           <h2>Um toque de cor.<br /><em>Um momento seu.</em></h2>
-          <span className={styles.scrollHint}>ROLE PARA DESCOBRIR <span aria-hidden="true">↓</span></span>
+          <span ref={hintRef} className={styles.scrollHint}>ROLE PARA DESCOBRIR <span aria-hidden="true">↓</span></span>
         </div>
         <div ref={stageRef} className={styles.stage}>
-          <svg ref={sceneRef} className={styles.scene} viewBox="0 0 900 600" role="img" aria-label="Um frasco de esmalte se abre e o pincel pinta um zigue-zague contínuo" preserveAspectRatio="xMidYMid meet">
+          <svg ref={sceneRef} className={styles.scene} viewBox="190 0 520 510" role="img" aria-label="Um frasco de esmalte se abre e o pincel pinta um zigue-zague contínuo" preserveAspectRatio="xMidYMid meet">
             <defs>
               <linearGradient id="polish-glass" x1="0" x2="1">
                 <stop offset="0" stopColor="#f51b6d" /><stop offset=".5" stopColor="#ff4d91" /><stop offset="1" stopColor="#cc0752" />
@@ -258,8 +268,7 @@ export default function NailPolishExperience() {
               <path d="M432 62 L439 62 L439 119" fill="none" stroke="#fff" strokeOpacity=".2" strokeWidth="3" />
               <rect x="414" y="122" width="72" height="13" rx="3" fill="#d8a9b5" />
             </g>
-            {/* The guide and paint share the exact same path and SVG viewBox. */}
-            <path ref={guideRef} d={PAINT_PATH} fill="none" stroke="#f7a2ac" strokeWidth="25" strokeLinecap="round" strokeLinejoin="round" opacity=".28" />
+            {/* Só o traço de tinta existe: não há pré-rastro visível antes do pincel passar. */}
             <path ref={paintRef} d={PAINT_PATH} fill="none" stroke="#ed1742" strokeWidth="25" strokeLinecap="round" strokeLinejoin="round" />
             {/* The brush tip sits at the origin; its transform follows getPointAtLength(). */}
             <g ref={brushRef} className={styles.brush} transform="translate(450 205)">
@@ -290,4 +299,4 @@ export default function NailPolishExperience() {
       </div>
     </section>
   );
-}
+} 
