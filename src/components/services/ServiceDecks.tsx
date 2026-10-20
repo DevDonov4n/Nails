@@ -51,14 +51,12 @@ export default function ServiceDecks() {
   const [modalMounted, setModalMounted] = useState(false);
   const [closing, setClosing] = useState(false);
   const [activeByService, setActiveByService] = useState<Record<string, number>>({ HAND: 0, FOOT: 0, BOTH: 0 });
-  const [pausedByService, setPausedByService] = useState<Record<string, boolean>>({ HAND: false, FOOT: false, BOTH: false });
   const [leavingByService, setLeavingByService] = useState<Record<string, boolean>>({ HAND: false, FOOT: false, BOTH: false });
   const pausedRef = useRef<Record<string, boolean>>({ HAND: false, FOOT: false, BOTH: false });
   const selectedRef = useRef<SalonService | null>(null);
   selectedRef.current = selected;
   const setDeckPaused = (id: string, paused: boolean) => {
     pausedRef.current = { ...pausedRef.current, [id]: paused };
-    setPausedByService((state) => ({ ...state, [id]: paused }));
   };
   const deckButtons = useRef<Record<string, HTMLButtonElement | null>>({});
   const closeButton = useRef<HTMLButtonElement>(null);
