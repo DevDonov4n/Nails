@@ -42,6 +42,7 @@ const workByService: Record<SalonService["id"], Work[]> = {
 const VISIBLE_CARDS = 4;
 const AUTOPLAY_MS = 2000;
 const STAGGER_MS = 650;
+const CARD_TRANSITION_MS = 620;
 const ROTATION_DEG = 3;
 
 export default function ServiceDecks() {
@@ -51,6 +52,14 @@ export default function ServiceDecks() {
   const [closing, setClosing] = useState(false);
   const [activeByService, setActiveByService] = useState<Record<string, number>>({ HAND: 0, FOOT: 0, BOTH: 0 });
   const [pausedByService, setPausedByService] = useState<Record<string, boolean>>({ HAND: false, FOOT: false, BOTH: false });
+  const [leavingByService, setLeavingByService] = useState<Record<string, boolean>>({ HAND: false, FOOT: false, BOTH: false });
+  const pausedRef = useRef<Record<string, boolean>>({ HAND: false, FOOT: false, BOTH: false });
+  const selectedRef = useRef<SalonService | null>(null);
+  selectedRef.current = selected;
+  const setDeckPaused = (id: string, paused: boolean) => {
+    pausedRef.current = { ...pausedRef.current, [id]: paused };
+    setPausedByService((state) => ({ ...state, [id]: paused }));
+  };
   const deckButtons = useRef<Record<string, HTMLButtonElement | null>>({});
   const closeButton = useRef<HTMLButtonElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -71,21 +80,29 @@ export default function ServiceDecks() {
     );
   }, { scope: sectionRef });
 
-  // One recursive timeout per deck; pause while hovered/focused or while the modal is open.
+  // Exactly one timeout per deck at a time; the outgoing card animates before the index advances.
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const cleanups = services.map((service, index) => {
-      if (selected || pausedByService[service.id]) return () => undefined;
       let timeoutId: number | undefined;
       let cancelled = false;
       const schedule = (delay: number) => {
         timeoutId = window.setTimeout(() => {
           if (cancelled) return;
-          setActiveByService((current) => ({
-            ...current,
-            [service.id]: ((current[service.id] ?? 0) + 1) % workByService[service.id].length,
-          }));
-          schedule(AUTOPLAY_MS);
+          if (selectedRef.current || pausedRef.current[service.id]) {
+            schedule(200);
+            return;
+          }
+          setLeavingByService((state) => ({ ...state, [service.id]: true }));
+          timeoutId = window.setTimeout(() => {
+            if (cancelled) return;
+            setActiveByService((current) => ({
+              ...current,
+              [service.id]: ((current[service.id] ?? 0) + 1) % workByService[service.id].length,
+            }));
+            setLeavingByService((state) => ({ ...state, [service.id]: false }));
+            schedule(AUTOPLAY_MS - CARD_TRANSITION_MS);
+          }, CARD_TRANSITION_MS);
         }, delay);
       };
       schedule(AUTOPLAY_MS + index * STAGGER_MS);
@@ -95,7 +112,7 @@ export default function ServiceDecks() {
       };
     });
     return () => cleanups.forEach((cleanup) => cleanup());
-  }, [pausedByService, selected]);
+  }, []);
 
   const closeModal = useCallback(() => {
     if (!selected || closingRef.current) return;
@@ -191,10 +208,10 @@ export default function ServiceDecks() {
                   className={styles.deckButton}
                   ref={(node) => { deckButtons.current[service.id] = node; }}
                   onClick={() => openModal(service)}
-                  onMouseEnter={() => setPausedByService((state) => ({ ...state, [service.id]: true }))}
-                  onMouseLeave={() => setPausedByService((state) => ({ ...state, [service.id]: false }))}
-                  onFocus={() => setPausedByService((state) => ({ ...state, [service.id]: true }))}
-                  onBlur={() => setPausedByService((state) => ({ ...state, [service.id]: false }))}
+                  onMouseEnter={() => setDeckPaused(service.id, true)}
+                  onMouseLeave={() => setDeckPaused(service.id, false)}
+                  onFocus={() => setDeckPaused(service.id, true)}
+                  onBlur={() => setDeckPaused(service.id, false)}
                   aria-label={`Ver todos os trabalhos de ${service.name}`}
                   aria-haspopup="dialog"
                 >
@@ -206,6 +223,7 @@ export default function ServiceDecks() {
                         className={styles.card}
                         key={work.id}
                         data-front={offset === 0 ? "true" : "false"}
+                        data-leaving={offset === 0 && leavingByService[service.id] ? "true" : "false"}
                         aria-hidden={offset !== 0}
                         inert={offset !== 0}
                         hidden={!visible}
