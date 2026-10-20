@@ -1,7 +1,7 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import anime from "animejs";
 import styles from "./NailInspirationDeck.module.css";
 
@@ -37,84 +37,129 @@ const categories: { id: Category; label: string }[] = [
   { id: "todos", label: "Pé e mão" },
 ];
 
+const VISIBLE_CARDS = 5;
+const AUTOPLAY_INTERVAL = 2000;
+const CARD_TRANSITION_MS = 620;
+
 export default function NailInspirationDeck() {
   const [category, setCategory] = useState<Category>("todos");
   const [expanded, setExpanded] = useState(false);
   const [closing, setClosing] = useState(false);
   const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [modalMounted, setModalMounted] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-
-  const works = category === "maos" ? handWorks : category === "pes" ? footWorks : [...handWorks, ...footWorks];
+  const deckRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const closingRef = useRef(false);
+  const works = useMemo(
+    () => category === "maos" ? handWorks : category === "pes" ? footWorks : [...handWorks, ...footWorks],
+    [category],
+  );
 
   const closeModal = useCallback(() => {
-    if (!expanded || closing) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !modalRef.current || !panelRef.current) {
+    if (!expanded || closingRef.current) return;
+    closingRef.current = true;
+    setClosing(true);
+
+    const finishClose = () => {
       setExpanded(false);
+      setModalMounted(false);
       setClosing(false);
+      closingRef.current = false;
+      window.requestAnimationFrame(() => deckRef.current?.focus());
+    };
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !modalRef.current || !panelRef.current) {
+      finishClose();
       return;
     }
-    setClosing(true);
+
+    anime.remove([modalRef.current, panelRef.current]);
     anime({
       targets: panelRef.current,
       opacity: [1, 0],
-      translateY: [0, 12],
-      scale: [1, 0.98],
-      duration: 220,
+      translateY: [0, 14],
+      scale: [1, 0.975],
+      duration: 300,
       easing: "easeInCubic",
     });
     anime({
       targets: modalRef.current,
       opacity: [1, 0],
-      duration: 260,
+      duration: 320,
       easing: "easeInQuad",
-      complete: () => {
-        setExpanded(false);
-        setClosing(false);
-      },
+      complete: finishClose,
     });
-  }, [expanded, closing]);
+  }, [expanded]);
 
   useEffect(() => {
-    if (expanded || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const timer = window.setInterval(() => setActive((value) => (value + 1) % works.length), 2000);
+    if (expanded || paused || window.matchMedia("(prefers-reduced-motion: reduce)").matches || works.length < 2) return;
+    const timer = window.setInterval(() => setActive((value) => (value + 1) % works.length), AUTOPLAY_INTERVAL);
     return () => window.clearInterval(timer);
-  }, [expanded, works.length, category]);
+  }, [expanded, paused, works.length]);
 
   useEffect(() => {
     if (!expanded) return;
+    setModalMounted(true);
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    const focusTimer = window.setTimeout(() => closeButtonRef.current?.focus(), 0);
+
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeModal();
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeModal();
+        return;
+      }
+      if (event.key !== "Tab" || !panelRef.current) return;
+      const focusable = panelRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable.length) {
+        event.preventDefault();
+        panelRef.current.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
+
     window.addEventListener("keydown", onKeyDown);
     return () => {
+      window.clearTimeout(focusTimer);
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [expanded, closeModal]);
 
   useEffect(() => {
-    if (!expanded || !modalRef.current || !panelRef.current) return;
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduceMotion) return;
+    if (!expanded || !modalMounted || !modalRef.current || !panelRef.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    anime.remove([modalRef.current, panelRef.current]);
     anime({
       targets: modalRef.current,
       opacity: [0, 1],
-      duration: 240,
+      duration: 250,
       easing: "easeOutQuad",
     });
     anime({
       targets: panelRef.current,
       opacity: [0, 1],
-      translateY: [18, 0],
-      scale: [0.98, 1],
-      duration: 360,
+      translateY: [16, 0],
+      scale: [0.975, 1],
+      duration: 330,
       easing: "easeOutCubic",
     });
-  }, [expanded]);
+  }, [expanded, modalMounted]);
 
   useEffect(() => {
     if (!expanded || !gridRef.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -122,13 +167,19 @@ export default function NailInspirationDeck() {
       targets: gridRef.current.querySelectorAll("[data-work-card]"),
       opacity: [0, 1],
       translateY: [12, 0],
-      duration: 360,
-      delay: anime.stagger(45),
+      duration: 320,
+      delay: anime.stagger(35),
       easing: "easeOutCubic",
     });
   }, [expanded, category]);
 
-
+  const openModal = () => {
+    closingRef.current = false;
+    setClosing(false);
+    setModalMounted(true);
+    setExpanded(true);
+    setPaused(true);
+  };
 
   return (
     <div className={styles.wrapper}>
@@ -145,49 +196,64 @@ export default function NailInspirationDeck() {
             }}
           >
             {item.label}
-            {item.id === "todos" && <span>{handWorks.length + footWorks.length}</span>}
-            {item.id === "maos" && <span>{handWorks.length}</span>}
-            {item.id === "pes" && <span>{footWorks.length}</span>}
+            <span>{item.id === "todos" ? handWorks.length + footWorks.length : item.id === "maos" ? handWorks.length : footWorks.length}</span>
           </button>
         ))}
       </div>
 
-      <button
-        className={styles.deck}
-        type="button"
-        onClick={() => setExpanded(true)}
-        aria-label={`Abrir galeria de trabalhos: ${categories.find((item) => item.id === category)?.label}`}
+      <div
+        className={styles.deckStage}
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
       >
-        {works.map((work, index) => {
-          const offset = (index - active + works.length) % works.length;
-          return (
-            <span
-              key={work.id}
-              className={styles.card}
-              style={{ "--offset": offset, zIndex: works.length - offset } as React.CSSProperties}
-              aria-hidden={index !== active}
-            >
-              <span className={styles.photoFrame}>
-                <Image
-                  src={work.image}
-                  alt={work.title}
-                  fill
-                  priority={index === active}
-                  sizes="(max-width: 420px) 190px, (max-width: 850px) 220px, 270px"
-                />
+        <button
+          ref={deckRef}
+          className={styles.deck}
+          type="button"
+          onClick={openModal}
+          onFocus={() => setPaused(true)}
+          onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setPaused(false);
+          }}
+          aria-label={`Abrir galeria de trabalhos: ${categories.find((item) => item.id === category)?.label}`}
+          aria-haspopup="dialog"
+        >
+          {works.map((work, index) => {
+            const offset = (index - active + works.length) % works.length;
+            const visible = offset < VISIBLE_CARDS;
+            return (
+              <span
+                key={work.id}
+                className={styles.card}
+                style={{
+                  "--offset": Math.min(offset, VISIBLE_CARDS - 1),
+                  "--depth": Math.min(offset, VISIBLE_CARDS - 1),
+                  zIndex: works.length - offset,
+                } as React.CSSProperties}
+                data-front={offset === 0 ? "true" : "false"}
+                aria-hidden={index !== active}
+                inert={index !== active}
+                hidden={!visible}
+              >
+                <span className={styles.photoFrame}>
+                  <Image
+                    src={work.image}
+                    alt={work.title}
+                    fill
+                    priority={index === active}
+                    sizes="(max-width: 768px) 60vw, 320px"
+                  />
+                  <span className={styles.photoShade} aria-hidden="true" />
+                  <span className={styles.categoryLabel}>{work.category === "maos" ? "Mão" : "Pé"}</span>
+                </span>
               </span>
-              <span className={styles.footer}>
-                <small>NAILS BY SAMARA</small>
-                <strong>{work.title}</strong>
-                <small>{String(index + 1).padStart(2, "0")} / {String(works.length).padStart(2, "0")}</small>
-              </span>
-            </span>
-          );
-        })}
-        <span className={styles.hint}>TOQUE NO BARALHO PARA VER OS TRABALHOS</span>
-      </button>
+            );
+          })}
+          <span className={styles.hint}>TOQUE NAS CARTAS PARA VER OS TRABALHOS</span>
+        </button>
+      </div>
 
-      {expanded && (
+      {modalMounted && (
         <div
           className={styles.modalBackdrop}
           ref={modalRef}
@@ -202,6 +268,7 @@ export default function NailInspirationDeck() {
             aria-modal="true"
             aria-labelledby="work-gallery-title"
             aria-describedby="work-gallery-description"
+            tabIndex={-1}
           >
             <header className={styles.modalHeader}>
               <div>
@@ -211,7 +278,7 @@ export default function NailInspirationDeck() {
                   {works.length} {works.length === 1 ? "trabalho" : "trabalhos"} nesta seleção.
                 </p>
               </div>
-              <button className={styles.closeButton} type="button" onClick={closeModal} disabled={closing} aria-label="Fechar galeria">
+              <button ref={closeButtonRef} className={styles.closeButton} type="button" onClick={closeModal} disabled={closing} aria-label="Fechar">
                 <span aria-hidden="true">×</span>
               </button>
             </header>
@@ -223,7 +290,10 @@ export default function NailInspirationDeck() {
                   type="button"
                   className={`${styles.modalCategory} ${category === item.id ? styles.modalCategoryActive : ""}`}
                   aria-pressed={category === item.id}
-                  onClick={() => setCategory(item.id)}
+                  onClick={() => {
+                    setCategory(item.id);
+                    setActive(0);
+                  }}
                 >
                   {item.label}
                 </button>
@@ -231,15 +301,16 @@ export default function NailInspirationDeck() {
             </div>
 
             <div className={styles.grid} ref={gridRef}>
-              {works.map((work, index) => (
+              {works.map((work) => (
                 <article className={styles.item} key={work.id} data-work-card>
                   <div className={styles.galleryPhoto}>
                     <Image
                       src={work.image}
                       alt={work.title}
                       fill
-                      sizes="(max-width: 600px) 46vw, (max-width: 1000px) 30vw, 22vw"
+                      sizes="(max-width: 600px) 46vw, (max-width: 1000px) 22vw, 250px"
                     />
+                    <span className={styles.galleryCategory}>{work.category === "maos" ? "Mão" : "Pé"}</span>
                   </div>
                   <div className={styles.caption}>
                     <span>{work.category === "maos" ? "MÃOS" : "PÉS"}</span>
