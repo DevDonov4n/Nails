@@ -228,12 +228,17 @@
   max-width: 320px;
   aspect-ratio: 5 / 7;
   margin-inline: auto;
-  padding: 20px;
+  padding: 0;
   overflow: hidden;
   background: var(--cream);
   isolation: isolate;
 }
-.galleryPhoto img { border-radius: 4px; }
+.galleryPhoto img {
+  inset: 20px !important;
+  width: calc(100% - 40px) !important;
+  height: calc(100% - 40px) !important;
+  border-radius: 4px;
+}
 .caption { padding: 12px; }
 .caption > span { color: var(--rose-deep); font-size: 8px; font-weight: 700; letter-spacing: .14em; }
 .caption h3 { margin: 6px 0; color: var(--wine); font-family: var(--font-display); font-size: clamp(17px, 1.8vw, 23px); font-weight: 500; line-height: 1.1; }
@@ -246,13 +251,11 @@
 }
 @media (max-width: 767px) {
   .deckStage { width: min(100%, 520px); height: clamp(330px, 92vw, 410px); margin: 26px auto 0; }
-  .card { width: clamp(180px, 60vw, 280px); border-width: 20px; }
 }
 @media (max-width: 420px) {
   .categoryBar { gap: 6px; }
   .categoryButton { padding: 9px 12px; font-size: 11px; }
   .deckStage { height: 340px; }
-  .card { width: min(72vw, 240px); border-width: 20px; }
   .hint { font-size: 8px; letter-spacing: .09em; }
   .modalBackdrop { padding: 8px; }
   .modalPanel { max-height: 94dvh; border-radius: 13px; }
@@ -261,7 +264,6 @@
   .modalCategories { padding: 12px; gap: 6px; }
   .modalCategory { padding: 8px 11px; font-size: 11px; }
   .grid { gap: 8px; padding: 0 12px 16px; }
-  .galleryPhoto { padding: 20px; }
   .caption { padding: 9px; }
   .caption h3 { font-size: 18px; }
   .caption p { font-size: 9px; }
