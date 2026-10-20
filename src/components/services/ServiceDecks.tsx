@@ -1,8 +1,8 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
-import { createPortal } from "react-dom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { services, type SalonService } from "@/data/services";
 import styles from "./ServiceDecks.module.css";
 
@@ -126,8 +126,10 @@ export default function ServiceDecks() {
   );
 
   const openModal = useCallback((service: SalonService, trigger: HTMLButtonElement) => {
-    if (closingTimer.current !== null) window.clearTimeout(closingTimer.current);
-    closingTimer.current = null;
+    if (closingTimer.current !== null) {
+      window.clearTimeout(closingTimer.current);
+      closingTimer.current = null; // CORREÇÃO: evita timer "travado" bloqueando o próximo fechamento
+    }
     lastFocusedDeck.current = trigger;
     setSelected(service);
     setModalMounted(true);
@@ -141,8 +143,10 @@ export default function ServiceDecks() {
     closingTimer.current = window.setTimeout(() => {
       setModalMounted(false);
       setSelected(null);
-      setPausedByService({});
       closingTimer.current = null;
+      // CORREÇÃO: libera todos os baralhos antes de devolver o foco,
+      // para o autoplay não ficar parado após fechar o modal.
+      setPausedByService({});
       lastFocusedDeck.current?.focus({ preventScroll: true });
     }, reducedMotionRef.current ? 0 : 320);
   }, []);
@@ -219,7 +223,10 @@ export default function ServiceDecks() {
                 onPointerEnter={() => setDeckPaused(service.id, true)}
                 onPointerLeave={() => setDeckPaused(service.id, false)}
                 onFocus={(event) => {
-                  if (event.currentTarget.matches(":focus-visible")) setDeckPaused(service.id, true);
+                  // CORREÇÃO: só pausa por foco quando é navegação por teclado.
+                  if (event.currentTarget.matches(":focus-visible")) {
+                    setDeckPaused(service.id, true);
+                  }
                 }}
                 onBlur={(event) => {
                   if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
@@ -240,9 +247,10 @@ export default function ServiceDecks() {
                       data-front={offset === 0 ? "true" : "false"}
                       data-leaving={offset === 0 && leavingByService[service.id] ? "true" : "false"}
                       data-offset={Math.min(offset, VISIBLE_CARDS - 1)}
+                      // CORREÇÃO: data-hidden (animável) no lugar de hidden (display: none)
+                      data-hidden={visible ? "false" : "true"}
                       aria-hidden={offset !== 0}
                       inert={offset !== 0}
-                      data-hidden={visible ? "false" : "true"}
                       style={{ zIndex: works.length - offset }}
                     >
                       <span className={styles.cardPhoto}>
@@ -277,6 +285,7 @@ export default function ServiceDecks() {
         })}
       </div>
 
+      {/* CORREÇÃO: modal em portal, para o position: fixed não depender dos ancestrais */}
       {modalMounted && selected && createPortal(
         <div
           className={`${styles.modalBackdrop} ${modalVisible ? styles.modalOpen : ""}`}

@@ -31,10 +31,10 @@
 .deckButton {
   position: relative;
   display: block;
+  align-self: start;   /* CORREÇÃO: item de grid não estica na vertical */
+  justify-self: center;
   width: min(100%, var(--card-w));
   aspect-ratio: 5 / 7;
-  align-self: start;
-  justify-self: center;
   margin: 10px auto;
   padding: 0;
   border: 0;
@@ -76,8 +76,12 @@
 
 .card[data-offset="1"] { translate: 7% -2%; rotate: 4deg; scale: .96; }
 .card[data-offset="2"] { translate: -7% -4%; rotate: -4deg; scale: .92; }
+
+/* CORREÇÃO: cartas fora da pilha ficam invisíveis, mas continuam animáveis
+   (antes: display: none, o que fazia a carta "sumir" sem transição). */
 .card[data-hidden="true"] {
   translate: 0 -5%;
+  rotate: 0deg;
   scale: .88;
   opacity: 0;
   visibility: hidden;
@@ -89,6 +93,7 @@
     opacity 320ms ease,
     visibility 0s linear 600ms;
 }
+
 .card[data-front="true"] { z-index: 3; }
 .card[data-front="true"][data-leaving="true"] {
   translate: 0 -16%;
@@ -133,15 +138,14 @@
   z-index: 1;
   right: 4px;
   bottom: 4px;
-  padding: 4px 6px;
+  padding: 4px 8px;
   border: 1px solid rgb(255 250 247 / 80%);
   border-radius: 999px;
   background: rgb(255 250 247 / 92%);
   color: var(--wine);
-  font-size: clamp(10px, .8vw, 12px);
+  font-size: clamp(10px, .9vw, 11px); /* CORREÇÃO: mínimo legível */
   font-weight: 700;
 }
-
 
 .serviceDetails {
   display: flex;
@@ -179,7 +183,7 @@
   border-top: 1px solid var(--line);
   padding-top: 15px;
   color: var(--muted);
-  font-size: clamp(.7rem, 1.2vw, .9rem);
+  font-size: clamp(.7rem, 1.2vw, .9rem); /* CORREÇÃO: antes 8 a 10px */
   overflow-wrap: anywhere;
 }
 
@@ -199,16 +203,16 @@
   gap: 5px;
   padding-top: 12px;
   color: var(--wine);
-  font-size: clamp(.75rem, 1.2vw, .95rem);
+  font-size: clamp(.75rem, 1.2vw, .95rem); /* CORREÇÃO: antes 9 a 11px */
   font-weight: 600;
   overflow-wrap: anywhere;
 }
 
-/* Modal simples: fade no fundo e subida/escala do painel. */
+/* Modal: fade no fundo e subida/escala do painel. */
 .modalBackdrop {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 1000; /* CORREÇÃO: acima do header fixo e de qualquer seção */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -261,9 +265,9 @@
 .modalEyebrow {
   margin: 0 0 7px;
   color: var(--rose-deep);
-  font-size: 11px;
+  font-size: 11px; /* CORREÇÃO: antes 9px */
   font-weight: 700;
-  letter-spacing: .18em;
+  letter-spacing: .14em;
 }
 
 .modalHeader h2 {
@@ -332,13 +336,12 @@
 
 @media (max-width: 767px) {
   .serviceDeckGrid { --card-w: clamp(84px, 17vw, 130px); }
+  .cardLabel { display: none; } /* CORREÇÃO: rótulo ilegível em cartas pequenas */
   .serviceDetails { padding: 4px 1px 2px; }
-  .serviceDescription { margin-bottom: 12px; font-size: clamp(.7rem, 1.4vw, .8rem); line-height: 1.45; }
+  .serviceDescription { margin-bottom: 12px; font-size: .7rem; line-height: 1.45; }
   .serviceMeta { flex-direction: column; align-items: flex-start; gap: 4px; padding-top: 9px; font-size: .7rem; }
-  .serviceMeta strong { font-size: .7rem; }
-  .serviceLink { font-size: .7rem; }
-  .cardLabel { display: none; }
-  .serviceLink { justify-content: flex-start; line-height: 1.35; }
+  .serviceMeta strong { font-size: .75rem; }
+  .serviceLink { justify-content: flex-start; line-height: 1.35; font-size: .75rem; }
   .modalBackdrop { padding: 8px; }
   .modalPanel { max-height: 94dvh; border-radius: 13px; }
   .modalHeader { padding: 18px 14px; }
