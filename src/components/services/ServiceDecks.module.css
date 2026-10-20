@@ -1,0 +1,328 @@
+.serviceDeckRoot {
+  width: 100%;
+  min-width: 0;
+  isolation: isolate;
+}
+
+.serviceDeckGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: clamp(16px, 2.2vw, 28px);
+}
+
+.serviceCard.serviceCard {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  padding: clamp(12px, 1.4vw, 20px);
+  border: 1px solid #eadbd7;
+  background: rgb(255 253 251 / 70%);
+}
+
+.deckStage {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  place-items: center;
+  padding: 18px 6px 22px;
+  isolation: isolate;
+}
+
+.deckButton {
+  position: relative;
+  display: block;
+  width: min(100%, clamp(180px, 22vw, 300px));
+  max-width: 300px;
+  aspect-ratio: 5 / 7;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.deckButton:focus-visible {
+  outline: 3px solid var(--rose-deep);
+  outline-offset: 8px;
+  border-radius: 20px;
+}
+
+.card {
+  position: absolute;
+  inset: 0;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  overflow: hidden;
+  border: 20px solid var(--cream);
+  border-radius: 19px;
+  background: var(--cream);
+  box-shadow: 0 15px 32px rgb(51 40 42 / 15%), 0 3px 8px rgb(51 40 42 / 8%);
+  transform:
+    translate(calc(var(--offset) * 8px), calc(var(--offset) * 5px))
+    rotate(calc(var(--rotation) * 1deg))
+    scale(calc(1 - var(--offset) * .035));
+  transform-origin: 50% 65%;
+  transition: transform 620ms cubic-bezier(.22, 1, .36, 1), box-shadow 260ms ease;
+  will-change: transform;
+}
+
+.card[hidden] { display: none !important; }
+
+.card[data-front="true"] {
+  box-shadow: 0 19px 38px rgb(51 40 42 / 19%), 0 4px 10px rgb(51 40 42 / 9%);
+}
+
+.deckButton:hover .card[data-front="true"],
+.deckButton:focus-visible .card[data-front="true"] {
+  transform: translateY(-6px);
+}
+
+.cardPhoto {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--rose-light);
+  isolation: isolate;
+}
+
+.cardPhoto img,
+.modalPhoto img {
+  object-fit: cover;
+  object-position: center;
+}
+
+.cardShade {
+  position: absolute;
+  inset: 48% 0 0;
+  background: linear-gradient(180deg, transparent, rgb(38 20 27 / 46%));
+  pointer-events: none;
+}
+
+.cardLabel {
+  position: absolute;
+  z-index: 1;
+  right: 8px;
+  bottom: 8px;
+  padding: 6px 10px;
+  border: 1px solid rgb(255 250 247 / 80%);
+  border-radius: 999px;
+  background: rgb(255 250 247 / 92%);
+  color: var(--wine);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.deckHint {
+  position: absolute;
+  right: -4px;
+  bottom: -30px;
+  left: -4px;
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-align: center;
+  pointer-events: none;
+}
+
+.serviceDetails {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  padding: 12px 4px 4px;
+}
+
+.serviceDetails h3 {
+  margin: 0 0 10px;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: clamp(27px, 2.6vw, 34px);
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.serviceDescription {
+  min-height: 90px;
+  margin: 0 0 22px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.serviceMeta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  border-top: 1px solid var(--line);
+  padding-top: 15px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.serviceMeta strong {
+  flex: 0 0 auto;
+  color: var(--wine);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.serviceLink {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 0;
+  padding-top: 19px;
+  color: var(--wine);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.modalBackdrop {
+  position: fixed;
+  z-index: 40;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(12px, 3vw, 32px);
+  overflow-y: auto;
+  background: rgb(38 20 27 / 58%);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  isolation: isolate;
+}
+
+.modalPanel {
+  position: relative;
+  width: min(1050px, 100%);
+  max-height: min(90dvh, 900px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--cream);
+  box-shadow: 0 30px 100px rgb(39 20 29 / 33%);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: clamp(18px, 3vw, 30px);
+  border-bottom: 1px solid var(--line);
+}
+
+.modalEyebrow {
+  margin: 0 0 7px;
+  color: var(--rose-deep);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .18em;
+}
+
+.modalHeader h2 {
+  margin: 0;
+  color: var(--wine);
+  font-family: var(--font-display);
+  font-size: clamp(30px, 4vw, 44px);
+  font-weight: 500;
+  line-height: 1.05;
+}
+
+.modalDescription { margin: 7px 0 0; color: var(--muted); font-size: 12px; }
+
+.closeButton {
+  display: grid;
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--wine);
+  font-size: 30px;
+  font-weight: 300;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.closeButton:focus-visible { outline: 3px solid var(--rose-deep); outline-offset: 3px; }
+
+.modalGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-content: start;
+  gap: 16px;
+  padding: 20px clamp(16px, 3vw, 30px) 30px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.modalWork { min-width: 0; margin: 0; border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: var(--paper); }
+.modalPhoto {
+  position: relative;
+  width: 100%;
+  max-width: 220px;
+  aspect-ratio: 5 / 7;
+  margin-inline: auto;
+  padding: 20px;
+  border: 20px solid var(--cream);
+  border-radius: 15px;
+  background: var(--cream);
+  box-shadow: 0 8px 22px rgb(51 40 42 / 10%);
+  overflow: hidden;
+}
+.modalWork p { margin: 10px 0 2px; color: var(--wine); font-size: 11px; text-align: center; }
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .serviceDeckGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .serviceCard.serviceCard { padding: 10px; }
+  .deckStage { padding-inline: 0; }
+  .deckButton { width: min(100%, 27vw, 250px); }
+  .card { padding: 12px; border-width: 20px; }
+  .serviceDetails h3 { font-size: 27px; }
+  .serviceDescription { min-height: 120px; font-size: 11px; }
+  .serviceMeta { align-items: flex-start; flex-direction: column; }
+  .modalGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 767px) {
+  .serviceDeckGrid { grid-template-columns: minmax(0, 1fr); gap: 38px; }
+  .serviceCard.serviceCard { padding: 18px; }
+  .deckStage { padding: 18px 0 24px; }
+  .deckButton { width: min(100%, clamp(180px, 60vw, 300px)); }
+  .serviceDetails { padding: 14px 4px 4px; }
+  .serviceDetails h3 { font-size: 32px; }
+  .serviceDescription { min-height: 0; margin-bottom: 24px; }
+  .serviceMeta { flex-direction: row; align-items: baseline; }
+  .modalBackdrop { padding: 8px; }
+  .modalPanel { max-height: 94dvh; border-radius: 13px; }
+  .modalHeader { padding: 18px 14px; }
+  .closeButton { width: 36px; height: 36px; }
+  .modalGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 14px 12px 18px; }
+  .modalWork { padding: 7px; }
+  .modalPhoto { padding: 8px; border-width: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card { transition: none; will-change: auto; }
+}
