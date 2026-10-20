@@ -1,6 +1,10 @@
 .serviceDeckRoot {
   width: 100%;
+  max-width: 1440px;
   min-width: 0;
+  margin-inline: auto;
+  padding-inline: clamp(12px, 4vw, 48px);
+  box-sizing: border-box;
   isolation: isolate;
 }
 
@@ -8,7 +12,7 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: start;
-  gap: clamp(16px, 2.2vw, 28px);
+  gap: clamp(8px, 2.5vw, 32px);
 }
 
 .serviceCard.serviceCard {
@@ -16,7 +20,7 @@
   min-width: 0;
   min-height: 0;
   flex-direction: column;
-  padding: clamp(12px, 1.4vw, 20px);
+  padding: clamp(5px, 1.1vw, 16px);
   border: 1px solid #eadbd7;
   background: rgb(255 253 251 / 70%);
 }
@@ -27,15 +31,15 @@
   width: 100%;
   min-width: 0;
   place-items: center;
-  padding: 18px 6px 22px;
+  padding: 12px 8px 20px;
   isolation: isolate;
 }
 
 .deckButton {
   position: relative;
   display: block;
-  width: min(100%, clamp(180px, 22vw, 300px));
-  max-width: 300px;
+  width: min(100%, clamp(84px, 20vw, 200px));
+  max-width: 200px;
   aspect-ratio: 5 / 7;
   flex: 0 0 auto;
   margin: 0;
@@ -51,7 +55,7 @@
 .deckButton:focus-visible {
   outline: 3px solid var(--rose-deep);
   outline-offset: 8px;
-  border-radius: 20px;
+  border-radius: clamp(8px, 1.6vw, 18px);
 }
 
 .card {
@@ -63,12 +67,12 @@
   height: 100%;
   padding: 0;
   overflow: hidden;
-  border: 20px solid var(--cream);
-  border-radius: 19px;
+  border: clamp(6px, 2.6vw, 20px) solid var(--cream);
+  border-radius: clamp(8px, 1.6vw, 18px);
   background: var(--cream);
   box-shadow: 0 15px 32px rgb(51 40 42 / 15%), 0 3px 8px rgb(51 40 42 / 8%);
   transform:
-    translate(calc(var(--offset) * 8px), calc(var(--offset) * 5px))
+    translate(calc(var(--offset) * .22em), calc(var(--offset) * .14em))
     rotate(calc(var(--rotation) * 1deg))
     scale(calc(1 - var(--offset) * .035));
   transform-origin: 50% 65%;
@@ -79,7 +83,7 @@
 .card[hidden] { display: none !important; }
 
 .card[data-front="true"][data-leaving="true"] {
-  transform: translateY(-22px) rotate(8deg) scale(.94);
+  transform: translateY(-.7em) rotate(5deg) scale(.94);
   opacity: 0;
   z-index: 20 !important;
 }
@@ -90,7 +94,7 @@
 
 .deckButton:hover .card[data-front="true"],
 .deckButton:focus-visible .card[data-front="true"] {
-  transform: translateY(-6px);
+  transform: translateY(-.2em);
 }
 
 .cardPhoto {
@@ -120,14 +124,14 @@
 .cardLabel {
   position: absolute;
   z-index: 1;
-  right: 8px;
-  bottom: 8px;
-  padding: 6px 10px;
+  right: 4px;
+  bottom: 4px;
+  padding: 4px 6px;
   border: 1px solid rgb(255 250 247 / 80%);
   border-radius: 999px;
   background: rgb(255 250 247 / 92%);
   color: var(--wine);
-  font-size: 10px;
+  font-size: clamp(7px, .7vw, 10px);
   font-weight: 700;
 }
 
@@ -156,17 +160,18 @@
   margin: 0 0 10px;
   color: var(--ink);
   font-family: var(--font-display);
-  font-size: clamp(27px, 2.6vw, 34px);
+  font-size: clamp(1rem, 2.6vw, 2rem);
   font-weight: 500;
   line-height: 1.1;
 }
 
 .serviceDescription {
   min-height: 90px;
+  overflow-wrap: anywhere;
   margin: 0 0 22px;
   color: var(--muted);
-  font-size: 12px;
-  line-height: 1.8;
+  font-size: clamp(.7rem, 1.4vw, 1rem);
+  line-height: 1.65;
 }
 
 .serviceMeta {
@@ -178,25 +183,30 @@
   border-top: 1px solid var(--line);
   padding-top: 15px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: clamp(8px, .9vw, 10px);
+  overflow-wrap: anywhere;
 }
 
 .serviceMeta strong {
   flex: 0 0 auto;
   color: var(--wine);
-  font-size: 12px;
+  font-size: clamp(9px, 1vw, 12px);
   font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 .serviceLink {
   display: flex;
+  min-height: 44px;
+  align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 5px;
   margin-top: 0;
-  padding-top: 19px;
+  padding-top: 12px;
   color: var(--wine);
-  font-size: 11px;
+  font-size: clamp(9px, 1vw, 11px);
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .modalBackdrop {
@@ -300,26 +310,28 @@
 .modalWork p { margin: 10px 0 2px; color: var(--wine); font-size: 11px; text-align: center; }
 
 @media (min-width: 768px) and (max-width: 1023px) {
-  .serviceDeckGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-  .serviceCard.serviceCard { padding: 10px; }
-  .deckStage { padding-inline: 0; }
-  .deckButton { width: min(100%, 24vw, 230px); }
-  .card { padding: 12px; border-width: 20px; }
-  .serviceDetails h3 { font-size: 27px; }
-  .serviceDescription { min-height: 120px; font-size: 11px; }
-  .serviceMeta { align-items: flex-start; flex-direction: column; }
+  .serviceDeckGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 2.5vw, 24px); }
+  .serviceCard.serviceCard { padding: 8px; }
+  .deckStage { padding-inline: 3px; }
+  .deckButton { width: min(100%, clamp(84px, 20vw, 200px)); }
+  .serviceDetails h3 { font-size: clamp(1rem, 2.6vw, 1.65rem); }
+  .serviceDescription { min-height: 110px; font-size: clamp(.7rem, 1.4vw, .9rem); }
+  .serviceMeta { align-items: baseline; flex-direction: row; }
   .modalGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 767px) {
-  .serviceDeckGrid { grid-template-columns: minmax(0, 1fr); gap: 38px; }
-  .serviceCard.serviceCard { padding: 18px; }
-  .deckStage { padding: 18px 0 24px; }
-  .deckButton { width: min(100%, clamp(180px, 60vw, 300px)); }
-  .serviceDetails { padding: 14px 4px 4px; }
-  .serviceDetails h3 { font-size: 32px; }
-  .serviceDescription { min-height: 0; margin-bottom: 24px; }
-  .serviceMeta { flex-direction: row; align-items: baseline; }
+  .serviceDeckGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 2.5vw, 16px); }
+  .serviceCard.serviceCard { padding: 5px; }
+  .deckStage { padding: 10px 1px 16px; }
+  .deckButton { width: min(100%, clamp(84px, 20vw, 200px)); }
+  .serviceDetails { padding: 10px 1px 2px; }
+  .serviceDetails h3 { font-size: clamp(1rem, 2.6vw, 1.3rem); overflow-wrap: anywhere; }
+  .serviceDescription { min-height: 0; margin-bottom: 12px; font-size: clamp(.7rem, 1.4vw, .8rem); line-height: 1.45; overflow-wrap: anywhere; }
+  .serviceMeta { flex-direction: column; align-items: flex-start; gap: 4px; padding-top: 9px; font-size: 9px; }
+  .serviceMeta strong { font-size: 10px; }
+  .serviceLink { min-height: 44px; align-items: center; justify-content: flex-start; }
+  .deckHint { bottom: -23px; font-size: 6px; letter-spacing: .04em; }
   .modalBackdrop { padding: 8px; }
   .modalPanel { max-height: 94dvh; border-radius: 13px; }
   .modalHeader { padding: 18px 14px; }
@@ -327,6 +339,18 @@
   .modalGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 14px 12px 18px; }
   .modalWork { padding: 7px; }
   .modalPhoto { padding: 0; border-width: 10px; }
+}
+
+@media (max-width: 479px) {
+  .serviceDescription {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+  }
+  .serviceMeta { align-items: flex-start; }
+  .serviceLink { line-height: 1.35; }
 }
 
 @media (prefers-reduced-motion: reduce) {
