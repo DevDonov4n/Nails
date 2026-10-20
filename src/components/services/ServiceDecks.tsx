@@ -136,6 +136,7 @@ export default function ServiceDecks() {
     if (!selected || !modalMounted) return;
     const previousOverflow = document.body.style.overflow;
     const previousPaddingRight = document.body.style.paddingRight;
+    const previousScrollY = window.scrollY;
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
     document.body.style.overflow = "hidden";
     if (scrollbarWidth > 0) {
@@ -173,6 +174,7 @@ export default function ServiceDecks() {
       window.clearTimeout(focusTimer);
       document.body.style.overflow = previousOverflow;
       document.body.style.paddingRight = previousPaddingRight;
+      window.scrollTo(0, previousScrollY);
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [selected, modalMounted, closeModal]);
