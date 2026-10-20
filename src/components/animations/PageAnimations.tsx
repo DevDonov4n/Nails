@@ -18,8 +18,7 @@ export default function PageAnimations() {
       .from(".hero-description", { y: 18, autoAlpha: 0, duration: 0.65 }, "-=0.48")
       .from(".hero-actions > *", { y: 14, autoAlpha: 0, duration: 0.55, stagger: 0.1 }, "-=0.36")
       .from(".hero-note", { y: 12, autoAlpha: 0, duration: 0.55 }, "-=0.3")
-      .from(".hero-visual", { scale: 0.94, y: 22, autoAlpha: 0, duration: 1.1 }, "-=0.9")
-      .from(".hero-bottom span", { y: 8, autoAlpha: 0, duration: 0.4, stagger: 0.08 }, "-=0.55");
+      .from(".hero-visual", { scale: 0.94, y: 22, autoAlpha: 0, duration: 1.1 }, "-=0.9");
 
     gsap.to(".hero-flower", {
       rotate: 18,
@@ -57,7 +56,7 @@ export default function PageAnimations() {
       });
     });
 
-    gsap.utils.toArray<HTMLElement>(".service-card").forEach((card, index) => {
+    gsap.utils.toArray<HTMLElement>(".service-card, [data-service-card]").forEach((card, index) => {
       gsap.from(card, {
         y: 42,
         autoAlpha: 0,

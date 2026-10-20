@@ -152,7 +152,9 @@
   grid-row: 2;
   min-width: 0;
   flex-direction: column;
-  padding: 12px 4px 4px;
+  padding: clamp(8px, 2vw, 24px);
+  border: 1px solid var(--line);
+  background: var(--paper);
   overflow-wrap: anywhere;
 }
 
@@ -337,7 +339,7 @@
 @media (max-width: 767px) {
   .serviceDeckGrid { --card-w: clamp(84px, 17vw, 130px); }
   .cardLabel { display: none; } /* CORREÇÃO: rótulo ilegível em cartas pequenas */
-  .serviceDetails { padding: 4px 1px 2px; }
+  .serviceDetails { padding: 8px 6px; }
   .serviceDescription { margin-bottom: 12px; font-size: .7rem; line-height: 1.45; }
   .serviceMeta { flex-direction: column; align-items: flex-start; gap: 4px; padding-top: 9px; font-size: .7rem; }
   .serviceMeta strong { font-size: .75rem; }

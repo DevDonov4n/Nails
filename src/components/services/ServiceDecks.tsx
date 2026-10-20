@@ -70,9 +70,12 @@ export default function ServiceDecks() {
   const lastFocusedDeck = useRef<HTMLButtonElement | null>(null);
   const closingTimer = useRef<number | null>(null);
 
-  activeRef.current = activeByService;
-  pausedRef.current = pausedByService;
-  selectedRef.current = selected;
+  // Sincroniza os refs depois do commit (acessar ref.current durante o render é erro no React 19).
+  useEffect(() => {
+    activeRef.current = activeByService;
+    pausedRef.current = pausedByService;
+    selectedRef.current = selected;
+  }, [activeByService, pausedByService, selected]);
 
   const setDeckPaused = useCallback((id: string, paused: boolean) => {
     setPausedByService((current) => ({ ...current, [id]: paused }));
@@ -214,7 +217,7 @@ export default function ServiceDecks() {
           const active = activeByService[service.id] ?? 0;
 
           return (
-            <article className={styles.serviceCard} key={service.id}>
+            <article className={styles.serviceCard} key={service.id} data-service-card>
               <button
                 type="button"
                 className={styles.deckButton}
@@ -253,7 +256,7 @@ export default function ServiceDecks() {
                       inert={offset !== 0}
                       style={{ zIndex: works.length - offset }}
                     >
-                      <span className={styles.cardPhoto}>
+                      <span className={styles.cardPhoto} style={{ position: "relative" }}>
                         <Image
                           src={work.image}
                           alt=""
@@ -322,7 +325,7 @@ export default function ServiceDecks() {
             <div className={styles.modalGrid}>
               {modalWorks.map((work) => (
                 <article className={styles.modalWork} key={work.id}>
-                  <div className={styles.modalPhoto}>
+                  <div className={styles.modalPhoto} style={{ position: "relative" }}>
                     <Image
                       src={work.image}
                       alt={`Trabalho de ${work.category.toLowerCase()}`}
