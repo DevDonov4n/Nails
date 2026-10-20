@@ -257,6 +257,16 @@ export default function NailInspirationDeck() {
                   maxWidth: "320px",
                   aspectRatio: "5 / 7",
                   boxSizing: "border-box",
+                  border: "20px solid var(--cream)",
+                  borderRadius: "19px",
+                  overflow: "hidden",
+                  background: "var(--cream)",
+                  boxShadow: offset === 0
+                    ? "0 22px 48px rgb(51 40 42 / 20%), 0 4px 10px rgb(51 40 42 / 10%)"
+                    : "0 16px 38px rgb(51 40 42 / 16%), 0 3px 8px rgb(51 40 42 / 9%)",
+                  transform: `translate(calc(-50% + ${Math.min(offset, VISIBLE_CARDS - 1) * 12}px), calc(-50% + ${Math.min(offset, VISIBLE_CARDS - 1) * 5}px)) rotate(${(Math.min(offset, VISIBLE_CARDS - 1) - 2) * 3}deg) scale(${1 - Math.min(offset, VISIBLE_CARDS - 1) * 0.035})`,
+                  transformOrigin: "50% 60%",
+                  transition: "transform 620ms cubic-bezier(.22, .75, .25, 1), opacity 420ms ease, box-shadow 420ms ease",
                   zIndex: works.length - offset,
                 } as React.CSSProperties}
                 data-front={offset === 0 ? "true" : "false"}
@@ -285,6 +295,7 @@ export default function NailInspirationDeck() {
                     style={{
                       position: "absolute",
                       inset: 0,
+                      display: "block",
                       width: "100%",
                       height: "100%",
                       maxWidth: "100%",
