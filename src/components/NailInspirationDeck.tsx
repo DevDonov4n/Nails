@@ -48,6 +48,34 @@ export default function NailInspirationDeck() {
 
   const works = category === "maos" ? handWorks : category === "pes" ? footWorks : [...handWorks, ...footWorks];
 
+  const closeModal = useCallback(() => {
+    if (!expanded || closing) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !modalRef.current || !panelRef.current) {
+      setExpanded(false);
+      setClosing(false);
+      return;
+    }
+    setClosing(true);
+    anime({
+      targets: panelRef.current,
+      opacity: [1, 0],
+      translateY: [0, 12],
+      scale: [1, 0.98],
+      duration: 220,
+      easing: "easeInCubic",
+    });
+    anime({
+      targets: modalRef.current,
+      opacity: [1, 0],
+      duration: 260,
+      easing: "easeInQuad",
+      complete: () => {
+        setExpanded(false);
+        setClosing(false);
+      },
+    });
+  }, [expanded, closing]);
+
   useEffect(() => {
     if (expanded || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const timer = window.setInterval(() => setActive((value) => (value + 1) % works.length), 2000);
@@ -100,33 +128,7 @@ export default function NailInspirationDeck() {
     });
   }, [expanded, category]);
 
-  const closeModal = useCallback(() => {
-    if (!expanded || closing) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !modalRef.current || !panelRef.current) {
-      setExpanded(false);
-      setClosing(false);
-      return;
-    }
-    setClosing(true);
-    anime({
-      targets: panelRef.current,
-      opacity: [1, 0],
-      translateY: [0, 12],
-      scale: [1, 0.98],
-      duration: 220,
-      easing: "easeInCubic",
-    });
-    anime({
-      targets: modalRef.current,
-      opacity: [1, 0],
-      duration: 260,
-      easing: "easeInQuad",
-      complete: () => {
-        setExpanded(false);
-        setClosing(false);
-      },
-    });
-  }, [expanded, closing]);
+
 
   return (
     <div className={styles.wrapper}>
