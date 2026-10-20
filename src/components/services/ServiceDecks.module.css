@@ -1,49 +1,57 @@
 .serviceDeckRoot {
   width: 100%;
-  max-width: 1440px;
+  max-width: 1100px;
   min-width: 0;
   margin-inline: auto;
-  padding-inline: clamp(12px, 4vw, 48px);
+  padding: clamp(32px, 6vw, 80px) clamp(12px, 4vw, 48px);
   box-sizing: border-box;
   isolation: isolate;
 }
 
 .serviceDeckGrid {
+  --card-w: clamp(84px, 17vw, 200px);
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: auto auto;
+  column-gap: clamp(8px, 2.5vw, 32px);
+  row-gap: clamp(16px, 3vw, 28px);
   align-items: start;
-  gap: clamp(8px, 2.5vw, 32px);
+  min-width: 0;
 }
 
 .serviceCard.serviceCard {
-  display: flex;
+  display: grid;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
+  row-gap: inherit;
+  align-self: stretch;
   min-width: 0;
   min-height: 0;
-  flex-direction: column;
-  padding: clamp(5px, 1.1vw, 16px);
-  border: 1px solid #eadbd7;
-  background: rgb(255 253 251 / 70%);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-sizing: border-box;
 }
 
 .deckStage {
   position: relative;
-  display: grid;
-  width: 100%;
+  width: min(100%, var(--card-w));
+  aspect-ratio: 5 / 7;
   min-width: 0;
-  place-items: center;
-  padding: 12px 8px 20px;
+  margin: 8px auto;
   isolation: isolate;
 }
 
 .deckButton {
-  position: relative;
+  position: absolute;
+  inset: 0;
   display: block;
-  width: min(100%, clamp(84px, 20vw, 200px));
-  max-width: 200px;
-  aspect-ratio: 5 / 7;
-  flex: 0 0 auto;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
   overflow: visible;
   border: 0;
   background: transparent;
@@ -54,7 +62,7 @@
 
 .deckButton:focus-visible {
   outline: 3px solid var(--rose-deep);
-  outline-offset: 8px;
+  outline-offset: 4px;
   border-radius: clamp(8px, 1.6vw, 18px);
 }
 
@@ -67,34 +75,34 @@
   height: 100%;
   padding: 0;
   overflow: hidden;
-  border: clamp(6px, 2.6vw, 20px) solid var(--cream);
+  border: clamp(6px, 2.4vw, 20px) solid var(--cream);
   border-radius: clamp(8px, 1.6vw, 18px);
   background: var(--cream);
-  box-shadow: 0 15px 32px rgb(51 40 42 / 15%), 0 3px 8px rgb(51 40 42 / 8%);
+  box-shadow: 0 6px 18px rgb(51 40 42 / 12%);
   transform:
-    translate(calc(var(--offset) * .22em), calc(var(--offset) * .14em))
+    translate(calc(var(--offset) * 1.2%), calc(var(--offset) * 1.1%))
     rotate(calc(var(--rotation) * 1deg))
-    scale(calc(1 - var(--offset) * .035));
+    scale(calc(1 - var(--offset) * .04));
   transform-origin: 50% 65%;
-  transition: transform 620ms cubic-bezier(.22, 1, .36, 1), box-shadow 260ms ease;
-  will-change: transform;
+  transition: transform 620ms cubic-bezier(.22, 1, .36, 1), opacity 620ms cubic-bezier(.22, 1, .36, 1), box-shadow 260ms ease;
+  will-change: transform, opacity;
 }
 
 .card[hidden] { display: none !important; }
 
 .card[data-front="true"][data-leaving="true"] {
-  transform: translateY(-.7em) rotate(5deg) scale(.94);
+  transform: translateY(-4%) rotate(4deg) scale(.94);
   opacity: 0;
   z-index: 20 !important;
 }
 
 .card[data-front="true"] {
-  box-shadow: 0 19px 38px rgb(51 40 42 / 19%), 0 4px 10px rgb(51 40 42 / 9%);
+  box-shadow: 0 10px 24px rgb(51 40 42 / 16%);
 }
 
 .deckButton:hover .card[data-front="true"],
 .deckButton:focus-visible .card[data-front="true"] {
-  transform: translateY(-.2em);
+  transform: translateY(-2%);
 }
 
 .cardPhoto {
@@ -102,6 +110,9 @@
   display: block;
   width: 100%;
   height: 100%;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
   overflow: hidden;
   border-radius: 3px;
   background: var(--rose-light);
@@ -150,13 +161,14 @@
 
 .serviceDetails {
   display: flex;
+  grid-row: 2;
   min-width: 0;
   flex: 1;
   flex-direction: column;
   padding: 12px 4px 4px;
 }
 
-.serviceDetails h3 {
+.serviceCard.serviceCard .serviceDetails h3 {
   margin: 0 0 10px;
   color: var(--ink);
   font-family: var(--font-display);
@@ -166,7 +178,7 @@
 }
 
 .serviceDescription {
-  min-height: 90px;
+  min-height: 0;
   overflow-wrap: anywhere;
   margin: 0 0 22px;
   color: var(--muted);
@@ -309,29 +321,43 @@
 }
 .modalWork p { margin: 10px 0 2px; color: var(--wine); font-size: 11px; text-align: center; }
 
-@media (min-width: 768px) and (max-width: 1023px) {
-  .serviceDeckGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 2.5vw, 24px); }
-  .serviceCard.serviceCard { padding: 8px; }
-  .deckStage { padding-inline: 3px; }
-  .deckButton { width: min(100%, clamp(84px, 20vw, 200px)); }
-  .serviceDetails h3 { font-size: clamp(1rem, 2.6vw, 1.65rem); }
-  .serviceDescription { min-height: 110px; font-size: clamp(.7rem, 1.4vw, .9rem); }
-  .serviceMeta { align-items: baseline; flex-direction: row; }
-  .modalGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
-
 @media (max-width: 767px) {
-  .serviceDeckGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 2.5vw, 16px); }
-  .serviceCard.serviceCard { padding: 5px; }
-  .deckStage { padding: 10px 1px 16px; }
-  .deckButton { width: min(100%, clamp(84px, 20vw, 200px)); }
-  .serviceDetails { padding: 10px 1px 2px; }
-  .serviceDetails h3 { font-size: clamp(1rem, 2.6vw, 1.3rem); overflow-wrap: anywhere; }
-  .serviceDescription { min-height: 0; margin-bottom: 12px; font-size: clamp(.7rem, 1.4vw, .8rem); line-height: 1.45; overflow-wrap: anywhere; }
-  .serviceMeta { flex-direction: column; align-items: flex-start; gap: 4px; padding-top: 9px; font-size: 9px; }
+  .serviceDeckGrid {
+    --card-w: clamp(84px, 17vw, 130px);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: clamp(8px, 2.5vw, 16px);
+    row-gap: clamp(16px, 3vw, 24px);
+  }
+  .serviceCard.serviceCard { grid-row: span 2; grid-template-rows: subgrid; }
+  .deckStage { width: min(100%, var(--card-w)); margin-block: 4px; }
+  .card { border-width: clamp(6px, 2.4vw, 18px); }
+  .serviceDetails { padding: 4px 1px 2px; }
+  .serviceCard.serviceCard .serviceDetails h3 {
+    font-size: clamp(1rem, 2.6vw, 1.25rem);
+    overflow-wrap: anywhere;
+  }
+  .serviceDescription {
+    min-height: 0;
+    margin-bottom: 12px;
+    font-size: clamp(.7rem, 1.4vw, .8rem);
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+  .serviceMeta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding-top: 9px;
+    font-size: 9px;
+  }
   .serviceMeta strong { font-size: 10px; }
-  .serviceLink { min-height: 44px; align-items: center; justify-content: flex-start; }
-  .deckHint { bottom: -23px; font-size: 6px; letter-spacing: .04em; }
+  .serviceLink {
+    min-height: 44px;
+    align-items: center;
+    justify-content: flex-start;
+    line-height: 1.35;
+  }
+  .deckHint { bottom: -20px; font-size: 6px; letter-spacing: .04em; }
   .modalBackdrop { padding: 8px; }
   .modalPanel { max-height: 94dvh; border-radius: 13px; }
   .modalHeader { padding: 18px 14px; }
@@ -350,7 +376,6 @@
     overflow: hidden;
   }
   .serviceMeta { align-items: flex-start; }
-  .serviceLink { line-height: 1.35; }
 }
 
 @media (prefers-reduced-motion: reduce) {
