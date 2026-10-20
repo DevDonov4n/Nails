@@ -59,7 +59,9 @@ export default function NailPolishExperience() {
       const samples = Math.max(300, Math.min(600, DEBUG_MARKER_COUNT));
       const points = Array.from({ length: samples + 1 }, (_, index) => {
         const length = (pathLength * index) / samples;
-        return { ...paint.getPointAtLength(length), progress: index / samples };
+        // SVGPoint's x/y properties are not reliably enumerable, so copy them explicitly.
+        const point = paint.getPointAtLength(length);
+        return { x: point.x, y: point.y, progress: index / samples };
       });
       const candidates: CurveApex[] = [];
       let previousDirection = 0;
