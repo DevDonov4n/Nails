@@ -303,7 +303,7 @@
   .serviceDeckGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
   .serviceCard.serviceCard { padding: 10px; }
   .deckStage { padding-inline: 0; }
-  .deckButton { width: min(100%, 27vw, 250px); }
+  .deckButton { width: min(100%, 24vw, 230px); }
   .card { padding: 12px; border-width: 20px; }
   .serviceDetails h3 { font-size: 27px; }
   .serviceDescription { min-height: 120px; font-size: 11px; }
