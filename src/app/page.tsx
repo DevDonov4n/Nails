@@ -2,6 +2,7 @@ import Button from "@/components/Button";
 import PageAnimations from "@/components/animations/PageAnimations";
 import NailPolishExperience from "@/components/animations/NailPolishExperience";
 import NailInspirationDeck from "@/components/NailInspirationDeck";
+import ServiceDecks from "@/components/services/ServiceDecks";
 import { services } from "@/data/services";
 
 export default function Home() {
@@ -44,16 +45,7 @@ export default function Home() {
         <section className="services section-pad" id="servicos">
           <div className="container">
             <div className="section-heading"><div><p className="eyebrow">CUIDADO COM INTENÇÃO</p><h2>Um cuidado para<br /><em>cada versão de você.</em></h2></div><p className="section-description">Escolha o atendimento que deseja e consulte os valores com tranquilidade. Cada serviço tem duração estimada de uma hora, para que você possa se organizar e aproveitar seu momento sem pressa.</p></div>
-            <div className="service-grid">
-              {services.map((service) => (
-                <article className="service-card" key={service.number}>
-                  <div className="service-top" />
-                  <h3>{service.name}</h3><p>{service.description}</p>
-                  <div className="service-meta"><span>{service.duration} aproximadamente</span><span>{service.priceLabel}</span></div>
-                  <a href="/agendamento" className="service-link">Escolher este serviço</a>
-                </article>
-              ))}
-            </div>
+            <ServiceDecks />
           </div>
         </section>
 
