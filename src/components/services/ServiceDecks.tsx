@@ -43,7 +43,6 @@ const VISIBLE_CARDS = 4;
 const AUTOPLAY_MS = 2000;
 const STAGGER_MS = 650;
 const ROTATION_DEG = 3;
-const CARD_BORDER_PX = 20;
 
 export default function ServiceDecks() {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -51,6 +50,7 @@ export default function ServiceDecks() {
   const [modalMounted, setModalMounted] = useState(false);
   const [closing, setClosing] = useState(false);
   const [activeByService, setActiveByService] = useState<Record<string, number>>({ HAND: 0, FOOT: 0, BOTH: 0 });
+  const [pausedByService, setPausedByService] = useState<Record<string, boolean>>({ HAND: false, FOOT: false, BOTH: false });
   const deckButtons = useRef<Record<string, HTMLButtonElement | null>>({});
   const closeButton = useRef<HTMLButtonElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -71,10 +71,11 @@ export default function ServiceDecks() {
     );
   }, { scope: sectionRef });
 
-  // One recursive timeout per deck: first rotation is staggered, subsequent rotations are every 2 seconds.
+  // One recursive timeout per deck; pause while hovered/focused or while the modal is open.
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const timers = services.map((service, index) => {
+    const cleanups = services.map((service, index) => {
+      if (selected || pausedByService[service.id]) return () => undefined;
       let timeoutId: number | undefined;
       let cancelled = false;
       const schedule = (delay: number) => {
@@ -93,8 +94,8 @@ export default function ServiceDecks() {
         if (timeoutId !== undefined) window.clearTimeout(timeoutId);
       };
     });
-    return () => timers.forEach((cleanup) => cleanup());
-  }, []);
+    return () => cleanups.forEach((cleanup) => cleanup());
+  }, [pausedByService, selected]);
 
   const closeModal = useCallback(() => {
     if (!selected || closingRef.current) return;
@@ -190,6 +191,10 @@ export default function ServiceDecks() {
                   className={styles.deckButton}
                   ref={(node) => { deckButtons.current[service.id] = node; }}
                   onClick={() => openModal(service)}
+                  onMouseEnter={() => setPausedByService((state) => ({ ...state, [service.id]: true }))}
+                  onMouseLeave={() => setPausedByService((state) => ({ ...state, [service.id]: false }))}
+                  onFocus={() => setPausedByService((state) => ({ ...state, [service.id]: true }))}
+                  onBlur={() => setPausedByService((state) => ({ ...state, [service.id]: false }))}
                   aria-label={`Ver todos os trabalhos de ${service.name}`}
                   aria-haspopup="dialog"
                 >
