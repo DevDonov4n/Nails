@@ -78,6 +78,12 @@
 
 .card[hidden] { display: none !important; }
 
+.card[data-front="true"][data-leaving="true"] {
+  transform: translateY(-22px) rotate(8deg) scale(.94);
+  opacity: 0;
+  z-index: 20 !important;
+}
+
 .card[data-front="true"] {
   box-shadow: 0 19px 38px rgb(51 40 42 / 19%), 0 4px 10px rgb(51 40 42 / 9%);
 }
