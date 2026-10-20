@@ -339,7 +339,6 @@
   .serviceLink { font-size: .7rem; }
   .cardLabel { display: none; }
   .serviceLink { justify-content: flex-start; line-height: 1.35; }
-  .deckHint { bottom: -20px; font-size: 6px; letter-spacing: .04em; }
   .modalBackdrop { padding: 8px; }
   .modalPanel { max-height: 94dvh; border-radius: 13px; }
   .modalHeader { padding: 18px 14px; }
