@@ -3,7 +3,6 @@ import PageAnimations from "@/components/animations/PageAnimations";
 import NailPolishExperience from "@/components/animations/NailPolishExperience";
 import NailInspirationDeck from "@/components/NailInspirationDeck";
 import ServiceDecks from "@/components/services/ServiceDecks";
-import { services } from "@/data/services";
 
 export default function Home() {
   return (
