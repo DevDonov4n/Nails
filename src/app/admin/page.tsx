@@ -5,7 +5,7 @@ import "./admin.css";
 import { FormEvent, useEffect, useState } from "react";
 
 export default function AdminPage() {
-  const [email, setEmail] = useState("adm@adm.com");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const [checking, setChecking] = useState(true);
@@ -66,7 +66,7 @@ export default function AdminPage() {
             <p className="admin-description">Entre com as credenciais administrativas para continuar.</p>
             <form className="admin-form" onSubmit={submit}>
               <label>E-mail administrativo
-                <input type="email" required autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="adm@adm.com" />
+                <input type="email" required autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="admin@seusite.com" />
               </label>
               <label>Senha
                 <input type="password" required autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Digite sua senha" />
