@@ -35,6 +35,12 @@ function startOfMonth(date: Date) {
   const month = Number(parts.find(p => p.type === "month")?.value);
   return new Date(Date.UTC(year, month - 1, 1, 3));
 }
+function nextMonthStart(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit" }).formatToParts(date);
+  const year = Number(parts.find(p => p.type === "year")?.value);
+  const month = Number(parts.find(p => p.type === "month")?.value);
+  return new Date(Date.UTC(year + (month === 12 ? 1 : 0), month === 12 ? 0 : month, 1, 3));
+}
 function startOfYear(date: Date) {
   const year = Number(new Intl.DateTimeFormat("en", { timeZone: "America/Sao_Paulo", year: "numeric" }).format(date));
   return new Date(Date.UTC(year, 0, 1, 3));
@@ -54,7 +60,7 @@ export async function GET() {
     const yearStart = startOfYear(now);
     const dayStart = startOfDay(now);
     const tomorrow = new Date(dayStart.getTime() + 86_400_000);
-    const weekStart = new Date(dayStart.getTime() - ((Number(new Intl.DateTimeFormat("en", { timeZone: "America/Sao_Paulo", weekday: "numeric" }).format(now)) + 6) % 7) * 86_400_000);
+    const weekday = new Intl.DateTimeFormat("en-US", { timeZone: "America/Sao_Paulo", weekday: "short" }).format(now);\n    const weekdayIndex = ({ Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 } as const)[weekday as "Sun" | "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat"];\n    const weekStart = new Date(dayStart.getTime() - ((weekdayIndex + 6) % 7) * 86_400_000);\n    const nextWeek = new Date(weekStart.getTime() + 7 * 86_400_000);\n    const nextMonth = nextMonthStart(now);
     const nextYear = new Date(Date.UTC(getLocalYear(now) + 1, 0, 1, 3));
 
     const [all, admin] = await Promise.all([
@@ -67,8 +73,8 @@ export async function GET() {
     ]);
     const finished = all.filter(item => item.status === "COMPLETED");
     const inDay = all.filter(item => item.startAt >= dayStart && item.startAt < tomorrow && item.status !== "CANCELLED");
-    const inWeek = all.filter(item => item.startAt >= weekStart && item.startAt < tomorrow && item.status !== "CANCELLED");
-    const inMonth = all.filter(item => item.startAt >= monthStart && item.startAt < tomorrow && item.status !== "CANCELLED");
+    const inWeek = all.filter(item => item.startAt >= weekStart && item.startAt < nextWeek && item.status !== "CANCELLED");
+    const inMonth = all.filter(item => item.startAt >= monthStart && item.startAt < nextMonth && item.status !== "CANCELLED");
     const activeFuture = all.filter(item => item.startAt >= now && (item.status === "PENDING" || item.status === "CONFIRMED"));
     const revenue = finished.reduce((sum, item) => sum + item.totalPrice, 0);
     const forecast = revenue + activeFuture.reduce((sum, item) => sum + item.totalPrice, 0);
