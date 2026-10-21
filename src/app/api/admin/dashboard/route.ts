@@ -25,9 +25,11 @@ async function adminSession() {
 const money = (value: number) => Math.round(value);
 
 function startOfDay(date: Date) {
-  const value = new Date(date);
-  value.setUTCHours(3, 0, 0, 0);
-  return value;
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(date);
+  const year = Number(parts.find(p => p.type === "year")?.value);
+  const month = Number(parts.find(p => p.type === "month")?.value);
+  const day = Number(parts.find(p => p.type === "day")?.value);
+  return new Date(Date.UTC(year, month - 1, day, 3));
 }
 function startOfMonth(date: Date) {
   const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit" }).formatToParts(date);
