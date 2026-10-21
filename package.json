@@ -9,7 +9,8 @@
     "lint": "eslint",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:migrate:customers": "node scripts/migrate-customer-accounts.cjs"
+    "db:migrate:customers": "node scripts/migrate-customer-accounts.cjs",
+    "db:seed:admin": "node scripts/seed-admin.cjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
