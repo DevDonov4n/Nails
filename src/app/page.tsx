@@ -2,13 +2,15 @@ import Button from "@/components/Button";
 import PageAnimations from "@/components/animations/PageAnimations";
 import NailPolishExperience from "@/components/animations/NailPolishExperience";
 import ServiceDecks from "@/components/services/ServiceDecks";
+import NailScrollSequence from "@/components/animations/NailScrollSequence";
 
 export default function Home() {
   return (
     <>
       <PageAnimations />
       <main>
-        <NailPolishExperience />
+        <NailScrollSequence scrollLength={4} />
+        {/* <NailPolishExperience /> */}
         <section className="hero" id="inicio">
           <div className="hero-orb hero-orb--one" aria-hidden="true" />
           <div className="hero-orb hero-orb--two" aria-hidden="true" />
@@ -20,7 +22,7 @@ export default function Home() {
                 Reserve um momento para você, cuide das mãos e dos pés com carinho e escolha o estilo que faz você se sentir bonita e confiante. Um atendimento pensado para deixar seu dia mais leve, com atenção a cada detalhe.
               </p>
               <div className="hero-actions">
-                <Button href="/agendamento">Quero agendar <span aria-hidden="true">↗</span></Button>
+                <Button href="/agendamento">Quero agendar</Button>
                 <a className="text-link" href="#servicos">Conheça os serviços <span aria-hidden="true">↓</span></a>
               </div>
               <div className="hero-note">
@@ -52,7 +54,7 @@ export default function Home() {
             <p className="eyebrow">VAMOS MARCAR SEU MOMENTO?</p>
             <h2>Você merece esse<br /><em>tempo para você.</em></h2>
             <p>Quer saber qual serviço combina melhor com o que você procura? Consulte os horários disponíveis, tire suas dúvidas e veja os detalhes do atendimento antes de reservar.</p>
-            <a className="button button--light" href="mailto:contato@nailsbysamara.com?subject=Agendamento%20Nails%20by%20Samara">Entrar em contato <span aria-hidden="true">↗</span></a>
+            <a className="button button--light" href="mailto:contato@nailsbysamara.com?subject=Agendamento%20Nails%20by%20Samara">Entrar em contato</a>
             <span className="contact-footnote">Contato provisório — atualize com os canais oficiais antes de publicar.</span>
           </div>
         </section>

@@ -57,7 +57,7 @@ export default function Header() {
               <Link className="header-signup" href="/cadastro">Criar conta</Link>
             </>
           )}
-          <Link className="header-cta" href="/agendamento">Agendar horário <span aria-hidden="true">↗</span></Link>
+          <Link className="header-cta" href="/agendamento">Agendar horário</Link>
         </div>
       </div>
     </header>
