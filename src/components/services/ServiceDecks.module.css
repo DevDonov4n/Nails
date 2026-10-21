@@ -337,9 +337,20 @@
 .modalWork p { margin: 10px 0 2px; color: var(--wine); font-size: 11px; text-align: center; }
 
 @media (max-width: 767px) {
-  .serviceDeckGrid { --card-w: clamp(84px, 17vw, 130px); }
+  /* No celular, cada deck fica imediatamente acima das informações do serviço. */
+  .serviceDeckGrid {
+    --card-w: clamp(110px, 32vw, 160px);
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    row-gap: 22px;
+  }
+  .serviceCard {
+    grid-row: auto;
+    grid-template-rows: auto auto;
+    row-gap: 8px;
+  }
+  .serviceDetails { grid-row: auto; padding: 12px; }
   .cardLabel { display: none; } /* CORREÇÃO: rótulo ilegível em cartas pequenas */
-  .serviceDetails { padding: 8px 6px; }
   .serviceDescription { margin-bottom: 12px; font-size: .7rem; line-height: 1.45; }
   .serviceMeta { flex-direction: column; align-items: flex-start; gap: 4px; padding-top: 9px; font-size: .7rem; }
   .serviceMeta strong { font-size: .75rem; }
