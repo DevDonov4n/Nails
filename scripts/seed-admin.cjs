@@ -34,6 +34,12 @@ async function main() {
       )
     `);
 
+    try {
+      await db.execute('ALTER TABLE "AdminUser" ADD COLUMN "yearlyGoal" INTEGER NOT NULL DEFAULT 0');
+    } catch (error) {
+      if (!String(error.message).toLowerCase().includes("duplicate column")) throw error;
+    }
+
     const existing = await db.execute({
       sql: 'SELECT "id" FROM "AdminUser" WHERE "email" = ?',
       args: [email],
