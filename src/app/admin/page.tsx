@@ -157,13 +157,13 @@ export default function AdminPage() {
     <aside className="adm-sidebar">
       <a href="/" className="adm-brand"><span className="adm-brand-mark">S</span><span><strong>Nails by Samara</strong><small>PAINEL ADM</small></span></a>
       <div className="adm-side-label">MENU PRINCIPAL</div>
-      {["Visão geral","Agendamentos","Atendimentos","Financeiro"].map((item,i)=><button key={item} className={nav===item?"adm-nav-item active":"adm-nav-item"} onClick={()=>setNav(item)}><span className="adm-nav-icon">{["◫","▦","✦","↗"][i]}</span>{item}</button>)}
+      {["Visão geral","Agendamentos","Atendimentos","Financeiro"].map((item,i)=><button key={item} className={nav===item?"adm-nav-item active":"adm-nav-item"} onClick={()=>{ if (i===0) setNav(item); }} disabled={i!==0} title={i===0?"Visão geral":"Em breve"}><span className="adm-nav-icon">{["◫","▦","✦","↗"][i]}</span>{item}{i!==0&&<small className="adm-nav-soon">Em breve</small>}</button>)}
       <div className="adm-sidebar-bottom"><div className="adm-diva-avatar">D</div><div className="adm-diva-info"><strong>Diva</strong><small>Administradora</small></div><button className="adm-logout" onClick={logout} aria-label="Sair do painel" title="Sair">↗</button></div>
     </aside>
     <section className="adm-main">
       <header className="adm-topbar"><div><span className="adm-breadcrumb">Painel ADM</span><span className="adm-breadcrumb-sep">/</span><strong>{nav}</strong></div><div className="adm-top-actions"><span className="adm-live-dot"/> Dados do salão <button className="adm-refresh" onClick={()=>void loadDashboard()} disabled={loadingDashboard} title="Atualizar dados">↻</button></div></header>
       <div className="adm-content">
-        <div className="adm-welcome-row"><div><p className="adm-eyebrow">QUARTA-FEIRA · NAILS BY SAMARA</p><h1>Bom te ver, <em>Diva.</em></h1><p className="adm-subtitle">Aqui está o resumo do seu negócio em {dashboard?.year ?? new Date().getFullYear()}.</p></div><button className="adm-date-chip" onClick={()=>void loadDashboard()}><span>◷</span> Visão anual <span>⌄</span></button></div>
+        <div className="adm-welcome-row"><div><p className="adm-eyebrow">{new Intl.DateTimeFormat("pt-BR",{weekday:"long",timeZone:"America/Sao_Paulo"}).format(new Date()).toLocaleUpperCase("pt-BR")} · NAILS BY SAMARA</p><h1>Bom te ver, <em>Diva.</em></h1><p className="adm-subtitle">Aqui está o resumo do seu negócio em {dashboard?.year ?? new Date().getFullYear()}.</p></div><button className="adm-date-chip" onClick={()=>void loadDashboard()}><span>◷</span> Visão anual <span>⌄</span></button></div>
         {dashboardError&&<div className="adm-error-banner">{dashboardError}<button onClick={()=>void loadDashboard()}>Tentar novamente</button></div>}
         {loadingDashboard&&!dashboard&&<div className="adm-loading">Preparando os números do seu salão…</div>}
         {dashboard&&<>
