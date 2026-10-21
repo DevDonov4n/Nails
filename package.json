@@ -10,7 +10,8 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate:customers": "node scripts/migrate-customer-accounts.cjs",
-    "db:seed:admin": "node scripts/seed-admin.cjs"
+    "db:seed:admin": "node scripts/seed-admin.cjs",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
