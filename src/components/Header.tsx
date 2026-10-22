@@ -59,7 +59,7 @@ export default function Header() {
           <span className="brand-mark" aria-hidden="true">S.</span>
           <span className="brand-copy"><span className="brand-name">Nails by Samara</span><span className="brand-caption">BELEZA EM CADA DETALHE</span></span>
         </Link>
-        <nav className={`main-nav ${menuOpen ? "main-nav--open" : ""}`} aria-label="Navegação principal">
+        <nav id="mobile-navigation" className={`main-nav ${menuOpen ? "main-nav--open" : ""}`} aria-label="Navegação principal">
           {navigation.map((item) => <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)}>{item.label}</Link>)}
           <div className="mobile-nav-account">
             {!sessionChecked ? null : user ? <><Link href="/minha-conta" onClick={() => setMenuOpen(false)}>Olá, {user.name.split(" ")[0]}</Link><button type="button" onClick={logout}>Sair</button></> : <><Link href="/login" onClick={() => setMenuOpen(false)}>Entrar</Link><Link href="/cadastro" onClick={() => setMenuOpen(false)}>Criar conta</Link></>}
