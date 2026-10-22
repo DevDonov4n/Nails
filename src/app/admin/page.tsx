@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 
 type MonthMetric = { month: string; revenue: number; appointments: number; completed: number };
 type RecentBooking = { id: string; customerName: string; service: string; date: string; status: string; totalPrice: number; whatsapp: string };
+type AdminBooking = { id: string; customerName: string; whatsapp: string; address: string | null; service: "HAND" | "FOOT" | "BOTH"; location: "SALON" | "HOME"; startAt: string; endAt: string; status: "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED"; servicePrice: number; mobilityFee: number; totalPrice: number; userId: string | null };
 type DashboardData = {
   year: number;
   goal: number;
@@ -76,6 +77,11 @@ export default function AdminPage() {
   const [savingGoal, setSavingGoal] = useState(false);
   const [goalMessage, setGoalMessage] = useState("");
   const [nav, setNav] = useState("Visão geral");
+  const [bookings, setBookings] = useState<AdminBooking[]>([]);
+  const [bookingsLoading, setBookingsLoading] = useState(false);
+  const [bookingsError, setBookingsError] = useState("");
+  const [bookingFilter, setBookingFilter] = useState("ALL");
+  const [bookingSearch, setBookingSearch] = useState("");
 
   async function loadDashboard() {
     setLoadingDashboard(true);
@@ -108,6 +114,25 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => { if (authenticated) void loadDashboard(); }, [authenticated]);
+
+  async function loadBookings() {
+    setBookingsLoading(true); setBookingsError("");
+    try {
+      const response = await fetch("/api/admin/bookings", { cache: "no-store" });
+      const data = await response.json();
+      if (response.status === 401) {
+        setAuthenticated(false);
+        setError("Sua sessão expirou. Entre novamente.");
+        return;
+      }
+      if (!response.ok) throw new Error(data.error ?? "Não foi possível carregar a agenda.");
+      setBookings(data.bookings ?? []);
+    } catch (reason) {
+      setBookingsError(reason instanceof Error ? reason.message : "Falha ao carregar os registros.");
+    } finally { setBookingsLoading(false); }
+  }
+
+  useEffect(() => { if (authenticated && (nav === "Agendamentos" || nav === "Atendimentos")) void loadBookings(); }, [authenticated, nav]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -164,12 +189,14 @@ export default function AdminPage() {
     <aside className="adm-sidebar">
       <a href="/" className="adm-brand"><span className="adm-brand-mark">S</span><span><strong>Nails by Samara</strong><small>PAINEL ADM</small></span></a>
       <div className="adm-side-label">MENU PRINCIPAL</div>
-      {["Visão geral","Agendamentos","Atendimentos","Financeiro"].map((item,i)=><button key={item} className={nav===item?"adm-nav-item active":"adm-nav-item"} onClick={()=>{ if (i===0) setNav(item); }} disabled={i!==0} title={i===0?"Visão geral":"Em breve"}><span className="adm-nav-icon">{["◫","▦","✦","↗"][i]}</span>{item}{i!==0&&<small className="adm-nav-soon">Em breve</small>}</button>)}
+      {["Visão geral","Agendamentos","Atendimentos","Financeiro"].map((item,i)=><button key={item} className={nav===item?"adm-nav-item active":"adm-nav-item"} onClick={()=>{ if (i<3) setNav(item); }} disabled={i===3} title={i===3?"Planejado para uma próxima etapa":item}><span className="adm-nav-icon">{["◫","▦","✦","↗"][i]}</span>{item}{i===3&&<small className="adm-nav-soon">Em breve</small>}</button>)}
       <div className="adm-sidebar-bottom"><div className="adm-diva-avatar">D</div><div className="adm-diva-info"><strong>Diva</strong><small>Administradora</small></div><button className="adm-logout" onClick={logout} aria-label="Sair do painel" title="Sair">↗</button></div>
     </aside>
     <section className="adm-main">
       <header className="adm-topbar"><div><span className="adm-breadcrumb">Painel ADM</span><span className="adm-breadcrumb-sep">/</span><strong>{nav}</strong></div><div className="adm-top-actions"><span className="adm-live-dot"/> Dados do salão <button className="adm-refresh" onClick={()=>void loadDashboard()} disabled={loadingDashboard} title="Atualizar dados">↻</button></div></header>
       <div className="adm-content">
+        {nav === "Visão geral" ? <>
+
         <div className="adm-welcome-row"><div><p className="adm-eyebrow">{new Intl.DateTimeFormat("pt-BR",{weekday:"long",timeZone:"America/Sao_Paulo"}).format(new Date()).toLocaleUpperCase("pt-BR")} · NAILS BY SAMARA</p><h1>Bom te ver, <em>Diva.</em></h1><p className="adm-subtitle">Aqui está o resumo do seu negócio em {dashboard?.year ?? new Date().getFullYear()}.</p></div><button className="adm-date-chip" onClick={()=>void loadDashboard()}><span>◷</span> Visão anual <span>⌄</span></button></div>
         {dashboardError&&<div className="adm-error-banner">{dashboardError}<button onClick={()=>void loadDashboard()}>Tentar novamente</button></div>}
         {loadingDashboard&&!dashboard&&<div className="adm-loading">Preparando os números do seu salão…</div>}
@@ -196,6 +223,36 @@ export default function AdminPage() {
           </section>
           <p className="adm-footnote">Valores calculados a partir dos agendamentos salvos. A expectativa considera receita concluída e agenda futura pendente ou confirmada; cancelamentos não entram nos indicadores.</p>
         </>}
+        </> : nav === "Agendamentos" ? <>
+          <div className="adm-welcome-row"><div><p className="adm-eyebrow">AGENDA · NAILS BY SAMARA</p><h1>Seus <em>agendamentos.</em></h1><p className="adm-subtitle">Acompanhe os próximos horários, os pedidos pendentes e os detalhes de cada cliente.</p></div><button className="adm-date-chip" onClick={() => void loadBookings()} disabled={bookingsLoading}>↻ Atualizar agenda</button></div>
+          {bookingsError && <div className="adm-error-banner">{bookingsError}<button onClick={() => void loadBookings()}>Tentar novamente</button></div>}
+          <div className="adm-list-toolbar"><label>Buscar cliente ou WhatsApp<input value={bookingSearch} onChange={event => setBookingSearch(event.target.value)} placeholder="Nome ou telefone"/></label><label>Filtrar status<select value={bookingFilter} onChange={event => setBookingFilter(event.target.value)}><option value="ALL">Todos os status</option><option value="PENDING">Pendentes</option><option value="CONFIRMED">Confirmados</option><option value="COMPLETED">Concluídos</option><option value="CANCELLED">Cancelados</option></select></label></div>
+          {bookingsLoading ? <div className="adm-loading">Carregando agenda…</div> : <div className="adm-panel adm-list-panel"><div className="adm-panel-heading"><div><span className="adm-panel-overline">CALENDÁRIO DO SALÃO</span><h2>Agenda completa</h2><p>{bookings.filter(item => item.status === "PENDING" || item.status === "CONFIRMED").length} horários pendentes ou confirmados</p></div><span className="adm-panel-tag">{bookings.length} registros</span></div>
+            {(() => { const rows = bookings.filter(item => (bookingFilter === "ALL" || item.status === bookingFilter) && (item.customerName.toLowerCase().includes(bookingSearch.toLowerCase()) || item.whatsapp.includes(bookingSearch))); return rows.length ? <div className="adm-table-wrap"><table className="adm-table adm-wide-table"><thead><tr><th>Cliente</th><th>Serviço</th><th>Data e hora</th><th>Local</th><th>Valor</th><th>Status</th></tr></thead><tbody>{rows.map(item => <tr key={item.id}><td><strong>{item.customerName}</strong><small>{item.whatsapp}</small>{item.address && <small>{item.address}</small>}</td><td>{{HAND:"Mão",FOOT:"Pé",BOTH:"Mão + pé"}[item.service]}</td><td>{new Intl.DateTimeFormat("pt-BR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",timeZone:"America/Sao_Paulo"}).format(new Date(item.startAt))}</td><td>{item.location === "HOME" ? "Domicílio" : "Salão"}</td><td>{currency(item.totalPrice / 100)}</td><td><span className={`adm-status-pill ${item.status.toLowerCase()}`}>{statusLabel[item.status]}</span></td></tr>)}</tbody></table></div> : <div className="adm-empty">Nenhum agendamento corresponde aos filtros.</div>; })()}
+          </div>}
+        </> : <>
+          <div className="adm-welcome-row"><div><p className="adm-eyebrow">RELACIONAMENTO · NAILS BY SAMARA</p><h1>Fidelidade das <em>clientes.</em></h1><p className="adm-subtitle">Histórico de serviços concluídos e frequência de retorno de cada cliente.</p></div><button className="adm-date-chip" onClick={() => void loadBookings()} disabled={bookingsLoading}>↻ Atualizar dados</button></div>
+          {bookingsError && <div className="adm-error-banner">{bookingsError}<button onClick={() => void loadBookings()}>Tentar novamente</button></div>}
+          {(() => {
+            const done = bookings.filter(item => item.status === "COMPLETED");
+            const customers = new Map<string, {name:string;whatsapp:string;count:number;total:number;last:string;services:string[]}>();
+            done.forEach(item => { const key = item.whatsapp.replace(/\D/g,"") || item.customerName.trim().toLowerCase(); const entry = customers.get(key) ?? {name:item.customerName,whatsapp:item.whatsapp,count:0,total:0,last:item.startAt,services:[]}; entry.count++; entry.total += item.totalPrice; entry.services.push({HAND:"Mão",FOOT:"Pé",BOTH:"Mão + pé"}[item.service]); if (item.startAt > entry.last) entry.last = item.startAt; customers.set(key,entry); });
+            const ordered = [...customers.values()].sort((a,b)=>b.count-a.count || b.last.localeCompare(a.last));
+            const totalDone = done.length;
+            const average = ordered.length ? totalDone / ordered.length : 0;
+            return <>
+              <section className="adm-kpis adm-loyalty-kpis"><article className="adm-kpi"><div className="adm-kpi-top"><span>Clientes atendidas</span><span className="adm-kpi-icon">♡</span></div><strong>{number(ordered.length)}</strong><small>Com pelo menos um serviço concluído</small></article><article className="adm-kpi"><div className="adm-kpi-top"><span>Serviços concluídos</span><span className="adm-kpi-icon">✦</span></div><strong>{number(totalDone)}</strong><small>Registros finalizados no histórico</small></article><article className="adm-kpi"><div className="adm-kpi-top"><span>Média por cliente</span><span className="adm-kpi-icon">↻</span></div><strong>{average.toLocaleString("pt-BR",{maximumFractionDigits:1})}</strong><small>Serviços concluídos por cliente</small></article><article className="adm-kpi adm-kpi-highlight"><div className="adm-kpi-top"><span>Clientes recorrentes</span><span className="adm-kpi-icon">♥</span></div><strong>{number(ordered.filter(item=>item.count>1).length)}</strong><small>Voltaram para mais de um atendimento</small></article></section>
+              <div className="adm-list-toolbar"><label>Buscar cliente ou WhatsApp<input value={bookingSearch} onChange={event => setBookingSearch(event.target.value)} placeholder="Nome ou telefone"/></label></div>
+              <section className="adm-panel adm-list-panel"><div className="adm-panel-heading"><div><span className="adm-panel-overline">CARTEIRA DE CLIENTES</span><h2>Histórico de fidelidade</h2><p>Ordenado por número de atendimentos concluídos</p></div></div>
+              {bookingsLoading ? <div className="adm-loading">Carregando histórico…</div> : ordered.filter(item=>item.name.toLowerCase().includes(bookingSearch.toLowerCase())||item.whatsapp.includes(bookingSearch)).length ? <div className="adm-table-wrap"><table className="adm-table adm-wide-table"><thead><tr><th>Cliente</th><th>Atendimentos</th><th>Serviços realizados</th><th>Último atendimento</th><th>Total histórico</th></tr></thead><tbody>{ordered.filter(item=>item.name.toLowerCase().includes(bookingSearch.toLowerCase())||item.whatsapp.includes(bookingSearch)).map(item=><tr key={item.whatsapp}><td><strong>{item.name}</strong><small>{item.whatsapp}</small></td><td><span className="adm-loyalty-count">{item.count} {item.count===1?"visita":"visitas"}</span><small>{item.count>1?"Cliente recorrente":"Primeiro atendimento concluído"}</small></td><td>{item.services.join(", ")}</td><td>{new Intl.DateTimeFormat("pt-BR",{day:"2-digit",month:"short",year:"numeric",timeZone:"America/Sao_Paulo"}).format(new Date(item.last))}</td><td>{currency(item.total/100)}</td></tr>)}</tbody></table></div> : <div className="adm-empty">Ainda não existem atendimentos concluídos para mostrar.</div>}
+              </section>
+              <section className="adm-panel adm-list-panel"><div className="adm-panel-heading"><div><span className="adm-panel-overline">HISTÓRICO DETALHADO</span><h2>Atendimentos concluídos</h2><p>Registro individual de cada serviço finalizado</p></div></div>
+              {done.length ? <div className="adm-table-wrap"><table className="adm-table adm-wide-table"><thead><tr><th>Cliente</th><th>Serviço</th><th>Data</th><th>Local</th><th>Valor</th></tr></thead><tbody>{[...done].sort((a,b)=>b.startAt.localeCompare(a.startAt)).map(item=><tr key={item.id}><td><strong>{item.customerName}</strong><small>{item.whatsapp}</small></td><td>{{HAND:"Mão",FOOT:"Pé",BOTH:"Mão + pé"}[item.service]}</td><td>{new Intl.DateTimeFormat("pt-BR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",timeZone:"America/Sao_Paulo"}).format(new Date(item.startAt))}</td><td>{item.location==="HOME"?"Domicílio":"Salão"}</td><td>{currency(item.totalPrice/100)}</td></tr>)}</tbody></table></div> : <div className="adm-empty">Nenhum atendimento concluído até agora.</div>}
+              </section>
+            </>;
+          })()}
+        </>}
+
       </div>
     </section>
   </main>;
