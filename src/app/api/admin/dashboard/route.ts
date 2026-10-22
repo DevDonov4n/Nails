@@ -62,7 +62,11 @@ export async function GET() {
     const yearStart = startOfYear(now);
     const dayStart = startOfDay(now);
     const tomorrow = new Date(dayStart.getTime() + 86_400_000);
-    const weekday = new Intl.DateTimeFormat("en-US", { timeZone: "America/Sao_Paulo", weekday: "short" }).format(now);\n    const weekdayIndex = ({ Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 } as const)[weekday as "Sun" | "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat"];\n    const weekStart = new Date(dayStart.getTime() - ((weekdayIndex + 6) % 7) * 86_400_000);\n    const nextWeek = new Date(weekStart.getTime() + 7 * 86_400_000);\n    const nextMonth = nextMonthStart(now);
+    const weekday = new Intl.DateTimeFormat("en-US", { timeZone: "America/Sao_Paulo", weekday: "short" }).format(now);
+    const weekdayIndex = ({ Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 } as const)[weekday as "Sun" | "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat"];
+    const weekStart = new Date(dayStart.getTime() - ((weekdayIndex + 6) % 7) * 86_400_000);
+    const nextWeek = new Date(weekStart.getTime() + 7 * 86_400_000);
+    const nextMonth = nextMonthStart(now);
     const nextYear = new Date(Date.UTC(getLocalYear(now) + 1, 0, 1, 3));
 
     const [all, admin] = await Promise.all([
