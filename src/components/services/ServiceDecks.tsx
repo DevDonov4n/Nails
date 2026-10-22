@@ -280,7 +280,7 @@ export default function ServiceDecks() {
                   <strong>{service.priceLabel}</strong>
                 </div>
                 <a href="/agendamento" className={styles.serviceLink}>
-                  Escolher este serviço <span aria-hidden="true">↗</span>
+                  Escolher este serviço
                 </a>
               </div>
             </article>
