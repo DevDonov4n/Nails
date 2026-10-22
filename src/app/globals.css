@@ -582,3 +582,41 @@ h2 { margin-bottom: 22px; font-size: clamp(40px, 5vw, 64px); line-height: .98; }
   position: relative;
   z-index: 1;
 }
+
+
+/* Header transparente sobre a sequência cinematográfica e navegação móvel */
+.site-header { transition: background .35s ease, border-color .35s ease, color .35s ease, box-shadow .35s ease; }
+.site-header--home { position: fixed; inset: 0 0 auto; }
+.site-header--transparent { border-color: transparent; background: transparent; backdrop-filter: none; box-shadow: none; }
+.site-header--transparent .brand-name,
+.site-header--transparent .brand-caption,
+.site-header--transparent .main-nav a,
+.site-header--transparent .header-account,
+.site-header--transparent .header-cta { color: #fffaf7; text-shadow: 0 1px 12px rgb(40 20 25 / 30%); }
+.site-header--transparent .brand-mark { border-color: rgb(255 250 247 / 75%); color: #fffaf7; }
+.site-header--transparent .header-signup { border-color: rgb(255 250 247 / 75%); background: rgb(255 250 247 / 12%); color: #fffaf7; }
+.site-header--visible { border-color: rgb(97 60 67 / 8%); background: rgb(255 250 247 / 94%); box-shadow: 0 8px 30px rgb(75 45 52 / 5%); backdrop-filter: blur(16px); }
+.site-header--home.site-header--visible { background: rgb(255 250 247 / 94%); }
+.header-menu-toggle { display: none; }
+.mobile-nav-account { display: none; }
+.header-cta span { transition: transform .2s ease; }
+.header-cta:hover span { transform: translate(3px,-2px); }
+@media (max-width: 760px) {
+  .header-inner { min-height: 70px; gap: 10px; }
+  .header-actions { display: none; }
+  .header-menu-toggle { display: flex; width: 42px; height: 42px; flex: 0 0 42px; flex-direction: column; align-items: center; justify-content: center; gap: 5px; border: 1px solid var(--line); border-radius: 50%; background: rgb(255 253 251 / 70%); color: var(--wine); cursor: pointer; }
+  .header-menu-toggle span { display: block; width: 17px; height: 1.5px; border-radius: 2px; background: currentColor; transition: transform .2s ease, opacity .2s ease; }
+  .header-menu-toggle.is-open span:first-child { transform: translateY(6.5px) rotate(45deg); }
+  .header-menu-toggle.is-open span:nth-child(2) { opacity: 0; }
+  .header-menu-toggle.is-open span:last-child { transform: translateY(-6.5px) rotate(-45deg); }
+  .site-header--transparent .header-menu-toggle { border-color: rgb(255 250 247 / 70%); background: rgb(40 20 25 / 15%); color: #fffaf7; }
+  .main-nav { position: absolute; top: calc(100% + 8px); right: 18px; left: 18px; display: none; align-items: stretch; gap: 0; padding: 12px; border: 1px solid rgb(97 60 67 / 10%); border-radius: 18px; background: rgb(255 250 247 / 98%); box-shadow: 0 18px 50px rgb(50 30 35 / 15%); }
+  .main-nav.main-nav--open { display: flex; flex-direction: column; }
+  .main-nav > a { padding: 14px 12px; border-bottom: 1px solid var(--line); color: var(--wine) !important; font-size: 13px; text-shadow: none !important; }
+  .mobile-nav-account { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px 6px 4px; }
+  .mobile-nav-account > a, .mobile-nav-account > button { display: flex; min-height: 40px; align-items: center; justify-content: center; padding: 8px; border: 1px solid var(--line); border-radius: 9px; background: transparent; color: var(--wine); font: inherit; font-size: 12px; }
+  .mobile-nav-account .mobile-booking-cta { grid-column: 1 / -1; border-color: var(--wine); background: var(--wine); color: white; }
+  .brand-name { font-size: 19px; }
+  .brand-caption { font-size: 7px; }
+}
+@media (prefers-reduced-motion: reduce) { .site-header, .header-menu-toggle span { transition: none; } }
