@@ -54,8 +54,7 @@ export default function Home() {
             <p className="eyebrow">VAMOS MARCAR SEU MOMENTO?</p>
             <h2>Você merece esse<br /><em>tempo para você.</em></h2>
             <p>Quer saber qual serviço combina melhor com o que você procura? Consulte os horários disponíveis, tire suas dúvidas e veja os detalhes do atendimento antes de reservar.</p>
-            <a className="button button--light" href="mailto:contato@nailsbysamara.com?subject=Agendamento%20Nails%20by%20Samara">Entrar em contato</a>
-            <span className="contact-footnote">Contato provisório — atualize com os canais oficiais antes de publicar.</span>
+            <a className="button button--light" href="https://wa.me/5511918356982?text=Ol%C3%A1%20samara!%20Vim%20pelo%20site%20e%20desejo%20tirar%20algumas%20d%C3%BAvidas!!" target="_blank" rel="noopener noreferrer">Conversar pelo WhatsApp ↗</a>
           </div>
         </section>
       </main>
