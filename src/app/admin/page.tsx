@@ -83,6 +83,13 @@ export default function AdminPage() {
     try {
       const response = await fetch("/api/admin/dashboard", { cache: "no-store" });
       const data = await response.json();
+      if (response.status === 401) {
+        await fetch("/api/admin/logout", { method: "POST" }).catch(() => undefined);
+        setDashboard(null);
+        setAuthenticated(false);
+        setError("Sua sessão expirou ou não é mais válida. Entre novamente com seu e-mail e senha administrativos.");
+        return;
+      }
       if (!response.ok) throw new Error(data.error ?? "Falha ao carregar o painel.");
       setDashboard(data);
       setGoalDraft(String(data.goal));
