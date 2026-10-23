@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
+import logo from "@/assets/logo.jpg";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -56,7 +58,7 @@ export default function Header() {
     <header className={`site-header ${isHome ? "site-header--home" : ""} ${isHome && !sequenceFinished ? "site-header--transparent" : "site-header--visible"}`}>
       <div className="container header-inner">
         <Link className="brand" href="/" aria-label="Nails by Samara — início" onClick={() => setMenuOpen(false)}>
-          <span className="brand-mark" aria-hidden="true">S.</span>
+          <span className="brand-mark"><Image src={logo} alt="" aria-hidden="true" sizes="40px" /></span>
           <span className="brand-copy"><span className="brand-name">Nails by Samara</span><span className="brand-caption">BELEZA EM CADA DETALHE</span></span>
         </Link>
         <nav id="mobile-navigation" className={`main-nav ${menuOpen ? "main-nav--open" : ""}`} aria-label="Navegação principal">
