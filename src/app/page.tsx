@@ -5,6 +5,7 @@ import PageAnimations from "@/components/animations/PageAnimations";
 import NailPolishExperience from "@/components/animations/NailPolishExperience";
 import ServiceDecks from "@/components/services/ServiceDecks";
 import NailScrollSequence from "@/components/animations/NailScrollSequence";
+import BrandPolishes from "@/components/BrandPolishes";
 
 export default function Home() {
   return (
@@ -50,6 +51,8 @@ export default function Home() {
             <ServiceDecks />
           </div>
         </section>
+
+        <BrandPolishes />
 
         <section className="contact section-pad" id="contato">
           <div className="container contact-panel">
