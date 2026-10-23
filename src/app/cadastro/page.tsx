@@ -1,5 +1,8 @@
 "use client";
 
+import Image from "next/image";
+import logo from "@/assets/logo.jpg";
+
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -38,7 +41,7 @@ export default function CadastroPage() {
     <main className="login-page">
       <section className="login-card auth-card auth-card--signup">
         <Link className="booking-back" href="/">← Voltar ao início</Link>
-        <div className="login-monogram" aria-hidden="true">S</div>
+        <div className="login-monogram"><Image src={logo} alt="Logo Nails by Samara" sizes="58px" priority /></div>
         <p className="eyebrow">NAILS BY SAMARA</p>
         <h1>Seu cuidado,<br /><em>em um só lugar.</em></h1>
         <p className="login-description">Faça seu cadastro para facilitar o preenchimento dos próximos agendamentos e acompanhar seus cuidados. É rapidinho: informe seus dados e escolha uma senha para sua conta.</p>
