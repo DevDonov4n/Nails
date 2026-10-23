@@ -4,10 +4,10 @@ import { useState } from "react";
 import Image from "next/image";
 import styles from "./BrandPolishes.module.css";
 
-import colorama from "@/assets/colorama.webp";
-import dailus from "@/assets/dailus.webp";
-import impala from "@/assets/impala.webp";
-import risque from "@/assets/risque.webp";
+import colorama from "@/assets/colorama.png";
+import dailus from "@/assets/dailus.png";
+import impala from "@/assets/impala.png";
+import risque from "@/assets/risque.png";
 
 const brands = [
   { name: "Impala", image: impala, eyebrow: "COR, CRIATIVIDADE E ESTILO", description: "Uma marca conhecida pela variedade de cores e opções para criar combinações que acompanham seu estilo.", highlights: ["Variedade de tons", "Muitas possibilidades", "Para diferentes estilos"] },
