@@ -397,6 +397,31 @@ export default function AdminPage() {
       void loadBookings();
   }, [authenticated, nav]);
 
+  async function updateBookingStatus(id: string, status: "CONFIRMED" | "CANCELLED") {
+    const action = status === "CONFIRMED" ? "aprovar" : "recusar";
+    const confirmed = window.confirm(`Deseja ${action} este agendamento?`);
+    if (!confirmed) return;
+    setBookingsError("");
+    try {
+      const response = await fetch(`/api/admin/bookings/${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      const data = await response.json();
+      if (response.status === 401) {
+        setAuthenticated(false);
+        setError("Sua sessão expirou. Entre novamente.");
+        return;
+      }
+      if (!response.ok) throw new Error(data.error ?? "Não foi possível atualizar o agendamento.");
+      await loadBookings();
+      await loadDashboard();
+    } catch (reason) {
+      setBookingsError(reason instanceof Error ? reason.message : "Falha ao atualizar o agendamento.");
+    }
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (sending) return;
@@ -1012,6 +1037,7 @@ export default function AdminPage() {
                               <th>Local</th>
                               <th>Valor</th>
                               <th>Status</th>
+                              <th>Ações</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -1055,6 +1081,14 @@ export default function AdminPage() {
                                   >
                                     {statusLabel[item.status]}
                                   </span>
+                                </td>
+                                <td>
+                                  {item.status === "PENDING" ? (
+                                    <div className="adm-booking-actions">
+                                      <button type="button" className="adm-booking-action adm-booking-action--approve" onClick={() => void updateBookingStatus(item.id, "CONFIRMED")}>Aprovar</button>
+                                      <button type="button" className="adm-booking-action adm-booking-action--reject" onClick={() => void updateBookingStatus(item.id, "CANCELLED")}>Recusar</button>
+                                    </div>
+                                  ) : <span className="adm-muted">—</span>}
                                 </td>
                               </tr>
                             ))}
