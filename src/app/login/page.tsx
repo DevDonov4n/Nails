@@ -1,5 +1,8 @@
 "use client";
 
+import Image from "next/image";
+import logo from "@/assets/logo.jpg";
+
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -34,7 +37,7 @@ export default function LoginPage() {
     <main className="login-page">
       <section className="login-card auth-card">
         <Link className="booking-back" href="/">← Voltar ao início</Link>
-        <div className="login-monogram" aria-hidden="true">S</div>
+        <div className="login-monogram"><Image src={logo} alt="Logo Nails by Samara" sizes="58px" priority /></div>
         <p className="eyebrow">NAILS BY SAMARA</p>
         <h1>Que bom ter<br /><em>você por aqui.</em></h1>
         <p className="login-description">Acesse sua conta para consultar seus agendamentos e deixar seus próximos atendimentos mais práticos. Preencha seus dados abaixo para continuar.</p>
