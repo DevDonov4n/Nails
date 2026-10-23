@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
         startAt: booking.startAt.toISOString(),
         totalPriceLabel: (booking.totalPrice / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
       },
-      message: "Agendamento solicitado! Guarde o código e entre em contato com o salão para confirmar o atendimento.",
+      message: "Agendamento solicitado! Guarde o código. Sua solicitação ficará pendente até a confirmação do salão.",
     }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Não foi possível salvar o agendamento. Confira se o banco está configurado e tente novamente." }, { status: 500 });
