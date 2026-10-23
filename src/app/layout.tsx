@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import Header from "@/components/Header";
+import logo from "@/assets/logo.jpg";
 import Footer from "@/components/Footer";
 import "./globals.css";
 
@@ -18,6 +19,7 @@ const cormorant = Cormorant_Garamond({
 export const metadata: Metadata = {
   title: "Nails by Samara | Beleza em cada detalhe",
   description: "Seu momento de autocuidado, com delicadeza, beleza e estilo. Conheça os serviços da Nails by Samara.",
+  icons: { icon: logo.src, shortcut: logo.src, apple: logo.src },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
