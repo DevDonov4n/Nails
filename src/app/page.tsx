@@ -1,3 +1,5 @@
+import Image from "next/image";
+import logo from "@/assets/logo.jpg";
 import Button from "@/components/Button";
 import PageAnimations from "@/components/animations/PageAnimations";
 import NailPolishExperience from "@/components/animations/NailPolishExperience";
@@ -33,7 +35,7 @@ export default function Home() {
               <div className="visual-ring visual-ring--outer" />
               <div className="visual-ring visual-ring--inner" />
               <div className="hero-flower" aria-hidden="true"><span data-polish-start>NC</span></div>
-              <div id="visual-stamp" className="visual-stamp"><span>NAILS</span><span className="stamp-star">PIC</span><span>BY SAMARA</span></div>
+              <div id="visual-stamp" className="visual-stamp visual-stamp--logo"><Image src={logo} alt="Logo Nails by Samara" priority sizes="104px" /></div>
               <div className="visual-caption"><span>BELEZA NATURAL</span><span>·</span><span>ESTILO ÚNICO</span></div>
             </div>
           </div>  
