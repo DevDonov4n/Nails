@@ -127,11 +127,11 @@ export default function AgendamentoPage() {
         <form className="booking-card" onSubmit={submitBooking}>
           <section className="booking-section">
             <span className="booking-step">01</span>
-            <div><h2>Escolha o tratamento</h2><p>Veja as opções abaixo e selecione o atendimento que prefere. Cada serviço tem duração estimada de uma hora.</p></div>
+            <div><h2>Escolha o tratamento</h2><p>Veja as opções abaixo e selecione o atendimento que prefere. Todos os atendimentos têm duração reservada de duas horas.</p></div>
             <div className="booking-service-options">
               {serviceOptions.map((option) => (
                 <button key={option.id} type="button" className={service === option.id ? "booking-service is-selected" : "booking-service"} onClick={() => setService(option.id)} aria-pressed={service === option.id}>
-                  <span>{option.name}</span><strong>{money(option.price)}</strong><small>aprox. 1 hora</small>
+                  <span>{option.name}</span><strong>{money(option.price)}</strong><small>2 horas reservadas</small>
                 </button>
               ))}
             </div>
@@ -147,7 +147,7 @@ export default function AgendamentoPage() {
           </section>
           <section className="booking-section">
             <span className="booking-step">03</span>
-            <div><h2>Escolha a data e o horário</h2><p>Selecione o dia desejado e depois escolha um dos horários livres. O atendimento funciona de segunda a sexta, das 16h às 20h, e aos sábados e domingos, das 9h às 18h.</p></div>
+            <div><h2>Escolha a data e o horário</h2><p>Selecione o dia desejado e depois escolha um dos horários livres. Cada atendimento reserva duas horas. O atendimento funciona de segunda a sexta, das 16h às 20h, e aos sábados e domingos, das 9h às 18h.</p></div>
             <label className="booking-field">Data do atendimento<input type="date" min={minimumDate} value={date} onChange={(e) => setDate(e.target.value)} required /></label>
             <div className="booking-slots-label">Horários disponíveis</div>
             {loadingSlots ? <p className="booking-muted" role="status">Estamos consultando os horários para essa data. Só um instante, por favor.</p> : slots.length ? <div className="booking-slots">{slots.map((slot) => <button type="button" key={slot} onClick={() => setTime(slot)} className={time === slot ? "booking-slot is-selected" : "booking-slot"} aria-pressed={time === slot}>{slot}</button>)}</div> : <p className="booking-muted">Não encontramos horários livres para esse dia. Você pode escolher outra data para consultar novas opções.</p>}
@@ -161,7 +161,7 @@ export default function AgendamentoPage() {
           {error && <p className="booking-feedback booking-feedback--error" role="alert">{error}</p>}
           {success && <p className="booking-feedback booking-feedback--success" role="status">{success}</p>}
           <button className="button button--primary booking-submit" type="submit" disabled={sending || loadingSlots}>{sending ? "Enviando solicitação…" : "Solicitar agendamento ↗"}</button>
-          <p className="booking-disclaimer">Após enviar, sua solicitação será registrada. O horário ainda precisará ser confirmado pelo salão, para que você tenha certeza de que está tudo combinado.</p>
+          <p className="booking-disclaimer">Após enviar, sua solicitação será registrada. O horário ainda precisará ser aprovado pelo salão, para que você tenha certeza de que está tudo combinado.</p>
         </form>
         {!loggedIn && <p className="booking-login-prompt">Já tem uma conta? <Link href="/login">Acesse seu login</Link> para agilizar seus próximos agendamentos.</p>}
       </div>
