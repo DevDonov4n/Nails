@@ -1,6 +1,8 @@
 "use client";
 
 import "./admin.css";
+import Image from "next/image";
+import logo from "@/assets/logo.jpg";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
 type MonthMetric = {
@@ -483,7 +485,7 @@ export default function AdminPage() {
     return (
       <main className="admin-page">
         <section className="admin-card">
-          <div className="admin-mark">S</div>
+          <div className="admin-mark"><Image src={logo} alt="Logo Nails by Samara" priority sizes="64px" /></div>
           <p className="admin-eyebrow">NAILS BY SAMARA · ÁREA RESTRITA</p>
           <h1>
             Bem-vinda de <em>volta.</em>
@@ -534,7 +536,7 @@ export default function AdminPage() {
     <main className="adm-shell">
       <aside className="adm-sidebar">
         <a href="/" className="adm-brand">
-          <span className="adm-brand-mark">S</span>
+          <span className="adm-brand-mark"><Image src={logo} alt="" aria-hidden="true" sizes="36px" /></span>
           <span>
             <strong>Nails by Samara</strong>
             <small>PAINEL ADM</small>
