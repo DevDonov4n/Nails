@@ -1,0 +1,52 @@
+.section {
+  position: relative; overflow: hidden; padding: clamp(76px, 9vw, 124px) 0;
+  background: radial-gradient(ellipse at 14% 52%, rgb(234 208 208 / 30%), transparent 34%), linear-gradient(180deg, #fffaf7 0%, #fffdfb 52%, #fbf2ef 100%);
+}
+.container { width: min(1120px, calc(100% - 48px)); margin-inline: auto; }
+.heading { max-width: 680px; margin: 0 auto 48px; text-align: center; }
+.heading :global(.eyebrow) { justify-content: center; margin-bottom: 18px; }
+.heading h2 { margin: 0; color: var(--ink); font-family: var(--font-display); font-size: clamp(42px, 6vw, 68px); font-weight: 400; letter-spacing: -.045em; line-height: .98; }
+.heading h2 em { color: var(--rose-deep); font-weight: 400; }
+.intro { max-width: 520px; margin: 20px auto 0; color: var(--muted); font-size: 13px; line-height: 1.9; }
+.carousel { display: grid; grid-template-columns: 48px minmax(0, 1fr) 48px; align-items: center; gap: clamp(12px, 3vw, 36px); max-width: 980px; margin: 0 auto; }
+.arrow { display: grid; width: 46px; height: 46px; place-items: center; border: 1px solid rgb(97 60 67 / 18%); border-radius: 50%; background: rgb(255 253 251 / 78%); color: var(--wine); cursor: pointer; font-size: 21px; transition: background .2s ease, color .2s ease, transform .2s ease, border-color .2s ease; }
+.arrow:hover { transform: translateY(-2px); border-color: var(--wine); background: var(--wine); color: #fffaf7; }
+.arrow:focus-visible, .dots button:focus-visible { outline: 2px solid var(--rose-deep); outline-offset: 4px; }
+.content { display: grid; min-width: 0; grid-template-columns: minmax(0, 1fr) minmax(0, .9fr); align-items: center; gap: clamp(24px, 6vw, 78px); }
+.productStage { position: relative; display: grid; min-width: 0; min-height: 390px; place-items: center; isolation: isolate; }
+.productStage::before { position: absolute; z-index: -1; width: min(82%, 330px); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgb(234 208 208 / 65%) 0%, rgb(246 232 230 / 45%) 48%, transparent 72%); content: ""; }
+.orbit { position: absolute; width: min(90%, 360px); aspect-ratio: 1; border: 1px solid rgb(197 141 145 / 24%); border-radius: 50%; transform: rotate(-18deg) scaleY(.76); }
+.orbit::after { position: absolute; top: 13%; right: 12%; width: 7px; height: 7px; border-radius: 50%; background: var(--rose-deep); box-shadow: 0 0 0 6px rgb(197 141 145 / 12%); content: ""; }
+.sparkle { position: absolute; top: 16%; left: 16%; color: var(--rose-deep); font-size: 22px; animation: sparkle 3.6s ease-in-out infinite; }
+.productImage { display: grid; width: min(78%, 280px); height: 340px; place-items: center; animation: enter .45s ease both; }
+.bottle { display: block; width: 100%; height: 100%; object-fit: contain; animation: float 4.2s ease-in-out infinite; filter: drop-shadow(0 18px 16px rgb(97 60 67 / 12%)); }
+.productIndex { position: absolute; right: 3%; bottom: 9%; color: var(--muted); font-size: 9px; letter-spacing: .16em; }
+.details { min-width: 0; animation: enter .45s ease both; }
+.brandEyebrow { margin: 0 0 12px; color: var(--rose-deep); font-size: 9px; font-weight: 700; letter-spacing: .19em; line-height: 1.7; }
+.details h3 { margin: 0 0 18px; color: var(--wine); font-family: var(--font-display); font-size: clamp(46px, 6vw, 76px); font-weight: 400; letter-spacing: -.04em; line-height: .95; }
+.description { max-width: 390px; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.95; }
+.highlights { display: grid; gap: 11px; margin: 25px 0 28px; padding: 0; list-style: none; }
+.highlights li { display: flex; align-items: center; gap: 10px; color: var(--ink); font-size: 11px; }
+.highlights li span { color: var(--rose-deep); font-size: 17px; }
+.dots { display: flex; align-items: center; gap: 9px; }
+.dot, .dotActive { width: 7px; height: 7px; padding: 0; border: 0; border-radius: 99px; background: #dfc9c7; cursor: pointer; transition: width .25s ease, background .25s ease; }
+.dotActive { width: 25px; background: var(--wine); }
+.footnote { margin: 30px 0 0; color: #9a898b; font-family: var(--font-display); font-size: 18px; font-style: italic; text-align: center; }
+@keyframes float { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-12px) rotate(1.2deg); } }
+@keyframes sparkle { 0%, 100% { opacity: .45; transform: scale(.9) rotate(0deg); } 50% { opacity: 1; transform: scale(1.08) rotate(18deg); } }
+@keyframes enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 760px) {
+  .section { padding: 76px 0 82px; } .container { width: calc(100% - 30px); }
+  .heading { margin-bottom: 30px; } .heading :global(.eyebrow) { font-size: 8px; letter-spacing: .13em; }
+  .intro { max-width: 360px; font-size: 12px; }
+  .carousel { grid-template-columns: 34px minmax(0, 1fr) 34px; gap: 8px; } .arrow { width: 34px; height: 34px; font-size: 17px; }
+  .content { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .productStage { min-height: 290px; } .productStage::before { width: min(72%, 245px); } .orbit { width: min(80%, 275px); }
+  .productImage { width: min(64%, 220px); height: 255px; } .sparkle { top: 12%; left: 18%; font-size: 18px; } .productIndex { right: 8%; bottom: 3%; }
+  .details { padding: 10px 8px 0; text-align: center; } .brandEyebrow { margin-bottom: 8px; font-size: 8px; }
+  .details h3 { margin-bottom: 12px; font-size: 54px; } .description { margin-inline: auto; font-size: 12px; }
+  .highlights { justify-items: center; gap: 8px; margin: 18px 0 22px; } .highlights li { font-size: 10px; } .dots { justify-content: center; }
+  .footnote { max-width: 300px; margin: 25px auto 0; font-size: 16px; line-height: 1.5; }
+}
+@media (max-width: 380px) { .carousel { grid-template-columns: 28px minmax(0, 1fr) 28px; gap: 5px; } .arrow { width: 28px; height: 28px; } .productStage { min-height: 255px; } .productImage { height: 225px; } .details h3 { font-size: 48px; } }
+@media (prefers-reduced-motion: reduce) { .bottle, .sparkle, .productImage, .details { animation: none; } .arrow, .dot, .dotActive { transition: none; } }
