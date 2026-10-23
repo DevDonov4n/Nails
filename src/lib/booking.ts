@@ -14,7 +14,7 @@ export const SERVICE_LABELS: Record<BookingService, string> = {
 };
 
 export const MOBILITY_FEE = 500;
-export const APPOINTMENT_MINUTES = 60;
+export const APPOINTMENT_MINUTES = 120;
 const ACTIVE_STATUSES: BookingStatus[] = ["PENDING", "CONFIRMED"];
 
 /** Validates a real calendar date and a 24-hour time, interpreted as São Paulo time. */
@@ -87,7 +87,7 @@ export async function getAvailableSlots(date: string) {
   const now = new Date();
   const slots: string[] = [];
 
-  for (let hour = hours.open; hour + 1 <= hours.close; hour++) {
+  for (let hour = hours.open; hour + 2 <= hours.close; hour++) {
     const time = `${String(hour).padStart(2, "0")}:00`;
     const startAt = parseLocalDateTime(date, time);
     if (!startAt || startAt <= now) continue;
