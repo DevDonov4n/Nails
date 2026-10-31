@@ -27,7 +27,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
   }
 
   const { id } = await context.params;
-  let body: { status?: unknown };
+  let body: { status?: unknown; paymentMethod?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -37,6 +37,11 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
   const nextStatus = body.status;
   if (nextStatus !== "CONFIRMED" && nextStatus !== "CANCELLED" && nextStatus !== "COMPLETED") {
     return NextResponse.json({ error: "Status permitido: CONFIRMED, CANCELLED ou COMPLETED." }, { status: 400 });
+  }
+
+  const allowedPaymentMethods = ["PIX", "CASH", "CARD", "OTHER"] as const;
+  if (nextStatus === "COMPLETED" && !allowedPaymentMethods.includes(body.paymentMethod as typeof allowedPaymentMethods[number])) {
+    return NextResponse.json({ error: "Informe uma forma de pagamento válida para concluir o atendimento." }, { status: 400 });
   }
 
   try {
@@ -61,8 +66,8 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
 
       const result = await tx.booking.update({
         where: { id },
-        data: { status: nextStatus as BookingStatus },
-        select: { id: true, status: true },
+        data: { status: nextStatus as BookingStatus, ...(nextStatus === "COMPLETED" ? { paymentMethod: body.paymentMethod as string } : {}) },
+        select: { id: true, status: true, paymentMethod: true },
       });
       return { booking: result };
     });
