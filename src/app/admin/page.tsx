@@ -35,6 +35,7 @@ type AdminBooking = {
   mobilityFee: number;
   totalPrice: number;
   userId: string | null;
+  paymentMethod: string | null;
 };
 type DashboardData = {
   year: number;
@@ -87,6 +88,9 @@ export default function AdminPage() {
   const [bookingsError, setBookingsError] = useState("");
   const [bookingFilter, setBookingFilter] = useState("ALL");
   const [bookingSearch, setBookingSearch] = useState("");
+  const [paymentModalBooking, setPaymentModalBooking] = useState<AdminBooking | null>(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("PIX");
+  const [completingBooking, setCompletingBooking] = useState(false);
 
   async function loadDashboard() {
     setLoadingDashboard(true);
@@ -173,7 +177,7 @@ export default function AdminPage() {
       void loadBookings();
   }, [authenticated, nav]);
 
-  async function updateBookingStatus(id: string, status: "CONFIRMED" | "CANCELLED" | "COMPLETED") {
+  async function updateBookingStatus(id: string, status: "CONFIRMED" | "CANCELLED" | "COMPLETED", paymentMethod?: string) {
     const action = status === "CONFIRMED" ? "confirmar" : status === "COMPLETED" ? "concluir este atendimento" : "recusar";
     const confirmed = window.confirm(`Deseja ${action} este agendamento?`);
     if (!confirmed) return;
@@ -182,7 +186,7 @@ export default function AdminPage() {
       const response = await fetch(`/api/admin/bookings/${encodeURIComponent(id)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, ...(paymentMethod ? { paymentMethod } : {}) }),
       });
       const data = await response.json();
       if (response.status === 401) {
@@ -191,6 +195,7 @@ export default function AdminPage() {
         return;
       }
       if (!response.ok) throw new Error(data.error ?? "Não foi possível atualizar o agendamento.");
+      setPaymentModalBooking(null);
       await loadBookings();
       await loadDashboard();
     } catch (reason) {
@@ -396,6 +401,27 @@ export default function AdminPage() {
             </button>
           </div>
         </header>
+        {paymentModalBooking && (
+          <div className="adm-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !completingBooking) setPaymentModalBooking(null); }}>
+            <section className="adm-payment-modal" role="dialog" aria-modal="true" aria-labelledby="adm-payment-title">
+              <button type="button" className="adm-modal-close" aria-label="Fechar" disabled={completingBooking} onClick={() => setPaymentModalBooking(null)}>×</button>
+              <span className="adm-panel-overline">FINALIZAR ATENDIMENTO</span>
+              <h2 id="adm-payment-title">Como a cliente pagou?</h2>
+              <p>Selecione a forma de pagamento de <strong>{paymentModalBooking.customerName}</strong> antes de concluir o serviço.</p>
+              <div className="adm-payment-options">
+                {([{value:"PIX",label:"Pix",icon:"◇"},{value:"CASH",label:"Dinheiro",icon:"＄"},{value:"CARD",label:"Cartão",icon:"▣"},{value:"OTHER",label:"Outro",icon:"＋"}]).map((option) => (
+                  <button key={option.value} type="button" className={selectedPaymentMethod === option.value ? "adm-payment-option selected" : "adm-payment-option"} aria-pressed={selectedPaymentMethod === option.value} onClick={() => setSelectedPaymentMethod(option.value)}>
+                    <span>{option.icon}</span>{option.label}{selectedPaymentMethod === option.value && <b>✓</b>}
+                  </button>
+                ))}
+              </div>
+              <div className="adm-payment-modal-actions">
+                <button type="button" className="adm-secondary-btn" disabled={completingBooking} onClick={() => setPaymentModalBooking(null)}>Cancelar</button>
+                <button type="button" className="adm-primary-btn" disabled={completingBooking || !selectedPaymentMethod} onClick={async () => { if (!paymentModalBooking) return; setCompletingBooking(true); try { await updateBookingStatus(paymentModalBooking.id, "COMPLETED", selectedPaymentMethod); } finally { setCompletingBooking(false); } }}>{completingBooking ? "Concluindo…" : "✓ Confirmar conclusão"}</button>
+              </div>
+            </section>
+          </div>
+        )}
         <div className="adm-content">
           {nav === "Visão geral" ? (
             <>
@@ -934,7 +960,7 @@ export default function AdminPage() {
                             <td>{new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" }).format(new Date(item.startAt))}</td>
                             <td>{item.location === "HOME" ? "Domicílio" : "Salão"}</td>
                             <td>{currency(item.totalPrice / 100)}</td>
-                            <td><button type="button" className="adm-booking-action adm-booking-action--approve" onClick={() => void updateBookingStatus(item.id, "COMPLETED")}>Concluir atendimento</button></td>
+                            <td>{item.status === "COMPLETED" ? <span className="adm-completed-mark" title="Atendimento concluído">✅ Concluído</span> : <button type="button" className="adm-booking-action adm-booking-action--approve adm-complete-trigger" aria-label={`Concluir atendimento de ${item.customerName}`} onClick={() => { setPaymentModalBooking(item); setSelectedPaymentMethod("PIX"); }}>☑️ <span>Concluir</span></button>}</td>
                           </tr>
                         ))}
                       </tbody>
