@@ -173,8 +173,8 @@ export default function AdminPage() {
       void loadBookings();
   }, [authenticated, nav]);
 
-  async function updateBookingStatus(id: string, status: "CONFIRMED" | "CANCELLED") {
-    const action = status === "CONFIRMED" ? "aprovar" : "recusar";
+  async function updateBookingStatus(id: string, status: "CONFIRMED" | "CANCELLED" | "COMPLETED") {
+    const action = status === "CONFIRMED" ? "confirmar" : status === "COMPLETED" ? "concluir este atendimento" : "recusar";
     const confirmed = window.confirm(`Deseja ${action} este agendamento?`);
     if (!confirmed) return;
     setBookingsError("");
@@ -911,6 +911,39 @@ export default function AdminPage() {
                   </button>
                 </div>
               )}
+              <section className="adm-panel adm-list-panel">
+                <div className="adm-panel-heading">
+                  <div>
+                    <span className="adm-panel-overline">AGENDA CONFIRMADA</span>
+                    <h2>Atendimentos a realizar</h2>
+                    <p>Quando o serviço terminar, marque-o como concluído para atualizar o histórico e a fidelidade da cliente</p>
+                  </div>
+                  <span className="adm-panel-tag">{bookings.filter((item) => item.status === "CONFIRMED").length} confirmados</span>
+                </div>
+                {bookingsLoading ? (
+                  <div className="adm-loading">Carregando atendimentos…</div>
+                ) : bookings.filter((item) => item.status === "CONFIRMED").length ? (
+                  <div className="adm-table-wrap">
+                    <table className="adm-table adm-wide-table">
+                      <thead><tr><th>Cliente</th><th>Serviço</th><th>Data e hora</th><th>Local</th><th>Valor</th><th>Ação</th></tr></thead>
+                      <tbody>
+                        {bookings.filter((item) => item.status === "CONFIRMED").sort((a, b) => a.startAt.localeCompare(b.startAt)).map((item) => (
+                          <tr key={item.id}>
+                            <td><strong>{item.customerName}</strong><small>{item.whatsapp}</small></td>
+                            <td>{{ HAND: "Mão", FOOT: "Pé", BOTH: "Mão + pé" }[item.service]}</td>
+                            <td>{new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" }).format(new Date(item.startAt))}</td>
+                            <td>{item.location === "HOME" ? "Domicílio" : "Salão"}</td>
+                            <td>{currency(item.totalPrice / 100)}</td>
+                            <td><button type="button" className="adm-booking-action adm-booking-action--approve" onClick={() => void updateBookingStatus(item.id, "COMPLETED")}>Concluir atendimento</button></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="adm-empty">Não há atendimentos confirmados aguardando conclusão.</div>
+                )}
+              </section>
               {(() => {
                 const done = bookings.filter(
                   (item) => item.status === "COMPLETED",
