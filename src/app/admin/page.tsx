@@ -1165,7 +1165,9 @@ export default function AdminPage() {
                                 <th>Serviço</th>
                                 <th>Data</th>
                                 <th>Local</th>
+                                <th>Pagamento</th>
                                 <th>Valor</th>
+                                <th>Status</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -1203,7 +1205,9 @@ export default function AdminPage() {
                                         ? "Domicílio"
                                         : "Salão"}
                                     </td>
+                                    <td>{item.paymentMethod ? ({ PIX: "Pix", CASH: "Dinheiro", CARD: "Cartão", OTHER: "Outro" }[item.paymentMethod] ?? item.paymentMethod) : "Não informado"}</td>
                                     <td>{currency(item.totalPrice / 100)}</td>
+                                    <td><span className="adm-completed-mark">✅ Concluído</span></td>
                                   </tr>
                                 ))}
                             </tbody>
