@@ -35,15 +35,16 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
   }
 
   const nextStatus = body.status;
-  if (nextStatus !== "CONFIRMED" && nextStatus !== "CANCELLED") {
-    return NextResponse.json({ error: "Status permitido: CONFIRMED ou CANCELLED." }, { status: 400 });
+  if (nextStatus !== "CONFIRMED" && nextStatus !== "CANCELLED" && nextStatus !== "COMPLETED") {
+    return NextResponse.json({ error: "Status permitido: CONFIRMED, CANCELLED ou COMPLETED." }, { status: 400 });
   }
 
   try {
     const updated = await prisma.$transaction(async (tx) => {
       const booking = await tx.booking.findUnique({ where: { id } });
       if (!booking) return { error: "Agendamento não encontrado.", status: 404 as const };
-      if (booking.status !== "PENDING") return { error: "Somente agendamentos pendentes podem ser aprovados ou recusados.", status: 409 as const };
+      if (nextStatus === "COMPLETED" && booking.status !== "CONFIRMED") return { error: "Somente atendimentos confirmados podem ser concluídos.", status: 409 as const };
+      if ((nextStatus === "CONFIRMED" || nextStatus === "CANCELLED") && booking.status !== "PENDING") return { error: "Somente agendamentos pendentes podem ser confirmados ou recusados.", status: 409 as const };
 
       if (nextStatus === "CONFIRMED") {
         const conflict = await tx.booking.findFirst({
