@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
           location,
           startAt,
           endAt,
+          status: "CONFIRMED",
           servicePrice: price.servicePrice,
           mobilityFee: price.mobilityFee,
           totalPrice: price.totalPrice,
@@ -92,7 +93,7 @@ export async function POST(request: NextRequest) {
         startAt: booking.startAt.toISOString(),
         totalPriceLabel: (booking.totalPrice / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
       },
-      message: "Agendamento solicitado! Guarde o código. Sua solicitação ficará pendente até a confirmação do salão.",
+      message: "Horário confirmado! Seu agendamento foi registrado com sucesso. Guarde os dados para consultar seu atendimento.",
     }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Não foi possível salvar o agendamento. Confira se o banco está configurado e tente novamente." }, { status: 500 });
