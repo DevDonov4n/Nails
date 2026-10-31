@@ -1086,3 +1086,29 @@
 .adm-booking-action--approve { color: #286548; background: #e8f4ec; border-color: #c9e5d2; }
 .adm-booking-action--reject { color: #8e3944; background: #fae9eb; border-color: #f0cbd0; }
 @media (max-width: 760px) { .adm-booking-actions { min-width: 145px; } }
+
+
+/* Modal de forma de pagamento e estado de conclusão */
+.adm-modal-backdrop{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:18px;background:#24171bb8;backdrop-filter:blur(5px)}
+.adm-payment-modal{position:relative;width:min(100%,430px);padding:28px;border:1px solid #eadcdd;border-radius:16px;background:#fffdfd;box-shadow:0 24px 80px #1c0d1240}
+.adm-payment-modal h2{margin:0;color:var(--adm-ink);font-family:Georgia,serif;font-size:26px;font-weight:400;letter-spacing:-.03em}
+.adm-payment-modal>p{margin:10px 0 20px;color:#98868b;font-size:12px;line-height:1.6}
+.adm-payment-modal>p strong{color:#65434c}
+.adm-modal-close{position:absolute;top:13px;right:15px;width:32px;height:32px;border:0;border-radius:50%;background:#f7eeee;color:#80505b;font-size:23px;cursor:pointer}
+.adm-payment-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.adm-payment-option{position:relative;display:flex;align-items:center;gap:10px;min-height:58px;padding:12px;border:1px solid var(--adm-line);border-radius:9px;background:#fff;color:#725d63;font:inherit;font-size:12px;text-align:left;cursor:pointer}
+.adm-payment-option>span{display:grid;width:30px;height:30px;place-items:center;border-radius:8px;background:#f8eff0;color:var(--adm-wine);font-size:18px}
+.adm-payment-option.selected{border-color:#bd8490;background:#fff7f7;box-shadow:0 0 0 2px #bd84901c}
+.adm-payment-option>b{margin-left:auto;color:#548566}
+.adm-payment-modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:22px}
+.adm-completed-mark{display:inline-flex;align-items:center;gap:5px;padding:7px 9px;border:1px solid #cce6d4;border-radius:7px;background:#edf7f0;color:#477c59;font-size:11px;font-weight:700;white-space:nowrap}
+.adm-complete-trigger{white-space:nowrap}
+@media(max-width:760px){
+ .adm-payment-modal{padding:23px 18px;border-radius:14px}
+ .adm-payment-modal h2{font-size:23px}
+ .adm-payment-modal-actions{flex-direction:column-reverse}
+ .adm-payment-modal-actions button{width:100%;min-height:43px}
+ .adm-complete-trigger{min-width:42px;min-height:38px;padding:7px 9px;font-size:14px}
+ .adm-complete-trigger span{display:inline}
+ .adm-completed-mark{font-size:10px;padding:6px 7px}
+}
