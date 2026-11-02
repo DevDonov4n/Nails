@@ -69,13 +69,14 @@ export async function GET() {
     const nextMonth = nextMonthStart(now);
     const nextYear = new Date(Date.UTC(getLocalYear(now) + 1, 0, 1, 3));
 
-    const [all, admin] = await Promise.all([
+    const [all, admin, expenses] = await Promise.all([
       prisma.booking.findMany({
         where: { startAt: { gte: yearStart, lt: nextYear } },
         select: { id: true, customerName: true, whatsapp: true, service: true, location: true, startAt: true, status: true, totalPrice: true, createdAt: true },
         orderBy: { startAt: "desc" },
       }),
       prisma.adminUser.findFirst({ select: { id: true, yearlyGoal: true } }),
+      prisma.expense.findMany({ where: { occurredAt: { gte: yearStart, lt: nextYear } }, select: { id: true, amount: true, category: true, description: true, occurredAt: true }, orderBy: { occurredAt: "desc" } }),
     ]);
     const finished = all.filter(item => item.status === "COMPLETED");
     const inDay = all.filter(item => item.startAt >= dayStart && item.startAt < tomorrow && item.status !== "CANCELLED");
@@ -83,13 +84,20 @@ export async function GET() {
     const inMonth = all.filter(item => item.startAt >= monthStart && item.startAt < nextMonth && item.status !== "CANCELLED");
     const activeFuture = all.filter(item => item.startAt >= now && (item.status === "PENDING" || item.status === "CONFIRMED"));
     const revenue = finished.reduce((sum, item) => sum + item.totalPrice, 0);
+    const expenseTotal = expenses.reduce((sum, item) => sum + item.amount, 0);
+    const netProfit = revenue - expenseTotal;
+    const currentMonthNumber = getLocalMonth(now);
+    const averageMonthlyProfit = netProfit / currentMonthNumber;
+    const projectedProfit = netProfit + averageMonthlyProfit * (12 - currentMonthNumber);
     const forecast = revenue + activeFuture.reduce((sum, item) => sum + item.totalPrice, 0);
     const year = getLocalYear(now);
     const months = Array.from({ length: 12 }, (_, index) => {
       const month = index + 1;
       const done = finished.filter(item => getLocalYear(item.startAt) === year && getLocalMonth(item.startAt) === month);
       const bookings = all.filter(item => getLocalYear(item.startAt) === year && getLocalMonth(item.startAt) === month && item.status !== "CANCELLED");
-      return { month: new Intl.DateTimeFormat("pt-BR", { month: "short", timeZone: "America/Sao_Paulo" }).format(new Date(Date.UTC(year, index, 15))).replace(".", ""), revenue: done.reduce((sum, item) => sum + item.totalPrice, 0) / 100, appointments: bookings.length, completed: done.length };
+      const monthExpenses = expenses.filter(item => getLocalYear(item.occurredAt) === year && getLocalMonth(item.occurredAt) === month).reduce((sum, item) => sum + item.amount, 0);
+      const monthRevenue = done.reduce((sum, item) => sum + item.totalPrice, 0);
+      return { month: new Intl.DateTimeFormat("pt-BR", { month: "short", timeZone: "America/Sao_Paulo" }).format(new Date(Date.UTC(year, index, 15))).replace(".", ""), revenue: monthRevenue / 100, expenses: monthExpenses / 100, netProfit: (monthRevenue - monthExpenses) / 100, appointments: bookings.length, completed: done.length };
     });
     const recent = all.slice(0, 8).map(item => ({
       id: item.id,
@@ -105,9 +113,11 @@ export async function GET() {
       summary: {
         today: inDay.length, week: inWeek.length, month: inMonth.length,
         revenue: revenue / 100, forecast: forecast / 100,
+        expenses: expenseTotal / 100, netProfit: netProfit / 100, averageMonthlyProfit: averageMonthlyProfit / 100, projectedProfit: projectedProfit / 100,
         finishedToday: inDay.filter(item => item.status === "COMPLETED").length,
       },
       months, recent,
+      expenses: expenses.map(item => ({ id: item.id, amount: item.amount / 100, category: item.category, description: item.description, occurredAt: item.occurredAt.toISOString() })),
     }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("Erro ao carregar dashboard administrativo:", error);
