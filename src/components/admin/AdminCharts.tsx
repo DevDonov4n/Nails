@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-type MonthMetric = { month: string; revenue: number; appointments: number; completed: number };
+type MonthMetric = { month: string; revenue: number; expenses?: number; netProfit?: number; appointments: number; completed: number };
 const currency = (value: number) => value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 const number = (value: number) => value.toLocaleString("pt-BR");
 
@@ -112,11 +112,11 @@ export function LineChart({
   mode,
 }: {
   data: MonthMetric[];
-  valueKey: "revenue" | "appointments";
+  valueKey: "revenue" | "expenses" | "netProfit" | "appointments";
   mode: "money" | "count";
 }) {
   const [hover, setHover] = useState<number | null>(null);
-  const vals = data.map((item) => item[valueKey]);
+  const vals = data.map((item) => item[valueKey] ?? 0);
   const max = Math.max(1, ...vals) * 1.12;
   const width = 640,
     height = 250,
@@ -129,7 +129,7 @@ export function LineChart({
   const points = data.map((item, i) => ({
     x: left + (i * plotW) / (data.length - 1),
     y: top + plotH - (item[valueKey] / max) * plotH,
-    value: item[valueKey],
+    value: item[valueKey] ?? 0,
     month: item.month,
   }));
   const path = points
@@ -142,7 +142,7 @@ export function LineChart({
         viewBox={`0 0 ${width} ${height}`}
         role="img"
         aria-label={
-          mode === "money" ? "Receita mensal" : "Agendamentos por mês"
+          mode === "money" ? (valueKey === "expenses" ? "Despesas mensais" : valueKey === "netProfit" ? "Lucro líquido mensal" : "Receita mensal") : "Agendamentos por mês"
         }
       >
         {[0, 0.25, 0.5, 0.75, 1].map((t) => (
