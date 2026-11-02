@@ -9,6 +9,8 @@ import { BarChart, LineChart } from "@/components/admin/AdminCharts";
 type MonthMetric = {
   month: string;
   revenue: number;
+  expenses: number;
+  netProfit: number;
   appointments: number;
   completed: number;
 };
@@ -46,11 +48,17 @@ type DashboardData = {
     month: number;
     revenue: number;
     forecast: number;
+    expenses: number;
+    netProfit: number;
+    averageMonthlyProfit: number;
+    projectedProfit: number;
     finishedToday: number;
   };
   months: MonthMetric[];
   recent: RecentBooking[];
+  expenses: ExpenseRecord[];
 };
+type ExpenseRecord = { id: string; amount: number; category: string; description: string; occurredAt: string };
 
 const currency = (value: number) =>
   value.toLocaleString("pt-BR", {
@@ -91,6 +99,11 @@ export default function AdminPage() {
   const [paymentModalBooking, setPaymentModalBooking] = useState<AdminBooking | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("PIX");
   const [completingBooking, setCompletingBooking] = useState(false);
+  const [expenseAmount, setExpenseAmount] = useState("");
+  const [expenseCategory, setExpenseCategory] = useState("MATERIAL_NOVO");
+  const [expenseDescription, setExpenseDescription] = useState("");
+  const [savingExpense, setSavingExpense] = useState(false);
+  const [expenseMessage, setExpenseMessage] = useState("");
 
   async function loadDashboard() {
     setLoadingDashboard(true);
@@ -237,6 +250,20 @@ export default function AdminPage() {
     setPassword("");
   }
 
+  async function saveExpense(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); if (savingExpense) return;
+    const amount = Number(expenseAmount.replace(",", "."));
+    if (!Number.isFinite(amount) || amount <= 0) { setExpenseMessage("Informe um valor maior que zero."); return; }
+    if (expenseDescription.trim().length < 5) { setExpenseMessage("Justifique a saída com pelo menos 5 caracteres."); return; }
+    setSavingExpense(true); setExpenseMessage("");
+    try {
+      const response = await fetch("/api/admin/expenses", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ amount, category: expenseCategory, description: expenseDescription.trim() }) });
+      const result = await response.json(); if (!response.ok) throw new Error(result.error ?? "Não foi possível registrar a saída.");
+      setExpenseAmount(""); setExpenseDescription(""); setExpenseMessage("Saída registrada com sucesso."); await loadDashboard();
+    } catch (reason) { setExpenseMessage(reason instanceof Error ? reason.message : "Falha ao registrar a saída."); }
+    finally { setSavingExpense(false); }
+  }
+
   async function saveGoal(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const amount = Number(goalDraft);
@@ -355,14 +382,13 @@ export default function AdminPage() {
               key={item}
               className={nav === item ? "adm-nav-item active" : "adm-nav-item"}
               onClick={() => {
-                if (i < 3) setNav(item);
+                setNav(item);
               }}
-              disabled={i === 3}
-              title={i === 3 ? "Planejado para uma próxima etapa" : item}
+              disabled={false}
             >
               <span className="adm-nav-icon">{["◫", "▦", "✦", "↗"][i]}</span>
               {item}
-              {i === 3 && <small className="adm-nav-soon">Em breve</small>}
+
             </button>
           ),
         )}
@@ -740,6 +766,37 @@ export default function AdminPage() {
                   </p>
                 </>
               )}
+            </>
+          ) : nav === "Financeiro" ? (
+            <>
+              <div className="adm-welcome-row"><div><p className="adm-eyebrow">CONTROLE FINANCEIRO · NAILS BY SAMARA</p><h1>Seu <em>financeiro.</em></h1><p className="adm-subtitle">Acompanhe entradas, despesas e a evolução do lucro do salão.</p></div><button className="adm-date-chip" onClick={() => void loadDashboard()} disabled={loadingDashboard}>↻ Atualizar dados</button></div>
+              {dashboardError && <div className="adm-error-banner">{dashboardError}<button onClick={() => void loadDashboard()}>Tentar novamente</button></div>}
+              {dashboard && <>
+                <section className="adm-kpis adm-finance-kpis">
+                  <article className="adm-kpi"><div className="adm-kpi-top">Entradas recebidas</div><strong>{currency(dashboard.summary.revenue)}</strong><small>Atendimentos concluídos em {dashboard.year}</small></article>
+                  <article className="adm-kpi"><div className="adm-kpi-top">Saídas registradas</div><strong>{currency(dashboard.summary.expenses)}</strong><small>Despesas lançadas no ano</small></article>
+                  <article className="adm-kpi adm-kpi-highlight"><div className="adm-kpi-top">Lucro líquido atual</div><strong>{currency(dashboard.summary.netProfit)}</strong><small>Entradas menos saídas</small></article>
+                  <article className="adm-kpi"><div className="adm-kpi-top">Projeção até dezembro</div><strong>{currency(dashboard.summary.projectedProfit)}</strong><small>Média mensal líquida: {currency(dashboard.summary.averageMonthlyProfit)}</small></article>
+                </section>
+                <section className="adm-chart-grid">
+                  <article className="adm-panel"><div className="adm-panel-heading"><div><span className="adm-panel-overline">DESEMPENHO</span><h2>Entradas mensais</h2><p>Receita dos atendimentos concluídos</p></div></div><LineChart data={dashboard.months} valueKey="revenue" mode="money" /><div className="adm-panel-foot"><span>Total recebido</span><strong>{currency(dashboard.summary.revenue)}</strong></div></article>
+                  <article className="adm-panel"><div className="adm-panel-heading"><div><span className="adm-panel-overline">DESPESAS</span><h2>Saídas mensais</h2><p>Despesas registradas ao longo do ano</p></div></div><LineChart data={dashboard.months} valueKey="expenses" mode="money" /><div className="adm-panel-foot"><span>Total de saídas</span><strong>{currency(dashboard.summary.expenses)}</strong></div></article>
+                  <article className="adm-panel adm-panel-wide"><div className="adm-panel-heading"><div><span className="adm-panel-overline">RESULTADO</span><h2>Lucro líquido mensal</h2><p>Entradas menos despesas em cada mês</p></div></div><LineChart data={dashboard.months.map(item => ({ ...item, revenue: item.netProfit }))} valueKey="revenue" mode="money" /><div className="adm-finance-projection"><span>Projeção de lucro líquido até dezembro</span><strong>{currency(dashboard.summary.projectedProfit)}</strong><small>Estimativa baseada na média mensal líquida acumulada até agora, mantendo o ritmo atual. Não inclui atendimentos futuros ainda não realizados.</small></div></article>
+                </section>
+                <section className="adm-finance-grid">
+                  <article className="adm-panel"><div className="adm-panel-heading"><div><span className="adm-panel-overline">NOVO LANÇAMENTO</span><h2>Registrar saída</h2><p>Valor, categoria e justificativa são obrigatórios.</p></div></div>
+                    <form className="adm-expense-form" onSubmit={saveExpense}>
+                      <label>Valor da saída (R$)<input type="number" min="0.01" step="0.01" placeholder="Ex.: 85,00" value={expenseAmount} onChange={event => setExpenseAmount(event.target.value)} required /></label>
+                      <label>Categoria<select value={expenseCategory} onChange={event => setExpenseCategory(event.target.value)}><option value="MATERIAL_NOVO">Compra de material novo</option><option value="REPOSICAO">Reposição</option><option value="URGENCIA">Urgência</option><option value="MANUTENCAO">Manutenção</option><option value="OUTROS">Outros</option></select></label>
+                      <label>Justificativa obrigatória<textarea value={expenseDescription} onChange={event => setExpenseDescription(event.target.value)} minLength={5} maxLength={500} rows={4} placeholder="Descreva o motivo: compra de esmaltes, reposição de lixas…" required /></label>
+                      <button className="adm-primary-btn" disabled={savingExpense}>{savingExpense ? "Registrando…" : "＋ Registrar saída"}</button>{expenseMessage && <p className="adm-goal-message" role="status">{expenseMessage}</p>}
+                    </form>
+                  </article>
+                  <article className="adm-panel"><div className="adm-panel-heading"><div><span className="adm-panel-overline">HISTÓRICO DE DESPESAS</span><h2>Saídas registradas</h2><p>Consulte os gastos e justificativas.</p></div><span className="adm-panel-tag">{dashboard.expenses.length} lançamentos</span></div>
+                    {dashboard.expenses.length ? <div className="adm-expense-list">{dashboard.expenses.map(item => <div className="adm-expense-item" key={item.id}><div><strong>{({ MATERIAL_NOVO: "Compra de material novo", REPOSICAO: "Reposição", URGENCIA: "Urgência", MANUTENCAO: "Manutenção", OUTROS: "Outros" } as Record<string,string>)[item.category] ?? item.category}</strong><p>{item.description}</p><small>{new Intl.DateTimeFormat("pt-BR",{day:"2-digit",month:"short",year:"numeric",timeZone:"America/Sao_Paulo"}).format(new Date(item.occurredAt))}</small></div><b>{currency(item.amount)}</b></div>)}</div> : <div className="adm-empty">Nenhuma saída registrada neste ano.</div>}
+                  </article>
+                </section>
+              </>}
             </>
           ) : nav === "Agendamentos" ? (
             <>
