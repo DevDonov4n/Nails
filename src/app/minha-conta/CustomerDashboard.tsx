@@ -51,10 +51,20 @@ export default function MinhaContaPage() {
         if (active) {
           setName(me.user.name);
           setData(result);
+          const recentDecision = (result.bookings ?? []).find((booking: Booking) => {
+            if (booking.status !== "CONFIRMED" && booking.status !== "CANCELLED") return false;
+            const isRecent = Date.now() - new Date(booking.updatedAt).getTime() < 48 * 60 * 60 * 1000;
+            const key = `nbs-booking-notice-${booking.id}-${booking.status}`;
+            return isRecent && window.localStorage.getItem(key) !== "seen";
+          });
           const changed = (result.bookings ?? []).find((booking: Booking) => previousStatuses.get(booking.id) === "PENDING" && (booking.status === "CONFIRMED" || booking.status === "CANCELLED"));
-          if (changed) setNotice(changed.status === "CONFIRMED"
-            ? { title: "Seu horário foi confirmado!", message: "A Diva confirmou seu agendamento. Em breve, ela poderá entrar em contato pelo WhatsApp." }
-            : { title: "Seu pedido de horário foi cancelado", message: "A Diva não conseguiu atender nesse horário. Escolha outra data disponível para enviar uma nova solicitação." });
+          const decision = changed ?? recentDecision;
+          if (decision) {
+            setNotice(decision.status === "CONFIRMED"
+              ? { title: "Seu horário foi confirmado!", message: "A Diva confirmou seu agendamento. Em breve, ela poderá entrar em contato pelo WhatsApp." }
+              : { title: "Seu pedido de horário foi cancelado", message: "A Diva não conseguiu atender nesse horário. Escolha outra data disponível para enviar uma nova solicitação." });
+            window.localStorage.setItem(`nbs-booking-notice-${decision.id}-${decision.status}`, "seen");
+          }
           previousStatuses = new Map((result.bookings ?? []).map((booking: Booking) => [booking.id, booking.status]));
         }
       } catch (reason) {
