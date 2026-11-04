@@ -34,6 +34,7 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   bookings     Booking[]
+  loyaltyRewardsAvailable Int @default(0)
 
   @@index([whatsapp])
 }
@@ -49,6 +50,7 @@ model Booking {
   endAt           DateTime
   status          BookingStatus   @default(PENDING)
   paymentMethod   String?
+  loyaltyDiscount Int             @default(0)
   servicePrice    Int
   mobilityFee     Int             @default(0)
   totalPrice      Int
