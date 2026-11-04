@@ -72,15 +72,7 @@ model Expense {
   @@index([occurredAt])
 }
 
-model Expense {
-  id          String   @id @default(cuid())
-  amount      Int
-  category    String
-  description String
-  occurredAt  DateTime @default(now())
-  createdAt   DateTime @default(now())
-  @@index([occurredAt])
-}
+
 
 model AdminUser {
   id           String   @id @default(cuid())
