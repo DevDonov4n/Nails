@@ -96,7 +96,7 @@ export default function AgendamentoPage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Não foi possível solicitar o agendamento.");
-      setSuccess(`${data.message} Código: ${data.booking.id}. Total: ${data.booking.totalPriceLabel ?? money(total)}.`);
+      setSuccess(`${data.message} Código: ${data.booking.id}. ${data.booking.loyaltyDiscount > 0 ? `Desconto de 50% aplicado: −${data.booking.loyaltyDiscountLabel}. ` : ""}Total: ${data.booking.totalPriceLabel ?? money(total)}.`);
       setRequestModal(true);
       setTime("");
       const refreshedResponse = await fetch(`/api/availability?date=${encodeURIComponent(date)}`, { cache: "no-store" });
