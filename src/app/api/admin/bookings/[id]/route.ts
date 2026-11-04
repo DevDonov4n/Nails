@@ -67,8 +67,17 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       const result = await tx.booking.update({
         where: { id },
         data: { status: nextStatus as BookingStatus, ...(nextStatus === "COMPLETED" ? { paymentMethod: body.paymentMethod as string } : {}) },
-        select: { id: true, status: true, paymentMethod: true },
+        select: { id: true, status: true, paymentMethod: true, userId: true },
       });
+      if (nextStatus === "COMPLETED" && result.userId) {
+        const completedBefore = await tx.booking.count({ where: { userId: result.userId, status: "COMPLETED", id: { not: id } } });
+        if ((completedBefore + 1) % 5 === 0) {
+          await tx.user.update({ where: { id: result.userId }, data: { loyaltyRewardsAvailable: { increment: 1 } } });
+        }
+      }
+      if (nextStatus === "CANCELLED" && booking.loyaltyDiscount > 0 && booking.userId) {
+        await tx.user.update({ where: { id: booking.userId }, data: { loyaltyRewardsAvailable: { increment: 1 } } });
+      }
       return { booking: result };
     });
 

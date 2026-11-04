@@ -63,7 +63,11 @@ export async function POST(request: NextRequest) {
       });
       if (conflict) return null;
 
-      return tx.booking.create({
+      const account = user ? await tx.user.findUnique({ where: { id: user.id }, select: { loyaltyRewardsAvailable: true } }) : null;
+      const rewardApplied = Boolean(account && account.loyaltyRewardsAvailable > 0);
+      const loyaltyDiscount = rewardApplied ? Math.floor(price.servicePrice / 2) : 0;
+      const discountedTotal = price.totalPrice - loyaltyDiscount;
+      const created = await tx.booking.create({
         data: {
           customerName: user?.name ?? name,
           whatsapp: user?.whatsapp ?? whatsapp,
@@ -73,13 +77,16 @@ export async function POST(request: NextRequest) {
           location,
           startAt,
           endAt,
-          status: "CONFIRMED",
+          status: "PENDING",
           servicePrice: price.servicePrice,
           mobilityFee: price.mobilityFee,
-          totalPrice: price.totalPrice,
+          loyaltyDiscount,
+          totalPrice: discountedTotal,
         },
-        select: { id: true, customerName: true, service: true, location: true, startAt: true, servicePrice: true, mobilityFee: true, totalPrice: true },
+        select: { id: true, customerName: true, service: true, location: true, startAt: true, servicePrice: true, mobilityFee: true, loyaltyDiscount: true, totalPrice: true },
       });
+      if (rewardApplied && user) await tx.user.update({ where: { id: user.id }, data: { loyaltyRewardsAvailable: { decrement: 1 } } });
+      return created;
     });
 
     if (!booking) {
@@ -92,8 +99,9 @@ export async function POST(request: NextRequest) {
         locationLabel: booking.location === "HOME" ? "Atendimento em domicílio" : "No salão",
         startAt: booking.startAt.toISOString(),
         totalPriceLabel: (booking.totalPrice / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+        loyaltyDiscountLabel: (booking.loyaltyDiscount / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
       },
-      message: "Horário confirmado! Seu agendamento foi registrado com sucesso. Guarde os dados para consultar seu atendimento.",
+      message: "Solicitação enviada! A Diva vai verificar a disponibilidade e você receberá a confirmação na sua área de cliente.",
     }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Não foi possível salvar o agendamento. Confira se o banco está configurado e tente novamente." }, { status: 500 });

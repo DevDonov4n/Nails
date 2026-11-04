@@ -27,6 +27,7 @@ export default function AgendamentoPage() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [requestModal, setRequestModal] = useState(false);
   const [accountLoading, setAccountLoading] = useState(true);
   const [loggedIn, setLoggedIn] = useState(false);
 
@@ -95,7 +96,8 @@ export default function AgendamentoPage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Não foi possível solicitar o agendamento.");
-      setSuccess(`${data.message} Código: ${data.booking.id}. Total: ${data.booking.totalPriceLabel ?? money(total)}.`);
+      setSuccess(`${data.message} Código: ${data.booking.id}. ${data.booking.loyaltyDiscount > 0 ? `Desconto de 50% aplicado: −${data.booking.loyaltyDiscountLabel}. ` : ""}Total: ${data.booking.totalPriceLabel ?? money(total)}.`);
+      setRequestModal(true);
       setTime("");
       const refreshedResponse = await fetch(`/api/availability?date=${encodeURIComponent(date)}`, { cache: "no-store" });
       const refreshed = await refreshedResponse.json();
@@ -160,6 +162,7 @@ export default function AgendamentoPage() {
           <aside className="booking-total"><div><span>Valor do tratamento</span><strong>{money(selectedService.price)}</strong></div><div><span>Taxa de mobilidade</span><strong>{money(location === "HOME" ? 5 : 0)}</strong></div><div className="booking-total-final"><span>Valor total</span><strong>{money(total)}</strong></div></aside>
           {error && <p className="booking-feedback booking-feedback--error" role="alert">{error}</p>}
           {success && <p className="booking-feedback booking-feedback--success" role="status">{success}</p>}
+          {requestModal && <div className="customer-notice-backdrop" role="presentation"><section className="customer-notice" role="alertdialog" aria-modal="true"><button type="button" onClick={() => setRequestModal(false)} aria-label="Fechar">×</button><p className="eyebrow">SOLICITAÇÃO ENVIADA</p><h2>Seu pedido chegou à Diva!</h2><p>Aguarde a análise da disponibilidade. Assim que seu horário for confirmado ou cancelado, você verá um aviso na sua área de cliente.</p><button className="button button--primary" type="button" onClick={() => setRequestModal(false)}>Entendi</button></section></div>}
           <button className="button button--primary booking-submit" type="submit" disabled={sending || loadingSlots}>{sending ? "Enviando solicitação…" : "Solicitar agendamento ↗"}</button>
           <p className="booking-disclaimer">Após enviar, sua solicitação será registrada. O horário ainda precisará ser aprovado pelo salão, para que você tenha certeza de que está tudo combinado.</p>
         </form>
