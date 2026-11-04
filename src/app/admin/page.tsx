@@ -934,7 +934,7 @@ export default function AdminPage() {
                                     ? "Domicílio"
                                     : "Salão"}
                                 </td>
-                                <td>{currency(item.totalPrice / 100)}</td>
+                                <td>{currency(item.totalPrice / 100)}{item.loyaltyDiscount > 0 && <small className="adm-discount-note">−{currency(item.loyaltyDiscount / 100)} fidelidade</small>}</td>
                                 <td>
                                   <span
                                     className={`adm-status-pill ${item.status.toLowerCase()}`}
@@ -948,7 +948,7 @@ export default function AdminPage() {
                                       <button type="button" className="adm-booking-action adm-booking-action--approve" onClick={() => void updateBookingStatus(item.id, "CONFIRMED")}>Aprovar</button>
                                       <button type="button" className="adm-booking-action adm-booking-action--reject" onClick={() => void updateBookingStatus(item.id, "CANCELLED")}>Recusar</button>
                                     </div>
-                                  ) : <span className="adm-muted">—</span>}
+                                  ) : item.status === "CONFIRMED" ? <a className="adm-booking-action adm-booking-action--approve" target="_blank" rel="noopener noreferrer" href={`https://wa.me/${(item.whatsapp.replace(/\D/g, "").startsWith("55") ? item.whatsapp.replace(/\D/g, "") : `55${item.whatsapp.replace(/\D/g, "")}`)}?text=${encodeURIComponent(`Oi, ${item.customerName}! Tudo bem? Seu horário está confirmado. Passando para saber se está tudo certo e se você está preparada para o atendimento. 💗`)}`}>WhatsApp ↗</a> : <span className="adm-muted">—</span>}
                                 </td>
                               </tr>
                             ))}
