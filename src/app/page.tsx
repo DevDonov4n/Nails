@@ -6,12 +6,14 @@ import NailPolishExperience from "@/components/animations/NailPolishExperience";
 import ServiceDecks from "@/components/services/ServiceDecks";
 import NailScrollSequence from "@/components/animations/NailScrollSequence";
 import BrandPolishes from "@/components/BrandPolishes";
+import LoyaltyHomeNotice from "@/components/LoyaltyHomeNotice";
 
 export default function Home() {
   return (
     <>
       <PageAnimations />
       <main>
+        <LoyaltyHomeNotice />
         <NailScrollSequence scrollLength={4} />
         {/* <NailPolishExperience /> */}
         <section className="hero" id="inicio">
