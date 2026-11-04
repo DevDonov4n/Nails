@@ -10,10 +10,12 @@ type Booking = {
   startAt: string;
   status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
   totalPriceLabel: string;
+  loyaltyDiscountLabel: string;
+  updatedAt: string;
 };
 type AccountData = {
   bookings: Booking[];
-  loyalty: { completedCount: number; visitsUntilReward: number; rewardsEarned: number };
+  loyalty: { completedCount: number; visitsUntilReward: number; rewardsEarned: number; rewardsAvailable: number; progress: number };
 };
 
 const statusLabels: Record<Booking["status"], string> = {
@@ -28,9 +30,11 @@ export default function MinhaContaPage() {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [notice, setNotice] = useState<{title:string;message:string}|null>(null);
 
   useEffect(() => {
     let active = true;
+    let previousStatuses = new Map<string, string>();
     async function load() {
       try {
         const [meResponse, bookingsResponse] = await Promise.all([
@@ -47,6 +51,11 @@ export default function MinhaContaPage() {
         if (active) {
           setName(me.user.name);
           setData(result);
+          const changed = (result.bookings ?? []).find((booking: Booking) => previousStatuses.get(booking.id) === "PENDING" && (booking.status === "CONFIRMED" || booking.status === "CANCELLED"));
+          if (changed) setNotice(changed.status === "CONFIRMED"
+            ? { title: "Seu horário foi confirmado!", message: "A Diva confirmou seu agendamento. Em breve, ela poderá entrar em contato pelo WhatsApp." }
+            : { title: "Seu pedido de horário foi cancelado", message: "A Diva não conseguiu atender nesse horário. Escolha outra data disponível para enviar uma nova solicitação." });
+          previousStatuses = new Map((result.bookings ?? []).map((booking: Booking) => [booking.id, booking.status]));
         }
       } catch (reason) {
         if (active) setError(reason instanceof Error ? reason.message : "Não foi possível carregar sua conta.");
@@ -55,7 +64,8 @@ export default function MinhaContaPage() {
       }
     }
     void load();
-    return () => { active = false; };
+    const interval = window.setInterval(() => { void load(); }, 15000);
+    return () => { active = false; window.clearInterval(interval); };
   }, []);
 
   return (
@@ -68,13 +78,15 @@ export default function MinhaContaPage() {
           <>
             <div className="account-stats">
               <article className="account-stat"><span>Atendimentos concluídos</span><strong>{data.loyalty.completedCount}</strong><small>Visitas registradas</small></article>
-              <article className="account-stat"><span>Recompensas conquistadas</span><strong>{data.loyalty.rewardsEarned}</strong><small>Uma recompensa a cada 10 atendimentos concluídos</small></article>
+              <article className="account-stat"><span>Recompensas conquistadas</span><strong>{data.loyalty.rewardsEarned}</strong><small>50% de desconto a cada 5 atendimentos concluídos</small></article>
             </div>
+            {notice && <div className="customer-notice-backdrop" role="presentation"><section className="customer-notice" role="alertdialog" aria-modal="true" aria-labelledby="customer-notice-title"><button type="button" onClick={() => setNotice(null)} aria-label="Fechar">×</button><p className="eyebrow">NAILS BY SAMARA</p><h2 id="customer-notice-title">{notice.title}</h2><p>{notice.message}</p><button className="button button--primary" type="button" onClick={() => setNotice(null)}>Entendi</button></section></div>}
+            {data.loyalty.rewardsAvailable > 0 && <div className="loyalty-reward-banner"><strong>🎁 Você conquistou 50% de desconto!</strong><span>Seu benefício está reservado para o próximo agendamento.</span></div>}
             <section className="account-loyalty">
-              <div><p className="eyebrow">PROGRAMA DE FIDELIDADE</p><h2>Seu cuidado vale mais.</h2><p>Complete 10 atendimentos para conquistar uma recompensa. Os pontos são contabilizados quando o salão marca o atendimento como concluído.</p></div>
-              <div className="loyalty-progress" aria-label={`${data.loyalty.completedCount % 10} de 10 atendimentos para a próxima recompensa`}>
-                <div className="loyalty-progress-copy"><strong>{data.loyalty.completedCount % 10}/10</strong><span>{data.loyalty.visitsUntilReward === 0 ? "Recompensa alcançada!" : `Faltam ${data.loyalty.visitsUntilReward} atendimento(s)`}</span></div>
-                <div className="loyalty-track"><span style={{ width: `${(data.loyalty.completedCount % 10) * 10}%` }} /></div>
+              <div><p className="eyebrow">PROGRAMA DE FIDELIDADE</p><h2>Seu cuidado vale mais.</h2><p>Complete 5 atendimentos e ganhe 50% de desconto no próximo serviço. A contagem é atualizada quando a Diva conclui cada atendimento.</p></div>
+              <div className="loyalty-progress" aria-label={`${data.loyalty.progress} de 5 atendimentos para a próxima recompensa`}>
+                <div className="loyalty-progress-copy"><strong>{data.loyalty.progress}/5</strong><span>{data.loyalty.rewardsAvailable > 0 ? "Recompensa disponível!" : `Faltam ${data.loyalty.visitsUntilReward} atendimento(s)`}</span></div>
+                <div className="loyalty-track"><span style={{ width: `${data.loyalty.progress * 20}%` }} /></div>
               </div>
             </section>
             <section className="account-bookings">
@@ -83,7 +95,7 @@ export default function MinhaContaPage() {
                 <article className="account-booking" key={booking.id}>
                   <div className="account-booking-date"><strong>{new Date(booking.startAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</strong><span>{new Date(booking.startAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" })}</span></div>
                   <div className="account-booking-main"><strong>{booking.serviceLabel}</strong><span>{booking.locationLabel}</span><small>{new Date(booking.startAt).toLocaleDateString("pt-BR", { weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "America/Sao_Paulo" })}</small></div>
-                  <div className="account-booking-meta"><span className={`account-status account-status--${booking.status.toLowerCase()}`}>{statusLabels[booking.status]}</span><strong>{booking.totalPriceLabel}</strong></div>
+                  <div className="account-booking-meta"><span className={`account-status account-status--${booking.status.toLowerCase()}`}>{statusLabels[booking.status]}</span><strong>{booking.totalPriceLabel}</strong>{booking.loyaltyDiscountLabel !== "R$ 0,00" && <small>Desconto fidelidade: −{booking.loyaltyDiscountLabel}</small>}</div>
                 </article>
               ))}</div>}
             </section>
