@@ -36,6 +36,7 @@ type AdminBooking = {
   servicePrice: number;
   mobilityFee: number;
   totalPrice: number;
+  loyaltyDiscount: number;
   userId: string | null;
   paymentMethod: string | null;
 };
