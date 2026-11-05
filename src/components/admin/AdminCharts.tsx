@@ -128,7 +128,7 @@ export function LineChart({
     plotW = width - left - right;
   const points = data.map((item, i) => ({
     x: left + (i * plotW) / (data.length - 1),
-    y: top + plotH - (item[valueKey] / max) * plotH,
+    y: top + plotH - ((item[valueKey] ?? 0) / max) * plotH,
     value: item[valueKey] ?? 0,
     month: item.month,
   }));
