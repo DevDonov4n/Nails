@@ -1,5 +1,6 @@
 import Image from "next/image";
 import logo from "@/assets/logo.jpg";
+import divaIcon from "@/assets/divaicon.jpg";
 import Button from "@/components/Button";
 import PageAnimations from "@/components/animations/PageAnimations";
 import NailPolishExperience from "@/components/animations/NailPolishExperience";
@@ -37,7 +38,7 @@ export default function Home() {
             <div className="hero-visual" aria-label="Ilustração abstrata em tons rosados que representa beleza e cuidado">
               <div className="visual-ring visual-ring--outer" />
               <div className="visual-ring visual-ring--inner" />
-              <div className="hero-flower" aria-hidden="true"><span data-polish-start>NC</span></div>
+              <div className="hero-flower"><Image src={divaIcon} alt="Diva, identidade visual da Nails by Samara" priority sizes="(max-width: 640px) 46vw, 220px" className="hero-flower-image" /></div>
               <div id="visual-stamp" className="visual-stamp visual-stamp--logo"><Image src={logo} alt="Logo Nails by Samara" priority sizes="104px" /></div>
               <div className="visual-caption"><span>BELEZA NATURAL</span><span>·</span><span>ESTILO ÚNICO</span></div>
             </div>
