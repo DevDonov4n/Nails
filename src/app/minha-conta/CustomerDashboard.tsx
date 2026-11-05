@@ -30,7 +30,7 @@ export default function MinhaContaPage() {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [notice, setNotice] = useState<{title:string;message:string}|null>(null);
+  const [notice, setNotice] = useState<{title:string;message:string;kind:"status"|"loyalty"}|null>(null);
 
   useEffect(() => {
     let active = true;
@@ -51,6 +51,9 @@ export default function MinhaContaPage() {
         if (active) {
           setName(me.user.name);
           setData(result);
+          const rewardKey = `nbs-loyalty-reward-${result.loyalty.rewardsEarned}`;
+          const hasUnseenReward = result.loyalty.rewardsAvailable > 0
+            && window.localStorage.getItem(rewardKey) !== "seen";
           const recentDecision = (result.bookings ?? []).find((booking: Booking) => {
             if (booking.status !== "CONFIRMED" && booking.status !== "CANCELLED") return false;
             const isRecent = Date.now() - new Date(booking.updatedAt).getTime() < 48 * 60 * 60 * 1000;
@@ -58,12 +61,21 @@ export default function MinhaContaPage() {
             return isRecent && window.localStorage.getItem(key) !== "seen";
           });
           const changed = (result.bookings ?? []).find((booking: Booking) => previousStatuses.get(booking.id) === "PENDING" && (booking.status === "CONFIRMED" || booking.status === "CANCELLED"));
-          const decision = changed ?? recentDecision;
-          if (decision) {
-            setNotice(decision.status === "CONFIRMED"
-              ? { title: "Seu horário foi confirmado!", message: "A Diva confirmou seu agendamento. Em breve, ela poderá entrar em contato pelo WhatsApp." }
-              : { title: "Seu pedido de horário foi cancelado", message: "A Diva não conseguiu atender nesse horário. Escolha outra data disponível para enviar uma nova solicitação." });
-            window.localStorage.setItem(`nbs-booking-notice-${decision.id}-${decision.status}`, "seen");
+          if (hasUnseenReward) {
+            setNotice({
+              kind: "loyalty",
+              title: "Você conquistou 50% de desconto!",
+              message: "Parabéns! Você completou 5 atendimentos e ganhou 50% de desconto no próximo serviço. O benefício é aplicado ao valor do serviço e não inclui a taxa de atendimento em domicílio."
+            });
+            window.localStorage.setItem(rewardKey, "seen");
+          } else {
+            const decision = changed ?? recentDecision;
+            if (decision) {
+              setNotice(decision.status === "CONFIRMED"
+                ? { kind: "status", title: "Seu horário foi confirmado!", message: "A Diva confirmou seu agendamento. Em breve, ela poderá entrar em contato pelo WhatsApp." }
+                : { kind: "status", title: "Seu pedido de horário foi cancelado", message: "A Diva não conseguiu atender nesse horário. Escolha outra data disponível para enviar uma nova solicitação." });
+              window.localStorage.setItem(`nbs-booking-notice-${decision.id}-${decision.status}`, "seen");
+            }
           }
           previousStatuses = new Map((result.bookings ?? []).map((booking: Booking) => [booking.id, booking.status]));
         }
@@ -90,7 +102,7 @@ export default function MinhaContaPage() {
               <article className="account-stat"><span>Atendimentos concluídos</span><strong>{data.loyalty.completedCount}</strong><small>Visitas registradas</small></article>
               <article className="account-stat"><span>Recompensas conquistadas</span><strong>{data.loyalty.rewardsEarned}</strong><small>50% de desconto a cada 5 atendimentos concluídos</small></article>
             </div>
-            {notice && <div className="customer-notice-backdrop" role="presentation"><section className="customer-notice" role="alertdialog" aria-modal="true" aria-labelledby="customer-notice-title"><button type="button" onClick={() => setNotice(null)} aria-label="Fechar">×</button><p className="eyebrow">NAILS BY SAMARA</p><h2 id="customer-notice-title">{notice.title}</h2><p>{notice.message}</p><button className="button button--primary" type="button" onClick={() => setNotice(null)}>Entendi</button></section></div>}
+            {notice && <div className="customer-notice-backdrop" role="presentation"><section className={`customer-notice ${notice.kind === "loyalty" ? "customer-notice--loyalty" : ""}`} role="alertdialog" aria-modal="true" aria-labelledby="customer-notice-title"><button type="button" onClick={() => setNotice(null)} aria-label="Fechar">×</button><p className="eyebrow">{notice.kind === "loyalty" ? "RECOMPENSA DE FIDELIDADE" : "NAILS BY SAMARA"}</p>{notice.kind === "loyalty" && <div className="customer-notice-gift" aria-hidden="true">50%</div>}<h2 id="customer-notice-title">{notice.title}</h2><p>{notice.message}</p><button className="button button--primary" type="button" onClick={() => setNotice(null)}>Aproveitar meu benefício</button></section></div>}
             {data.loyalty.rewardsAvailable > 0 && <div className="loyalty-reward-banner"><strong>🎁 Você conquistou 50% de desconto!</strong><span>Seu benefício está reservado para o próximo agendamento.</span></div>}
             <section className="account-loyalty">
               <div><p className="eyebrow">PROGRAMA DE FIDELIDADE</p><h2>Seu cuidado vale mais.</h2><p>Complete 5 atendimentos e ganhe 50% de desconto no próximo serviço. A contagem é atualizada quando a Diva conclui cada atendimento.</p></div>
