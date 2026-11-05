@@ -641,3 +641,21 @@ h2 { margin-bottom: 22px; font-size: clamp(40px, 5vw, 64px); line-height: .98; }
 .loyalty-home-notice{position:relative;z-index:4;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:16px max(24px,calc((100vw - 1180px)/2));background:#fff5f4;border-bottom:1px solid #ead2d1;color:#704650}
 .loyalty-home-notice>div{display:grid;gap:4px}.loyalty-home-notice strong{font-family:var(--font-display);font-size:18px;font-weight:500}.loyalty-home-notice span{color:#856f73;font-size:11px}.loyalty-home-notice>a{color:var(--wine);font-size:11px;font-weight:700;white-space:nowrap}
 @media(max-width:600px){.loyalty-home-notice{align-items:flex-start;flex-direction:column;gap:9px;padding:14px 20px}.loyalty-home-notice strong{font-size:16px}}
+
+
+/* Foto da Diva no destaque principal: proporção fixa e recorte sem overflow. */
+.hero-flower {
+  overflow: hidden;
+  flex: 0 0 auto;
+  isolation: isolate;
+}
+.hero-flower-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+}
