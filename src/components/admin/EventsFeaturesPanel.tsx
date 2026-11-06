@@ -21,8 +21,8 @@ export default function EventsFeaturesPanel() {
   const [savingEvent, setSavingEvent] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const [title, setTitle] = useState("Campanha de inauguração");
-  const [description, setDescription] = useState("Celebre a inauguração com 10% de desconto nos serviços.");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [type, setType] = useState("LAUNCH_DISCOUNT");
   const [discountPercent, setDiscountPercent] = useState("10");
   const [startsAt, setStartsAt] = useState("2026-12-01T00:00");
