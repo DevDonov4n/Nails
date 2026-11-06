@@ -4,10 +4,14 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   try {
     const now = new Date();
-    const [loyalty, campaign] = await Promise.all([
+    const [loyalty, discountFeature, campaign] = await Promise.all([
       prisma.platformFeature.findUnique({
         where: { key: "loyalty" },
         select: { enabled: true, updatedAt: true },
+      }),
+      prisma.platformFeature.findUnique({
+        where: { key: "promotional-discounts" },
+        select: { enabled: true },
       }),
       prisma.platformEvent.findFirst({
         where: { type: "LAUNCH_DISCOUNT", active: true, endsAt: { gte: now } },
@@ -20,7 +24,7 @@ export async function GET() {
         enabled: loyalty?.enabled ?? true,
         updatedAt: loyalty?.updatedAt.toISOString() ?? null,
       },
-      campaign: campaign ? {
+      campaign: (discountFeature?.enabled ?? true) && campaign ? {
         title: campaign.title,
         discountPercent: campaign.discountPercent,
         startsAt: campaign.startsAt.toISOString(),
