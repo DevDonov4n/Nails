@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "E-mail ou senha incorretos." }, { status: 401 });
     }
     const response = NextResponse.json({ user: { id: user.id, name: user.name, email: user.email } });
-    response.cookies.set(AUTH_COOKIE_NAME, createSessionToken(user.id), sessionCookieOptions());
+    response.cookies.set(AUTH_COOKIE_NAME, await createSessionToken(user.id), sessionCookieOptions());
     return response;
   } catch {
     return NextResponse.json({ error: "Não foi possível entrar. Tente novamente em instantes." }, { status: 500 });

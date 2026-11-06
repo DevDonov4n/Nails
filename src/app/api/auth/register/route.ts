@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       select: { id: true, name: true, email: true },
     });
     const response = NextResponse.json({ user }, { status: 201 });
-    response.cookies.set(AUTH_COOKIE_NAME, createSessionToken(user.id), sessionCookieOptions());
+    response.cookies.set(AUTH_COOKIE_NAME, await createSessionToken(user.id), sessionCookieOptions());
     return response;
   } catch {
     return NextResponse.json({ error: "Não foi possível criar a conta. Verifique a configuração do banco e tente novamente." }, { status: 500 });
