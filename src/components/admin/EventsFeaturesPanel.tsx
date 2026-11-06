@@ -138,7 +138,7 @@ export default function EventsFeaturesPanel() {
         <div className="adm-events-heading"><div><span className="adm-panel-overline">CAMPANHAS TEMPORÁRIAS</span><h2>Criar evento</h2><p>Cadastre campanhas com período de validade e regras específicas.</p></div></div>
         <form className="adm-event-form" onSubmit={createEvent}>
           <label>Nome do evento<input value={title} onChange={(event) => setTitle(event.target.value)} minLength={3} maxLength={100} required placeholder="Ex.: Campanha de inauguração" /></label>
-          <label>Tipo de evento<select value={type} onChange={(event) => setType(event.target.value)}><option value="LAUNCH_DISCOUNT">Desconto promocional</option><option value="REFERRAL">Indique e Ganhe</option></select></label>
+          <label>Tipo de evento<select value={type} onChange={(event) => setType(event.target.value)}><option value="LAUNCH_DISCOUNT">Desconto promocional</option><option value="REFERRAL" disabled>Indique e Ganhe (em preparação)</option></select></label>
           {type === "LAUNCH_DISCOUNT" && <label>Desconto (%)<input type="number" min="1" max="90" step="1" value={discountPercent} onChange={(event) => setDiscountPercent(event.target.value)} required /></label>}
           <label className="adm-event-form-wide">Descrição<textarea value={description} onChange={(event) => setDescription(event.target.value)} maxLength={500} rows={2} /></label>
           <label>Início<input type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(localInput(event.target.value))} required /></label>
