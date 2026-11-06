@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
       const loyaltyDiscount = rewardApplied ? Math.floor(price.servicePrice / 2) : 0;
       const promoEnabled = discountFeature?.enabled ?? true;
       const promotionalDiscount = promoEnabled && campaign?.discountPercent
-        ? Math.floor(price.servicePrice * campaign.discountPercent / 100)
+        ? Math.min(Math.floor(price.servicePrice * campaign.discountPercent / 100), price.servicePrice - loyaltyDiscount)
         : 0;
       const discountedTotal = price.totalPrice - loyaltyDiscount - promotionalDiscount;
       const created = await tx.booking.create({
