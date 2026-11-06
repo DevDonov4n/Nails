@@ -5,6 +5,7 @@ import Link from "next/link";
 
 type ServiceId = "HAND" | "FOOT" | "BOTH";
 type LocationId = "SALON" | "HOME";
+type CampaignNotice = { title: string; discountPercent: number | null; startsAt: string; endsAt: string; active: boolean } | null;
 const serviceOptions: { id: ServiceId; name: string; price: number }[] = [
   { id: "HAND", name: "Mão", price: 30 },
   { id: "FOOT", name: "Pé", price: 35 },
@@ -30,9 +31,12 @@ export default function AgendamentoPage() {
   const [requestModal, setRequestModal] = useState(false);
   const [accountLoading, setAccountLoading] = useState(true);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [campaign, setCampaign] = useState<CampaignNotice>(null);
 
   const selectedService = useMemo(() => serviceOptions.find((item) => item.id === service)!, [service]);
-  const total = selectedService.price + (location === "HOME" ? 5 : 0);
+  const baseTotal = selectedService.price + (location === "HOME" ? 5 : 0);
+  const promotionalDiscount = campaign?.active && campaign.discountPercent ? selectedService.price * campaign.discountPercent / 100 : 0;
+  const total = baseTotal - promotionalDiscount;
   useEffect(() => {
     const today = dateValue(new Date());
     setMinimumDate(today);
