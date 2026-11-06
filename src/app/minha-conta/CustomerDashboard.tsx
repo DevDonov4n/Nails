@@ -129,7 +129,7 @@ export default function MinhaContaPage() {
                 <article className="account-booking" key={booking.id}>
                   <div className="account-booking-date"><strong>{new Date(booking.startAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</strong><span>{new Date(booking.startAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" })}</span></div>
                   <div className="account-booking-main"><strong>{booking.serviceLabel}</strong><span>{booking.locationLabel}</span><small>{new Date(booking.startAt).toLocaleDateString("pt-BR", { weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "America/Sao_Paulo" })}</small></div>
-                  <div className="account-booking-meta"><span className={`account-status account-status--${booking.status.toLowerCase()}`}>{statusLabels[booking.status]}</span><strong>{booking.totalPriceLabel}</strong>{booking.loyaltyDiscountLabel !== "R$ 0,00" && <small>Desconto fidelidade: −{booking.loyaltyDiscountLabel}</small>}{booking.promotionalDiscountLabel !== "R$ 0,00" && <small>Desconto promocional: −{booking.promotionalDiscountLabel}</small>}</div>
+                  <div className="account-booking-meta"><span className={`account-status account-status--${booking.status.toLowerCase()}`}>{statusLabels[booking.status]}</span><strong>{booking.totalPriceLabel}</strong>{booking.loyaltyDiscountLabel !== "R$ 0,00" && <small>Desconto fidelidade: −{booking.loyaltyDiscountLabel}</small>}{booking.promotionalDiscountLabel !== "R$ 0,00" && <small>Desconto promocional: −{booking.promotionalDiscountLabel}</small>}</div>
                 </article>
               ))}</div>}
             </section>
