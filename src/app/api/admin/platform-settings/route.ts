@@ -57,10 +57,24 @@ export async function PATCH(request: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Dados inválidos." }, { status: 400 });
   }
+  if (typeof body.eventId === "string" && typeof body.active === "boolean") {
+    try {
+      const event = await prisma.platformEvent.update({
+        where: { id: body.eventId },
+        data: { active: body.active },
+      });
+      return NextResponse.json({ event: { ...event, startsAt: event.startsAt.toISOString(), endsAt: event.endsAt.toISOString(), createdAt: event.createdAt.toISOString() } }, { headers: { "Cache-Control": "no-store" } });
+    } catch {
+      return NextResponse.json({ error: "Não foi possível atualizar o evento." }, { status: 404 });
+    }
+  }
   const key = body.key;
   const enabled = body.enabled;
   if (!["loyalty", "referrals", "promotional-discounts"].includes(String(key)) || typeof enabled !== "boolean") {
     return NextResponse.json({ error: "Funcionalidade ou estado inválido." }, { status: 400 });
+  }
+  if (key === "referrals" && enabled) {
+    return NextResponse.json({ error: "O programa Indique e Ganhe ainda está em preparação e não pode ser ativado." }, { status: 409 });
   }
   try {
     const feature = await prisma.platformFeature.upsert({
