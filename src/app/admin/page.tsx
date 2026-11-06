@@ -5,6 +5,7 @@ import Image from "next/image";
 import logo from "@/assets/logo.jpg";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { BarChart, LineChart } from "@/components/admin/AdminCharts";
+import EventsFeaturesPanel from "@/components/admin/EventsFeaturesPanel";
 
 type MonthMetric = {
   month: string;
@@ -377,7 +378,7 @@ export default function AdminPage() {
           </span>
         </a>
         <div className="adm-side-label">MENU PRINCIPAL</div>
-        {["Visão geral", "Agendamentos", "Atendimentos", "Financeiro"].map(
+        {["Visão geral", "Agendamentos", "Atendimentos", "Financeiro", "Eventos e Funcionalidades"].map(
           (item, i) => (
             <button
               key={item}
@@ -387,7 +388,7 @@ export default function AdminPage() {
               }}
               disabled={false}
             >
-              <span className="adm-nav-icon">{["◫", "▦", "✦", "↗"][i]}</span>
+              <span className="adm-nav-icon">{["◫", "▦", "✦", "↗", "⚙"][i]}</span>
               {item}
 
             </button>
@@ -1281,7 +1282,9 @@ export default function AdminPage() {
                 );
               })()}
             </>
-          )}
+          ) : nav === "Eventos e Funcionalidades" ? (
+            <EventsFeaturesPanel />
+          ) : null}
         </div>
       </section>
     </main>
