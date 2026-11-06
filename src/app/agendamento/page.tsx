@@ -142,7 +142,7 @@ export default function AgendamentoPage() {
           <span className="booking-promo-icon" aria-hidden="true">✦</span>
           <div>
             <strong>Quer deixar os próximos agendamentos mais práticos?</strong>
-            <p>Na sua área de cliente, você poderá acompanhar os agendamentos vinculados à sua conta e o progresso da fidelidade.</p>
+            <p>Na sua área de cliente, você poderá acompanhar os agendamentos vinculados à sua conta e os avisos do salão.</p>
           </div>
           <Link href="/cadastro">Conhecer o cadastro <span aria-hidden="true">↗</span></Link>
         </aside>}
