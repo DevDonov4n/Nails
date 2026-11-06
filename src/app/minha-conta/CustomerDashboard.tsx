@@ -16,7 +16,7 @@ type Booking = {
 };
 type AccountData = {
   bookings: Booking[];
-  loyalty: { enabled: boolean; completedCount: number; visitsUntilReward: number; rewardsEarned: number; rewardsAvailable: number; progress: number };
+  loyalty: { enabled: boolean; updatedAt: string | null; completedCount: number; visitsUntilReward: number; rewardsEarned: number; rewardsAvailable: number; progress: number };
 };
 
 const statusLabels: Record<Booking["status"], string> = {
@@ -31,7 +31,7 @@ export default function MinhaContaPage() {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [notice, setNotice] = useState<{title:string;message:string;kind:"status"|"loyalty"}|null>(null);
+  const [notice, setNotice] = useState<{title:string;message:string;kind:"status"|"loyalty"|"suspended"}|null>(null);
 
   useEffect(() => {
     let active = true;
@@ -62,7 +62,16 @@ export default function MinhaContaPage() {
             return isRecent && window.localStorage.getItem(key) !== "seen";
           });
           const changed = (result.bookings ?? []).find((booking: Booking) => previousStatuses.get(booking.id) === "PENDING" && (booking.status === "CONFIRMED" || booking.status === "CANCELLED"));
-          if (hasUnseenReward) {
+          const suspensionKey = "nbs-loyalty-suspended-" + (result.loyalty.updatedAt ?? "disabled");
+          const hasUnseenSuspension = !result.loyalty.enabled && window.localStorage.getItem(suspensionKey) !== "seen";
+          if (hasUnseenSuspension) {
+            setNotice({
+              kind: "suspended",
+              title: "Programa de fidelidade temporariamente pausado",
+              message: "O programa de fidelidade está temporariamente indisponível. Seu histórico, pontos acumulados e benefícios conquistados continuam preservados. Avisaremos quando o recurso estiver disponível novamente."
+            });
+            window.localStorage.setItem(suspensionKey, "seen");
+          } else if (hasUnseenReward) {
             setNotice({
               kind: "loyalty",
               title: "Você conquistou 50% de desconto!",
