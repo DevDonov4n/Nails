@@ -1,6 +1,5 @@
 "use client";
 
-import "./events-features.css";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 
 type Feature = { key: string; enabled: boolean };
