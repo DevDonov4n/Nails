@@ -5,6 +5,7 @@ import Link from "next/link";
 
 type ServiceId = "HAND" | "FOOT" | "BOTH";
 type LocationId = "SALON" | "HOME";
+type CampaignNotice = { title: string; discountPercent: number | null; startsAt: string; endsAt: string; active: boolean } | null;
 const serviceOptions: { id: ServiceId; name: string; price: number }[] = [
   { id: "HAND", name: "Mão", price: 30 },
   { id: "FOOT", name: "Pé", price: 35 },
@@ -30,13 +31,25 @@ export default function AgendamentoPage() {
   const [requestModal, setRequestModal] = useState(false);
   const [accountLoading, setAccountLoading] = useState(true);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [campaign, setCampaign] = useState<CampaignNotice>(null);
 
   const selectedService = useMemo(() => serviceOptions.find((item) => item.id === service)!, [service]);
-  const total = selectedService.price + (location === "HOME" ? 5 : 0);
+  const baseTotal = selectedService.price + (location === "HOME" ? 5 : 0);
+  const promotionalDiscount = campaign?.active && campaign.discountPercent ? selectedService.price * campaign.discountPercent / 100 : 0;
+  const total = baseTotal - promotionalDiscount;
   useEffect(() => {
     const today = dateValue(new Date());
     setMinimumDate(today);
     setDate((currentDate) => currentDate || today);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/platform-status", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => { if (active) setCampaign(data?.campaign ?? null); })
+      .catch(() => {});
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
@@ -96,7 +109,7 @@ export default function AgendamentoPage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Não foi possível solicitar o agendamento.");
-      setSuccess(`${data.message} Código: ${data.booking.id}. ${data.booking.loyaltyDiscount > 0 ? `Desconto de 50% aplicado: −${data.booking.loyaltyDiscountLabel}. ` : ""}Total: ${data.booking.totalPriceLabel ?? money(total)}.`);
+      setSuccess(`${data.message} Código: ${data.booking.id}. ${data.booking.loyaltyDiscount > 0 ? `Desconto de fidelidade aplicado: −${data.booking.loyaltyDiscountLabel}. ` : ""}${data.booking.promotionalDiscount > 0 ? `Desconto promocional aplicado: −${data.booking.promotionalDiscountLabel}. ` : ""}Total: ${data.booking.totalPriceLabel ?? money(total)}.`);
       setRequestModal(true);
       setTime("");
       const refreshedResponse = await fetch(`/api/availability?date=${encodeURIComponent(date)}`, { cache: "no-store" });
@@ -118,11 +131,18 @@ export default function AgendamentoPage() {
           <h1>Seu momento<br /><em>começa aqui.</em></h1>
           <p>Escolha o serviço que deseja, veja os horários disponíveis e solicite seu agendamento. {loggedIn ? "Seus dados de contato serão usados automaticamente pela sua conta." : "Você pode agendar como visitante ou entrar na sua conta para agilizar o processo."}</p>
         </div>
+        {campaign && <aside className="booking-account-promo">
+          <span className="booking-promo-icon" aria-hidden="true">✦</span>
+          <div>
+            <strong>{campaign.title}: {campaign.discountPercent}% OFF</strong>
+            <p>{campaign.active ? "O desconto já está ativo para solicitações criadas agora. Ele vale sobre o valor dos serviços, não sobre a taxa de mobilidade." : `Agendamentos criados de ${new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "America/Sao_Paulo" }).format(new Date(campaign.startsAt))} a ${new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "America/Sao_Paulo" }).format(new Date(campaign.endsAt))} recebem o desconto nos serviços. A taxa de mobilidade não participa da promoção.`}</p>
+          </div>
+        </aside>
         {!loggedIn && <aside className="booking-account-promo">
           <span className="booking-promo-icon" aria-hidden="true">✦</span>
           <div>
             <strong>Quer deixar os próximos agendamentos mais práticos?</strong>
-            <p>Na sua área de cliente, você poderá acompanhar os agendamentos vinculados à sua conta e o progresso da fidelidade.</p>
+            <p>Na sua área de cliente, você poderá acompanhar os agendamentos vinculados à sua conta e os avisos do salão.</p>
           </div>
           <Link href="/cadastro">Conhecer o cadastro <span aria-hidden="true">↗</span></Link>
         </aside>}
@@ -159,7 +179,7 @@ export default function AgendamentoPage() {
             <div><h2>{loggedIn ? "Dados da sua conta" : "Seus dados para contato"}</h2><p>{loggedIn ? "Vamos usar o nome e WhatsApp cadastrados na sua conta. Não é necessário preenchê-los novamente." : "Preencha seu nome e WhatsApp com DDD para que o salão possa identificar sua solicitação e conversar com você sobre a confirmação do atendimento."}</p></div>
             {accountLoading ? <p className="booking-muted" role="status">Conferindo sua conta...</p> : loggedIn ? <div className="booking-account-details"><p><strong>Nome:</strong> {name}</p><p><strong>WhatsApp:</strong> {whatsapp}</p><small>Para alterar esses dados, atualize seu cadastro antes de agendar.</small></div> : <><label className="booking-field">Nome completo<input required minLength={2} maxLength={120} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="Informe seu nome e sobrenome" /></label><label className="booking-field">WhatsApp com DDD<input required type="tel" maxLength={20} value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} autoComplete="tel" placeholder="Ex.: (11) 99999-9999" /></label></> }
           </section>
-          <aside className="booking-total"><div><span>Valor do tratamento</span><strong>{money(selectedService.price)}</strong></div><div><span>Taxa de mobilidade</span><strong>{money(location === "HOME" ? 5 : 0)}</strong></div><div className="booking-total-final"><span>Valor total</span><strong>{money(total)}</strong></div></aside>
+          <aside className="booking-total"><div><span>Valor do tratamento</span><strong>{money(selectedService.price)}</strong></div>{promotionalDiscount > 0 && <div><span>Desconto promocional ({campaign?.discountPercent}%)</span><strong>−{money(promotionalDiscount)}</strong></div>}<div><span>Taxa de mobilidade</span><strong>{money(location === "HOME" ? 5 : 0)}</strong></div><div className="booking-total-final"><span>Valor total estimado</span><strong>{money(total)}</strong></div></aside>
           {error && <p className="booking-feedback booking-feedback--error" role="alert">{error}</p>}
           {success && <p className="booking-feedback booking-feedback--success" role="status">{success}</p>}
           {requestModal && <div className="customer-notice-backdrop" role="presentation"><section className="customer-notice" role="alertdialog" aria-modal="true"><button type="button" onClick={() => setRequestModal(false)} aria-label="Fechar">×</button><p className="eyebrow">SOLICITAÇÃO ENVIADA</p><h2>Seu pedido chegou à Diva!</h2><p>Aguarde a análise da disponibilidade. Assim que seu horário for confirmado ou cancelado, você verá um aviso na sua área de cliente.</p><button className="button button--primary" type="button" onClick={() => setRequestModal(false)}>Entendi</button></section></div>}

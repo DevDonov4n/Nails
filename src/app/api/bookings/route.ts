@@ -63,10 +63,24 @@ export async function POST(request: NextRequest) {
       });
       if (conflict) return null;
 
-      const account = user ? await tx.user.findUnique({ where: { id: user.id }, select: { loyaltyRewardsAvailable: true } }) : null;
-      const rewardApplied = Boolean(account && account.loyaltyRewardsAvailable > 0);
+      const [account, loyaltyFeature, discountFeature, campaign] = await Promise.all([
+        user ? tx.user.findUnique({ where: { id: user.id }, select: { loyaltyRewardsAvailable: true } }) : null,
+        tx.platformFeature.findUnique({ where: { key: "loyalty" }, select: { enabled: true } }),
+        tx.platformFeature.findUnique({ where: { key: "promotional-discounts" }, select: { enabled: true } }),
+        tx.platformEvent.findFirst({
+          where: { type: "LAUNCH_DISCOUNT", active: true, startsAt: { lte: new Date() }, endsAt: { gte: new Date() } },
+          orderBy: { createdAt: "desc" },
+          select: { id: true, discountPercent: true },
+        }),
+      ]);
+      const loyaltyEnabled = loyaltyFeature?.enabled ?? true;
+      const rewardApplied = Boolean(loyaltyEnabled && account && account.loyaltyRewardsAvailable > 0);
       const loyaltyDiscount = rewardApplied ? Math.floor(price.servicePrice / 2) : 0;
-      const discountedTotal = price.totalPrice - loyaltyDiscount;
+      const promoEnabled = discountFeature?.enabled ?? true;
+      const promotionalDiscount = promoEnabled && campaign?.discountPercent
+        ? Math.min(Math.floor(price.servicePrice * campaign.discountPercent / 100), price.servicePrice - loyaltyDiscount)
+        : 0;
+      const discountedTotal = price.totalPrice - loyaltyDiscount - promotionalDiscount;
       const created = await tx.booking.create({
         data: {
           customerName: user?.name ?? name,
@@ -81,9 +95,11 @@ export async function POST(request: NextRequest) {
           servicePrice: price.servicePrice,
           mobilityFee: price.mobilityFee,
           loyaltyDiscount,
+          promotionalDiscount,
+          campaignEventId: promotionalDiscount > 0 ? campaign?.id ?? null : null,
           totalPrice: discountedTotal,
         },
-        select: { id: true, customerName: true, service: true, location: true, startAt: true, servicePrice: true, mobilityFee: true, loyaltyDiscount: true, totalPrice: true },
+        select: { id: true, customerName: true, service: true, location: true, startAt: true, servicePrice: true, mobilityFee: true, loyaltyDiscount: true, promotionalDiscount: true, totalPrice: true },
       });
       if (rewardApplied && user) await tx.user.update({ where: { id: user.id }, data: { loyaltyRewardsAvailable: { decrement: 1 } } });
       return created;
@@ -100,6 +116,7 @@ export async function POST(request: NextRequest) {
         startAt: booking.startAt.toISOString(),
         totalPriceLabel: (booking.totalPrice / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
         loyaltyDiscountLabel: (booking.loyaltyDiscount / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+        promotionalDiscountLabel: (booking.promotionalDiscount / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
       },
       message: "Solicitação enviada! A Diva vai verificar a disponibilidade e você receberá a confirmação na sua área de cliente.",
     }, { status: 201 });

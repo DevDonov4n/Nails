@@ -51,6 +51,8 @@ model Booking {
   status          BookingStatus   @default(PENDING)
   paymentMethod   String?
   loyaltyDiscount Int             @default(0)
+  promotionalDiscount Int         @default(0)
+  campaignEventId  String?
   servicePrice    Int
   mobilityFee     Int             @default(0)
   totalPrice      Int
@@ -83,4 +85,26 @@ model AdminUser {
   yearlyGoal   Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+
+model PlatformFeature {
+  key       String   @id
+  enabled   Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+}
+
+model PlatformEvent {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  type            String
+  discountPercent Int?
+  startsAt        DateTime
+  endsAt          DateTime
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([type, active, startsAt, endsAt])
 }

@@ -5,6 +5,7 @@ import Image from "next/image";
 import logo from "@/assets/logo.jpg";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { BarChart, LineChart } from "@/components/admin/AdminCharts";
+import EventsFeaturesPanel from "@/components/admin/EventsFeaturesPanel";
 
 type MonthMetric = {
   month: string;
@@ -37,6 +38,7 @@ type AdminBooking = {
   mobilityFee: number;
   totalPrice: number;
   loyaltyDiscount: number;
+  promotionalDiscount: number;
   userId: string | null;
   paymentMethod: string | null;
 };
@@ -377,7 +379,7 @@ export default function AdminPage() {
           </span>
         </a>
         <div className="adm-side-label">MENU PRINCIPAL</div>
-        {["Visão geral", "Agendamentos", "Atendimentos", "Financeiro"].map(
+        {["Visão geral", "Agendamentos", "Atendimentos", "Financeiro", "Eventos e Funcionalidades"].map(
           (item, i) => (
             <button
               key={item}
@@ -387,7 +389,7 @@ export default function AdminPage() {
               }}
               disabled={false}
             >
-              <span className="adm-nav-icon">{["◫", "▦", "✦", "↗"][i]}</span>
+              <span className="adm-nav-icon">{["◫", "▦", "✦", "↗", "⚙"][i]}</span>
               {item}
 
             </button>
@@ -934,7 +936,7 @@ export default function AdminPage() {
                                     ? "Domicílio"
                                     : "Salão"}
                                 </td>
-                                <td>{currency(item.totalPrice / 100)}{item.loyaltyDiscount > 0 && <small className="adm-discount-note">−{currency(item.loyaltyDiscount / 100)} fidelidade</small>}</td>
+                                <td>{currency(item.totalPrice / 100)}{item.loyaltyDiscount > 0 && <small className="adm-discount-note">−{currency(item.loyaltyDiscount / 100)} fidelidade</small>}{item.promotionalDiscount > 0 && <small className="adm-discount-note">−{currency(item.promotionalDiscount / 100)} promoção</small>}</td>
                                 <td>
                                   <span
                                     className={`adm-status-pill ${item.status.toLowerCase()}`}
@@ -964,7 +966,7 @@ export default function AdminPage() {
                 </div>
               )}
             </>
-          ) : (
+          ) : nav === "Fidelidade" ? (
             <>
               <div className="adm-welcome-row">
                 <div>
@@ -1281,7 +1283,9 @@ export default function AdminPage() {
                 );
               })()}
             </>
-          )}
+          ) : nav === "Eventos e Funcionalidades" ? (
+            <EventsFeaturesPanel />
+          ) : null}
         </div>
       </section>
     </main>

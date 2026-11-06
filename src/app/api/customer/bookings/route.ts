@@ -7,14 +7,15 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Entre na sua conta para consultar seus agendamentos." }, { status: 401, headers: { "Cache-Control": "no-store" } });
 
   try {
-    const [bookings, completedCount, account] = await Promise.all([
+    const [bookings, completedCount, account, loyaltyFeature] = await Promise.all([
       prisma.booking.findMany({
         where: { userId: user.id },
         orderBy: { startAt: "desc" },
-        select: { id: true, service: true, location: true, startAt: true, endAt: true, status: true, servicePrice: true, mobilityFee: true, totalPrice: true, loyaltyDiscount: true, address: true, updatedAt: true },
+        select: { id: true, service: true, location: true, startAt: true, endAt: true, status: true, servicePrice: true, mobilityFee: true, totalPrice: true, loyaltyDiscount: true, promotionalDiscount: true, address: true, updatedAt: true },
       }),
       prisma.booking.count({ where: { userId: user.id, status: "COMPLETED" } }),
       prisma.user.findUnique({ where: { id: user.id }, select: { loyaltyRewardsAvailable: true } }),
+      prisma.platformFeature.findUnique({ where: { key: "loyalty" }, select: { enabled: true, updatedAt: true } }),
     ]);
     return NextResponse.json({
       bookings: bookings.map((booking) => ({
@@ -25,9 +26,10 @@ export async function GET() {
         locationLabel: booking.location === "HOME" ? "Em domicílio" : "No salão",
         totalPriceLabel: (booking.totalPrice / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
         loyaltyDiscountLabel: (booking.loyaltyDiscount / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+        promotionalDiscountLabel: (booking.promotionalDiscount / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
         updatedAt: booking.updatedAt.toISOString(),
       })),
-      loyalty: { completedCount, visitsUntilReward: account?.loyaltyRewardsAvailable ? 0 : 5 - (completedCount % 5), rewardsEarned: Math.floor(completedCount / 5), rewardsAvailable: account?.loyaltyRewardsAvailable ?? 0, progress: account?.loyaltyRewardsAvailable ? 5 : completedCount % 5 },
+      loyalty: { enabled: loyaltyFeature?.enabled ?? true, updatedAt: loyaltyFeature?.updatedAt.toISOString() ?? null, completedCount, visitsUntilReward: account?.loyaltyRewardsAvailable ? 0 : 5 - (completedCount % 5), rewardsEarned: Math.floor(completedCount / 5), rewardsAvailable: account?.loyaltyRewardsAvailable ?? 0, progress: account?.loyaltyRewardsAvailable ? 5 : completedCount % 5 },
     }, { headers: { "Cache-Control": "no-store" } });
   } catch {
     return NextResponse.json({ error: "Não foi possível carregar seus agendamentos." }, { status: 500, headers: { "Cache-Control": "no-store" } });

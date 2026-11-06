@@ -71,7 +71,8 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       });
       if (nextStatus === "COMPLETED" && result.userId) {
         const completedBefore = await tx.booking.count({ where: { userId: result.userId, status: "COMPLETED", id: { not: id } } });
-        if ((completedBefore + 1) % 5 === 0) {
+        const loyaltyFeature = await tx.platformFeature.findUnique({ where: { key: "loyalty" }, select: { enabled: true } });
+        if ((loyaltyFeature?.enabled ?? true) && (completedBefore + 1) % 5 === 0) {
           await tx.user.update({ where: { id: result.userId }, data: { loyaltyRewardsAvailable: { increment: 1 } } });
         }
       }
