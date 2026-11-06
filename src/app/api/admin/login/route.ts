@@ -1,16 +1,11 @@
-import { createHmac } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth";
-
-const COOKIE = "nbs_admin_session";
-const TTL = 60 * 60 * 8;
-
-function sign(payload: string) {
-  const secret = process.env.SESSION_SECRET;
-  if (!secret || secret.length < 32) throw new Error("SESSION_SECRET precisa ter pelo menos 32 caracteres.");
-  return createHmac("sha256", secret).update(payload).digest("base64url");
-}
+import {
+  createAdminSession,
+  ADMIN_SESSION_COOKIE,
+  adminSessionCookieOptions,
+} from "@/lib/security/sessions";
 
 export async function POST(request: NextRequest) {
   let body: unknown;
@@ -19,7 +14,7 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Dados inválidos." }, { status: 400 });
   }
-  if (!body || typeof body !== "object") {
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
     return NextResponse.json({ error: "Dados inválidos." }, { status: 400 });
   }
 
@@ -39,19 +34,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "E-mail ou senha incorretos." }, { status: 401 });
     }
 
-    const payload = Buffer.from(JSON.stringify({
-      sub: admin.id,
-      role: "admin",
-      exp: Math.floor(Date.now() / 1000) + TTL,
-    })).toString("base64url");
-    const response = NextResponse.json({ ok: true });
-    response.cookies.set(COOKIE, payload + "." + sign(payload), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: TTL,
-    });
+    const token = await createAdminSession(admin.id);
+    const response = NextResponse.json({ ok: true }, { headers: { "Cache-Control": "no-store" } });
+    response.cookies.set(ADMIN_SESSION_COOKIE, token, adminSessionCookieOptions());
     return response;
   } catch (error) {
     console.error("Falha no login administrativo:", error);
