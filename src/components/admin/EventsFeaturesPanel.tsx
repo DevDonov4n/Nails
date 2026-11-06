@@ -12,6 +12,7 @@ const featureLabels: Record<string, { title: string; description: string }> = {
 };
 const formatDate = (value: string) => new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Sao_Paulo" }).format(new Date(value));
 const localInput = (value: string) => value;
+const saoPauloIso = (value: string) => new Date(value + ":00-03:00").toISOString();
 
 export default function EventsFeaturesPanel() {
   const [features, setFeatures] = useState<Feature[]>([]);
@@ -97,7 +98,7 @@ export default function EventsFeaturesPanel() {
       const response = await fetch("/api/admin/platform-settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description, type, discountPercent: type === "LAUNCH_DISCOUNT" ? Number(discountPercent) : null, startsAt: new Date(startsAt).toISOString(), endsAt: new Date(endsAt).toISOString() }),
+        body: JSON.stringify({ title, description, type, discountPercent: type === "LAUNCH_DISCOUNT" ? Number(discountPercent) : null, startsAt: saoPauloIso(startsAt), endsAt: saoPauloIso(endsAt) }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Não foi possível criar o evento.");
@@ -114,7 +115,7 @@ export default function EventsFeaturesPanel() {
 
   const now = Date.now();
   return (
-    <div className="adm-content adm-events-content">
+    <div className="adm-events-content">
       <div className="adm-events-intro">
         <div><span className="adm-panel-overline">CONTROLE DA PLATAFORMA</span><h1>Eventos e <em>funcionalidades.</em></h1><p>Gerencie recursos permanentes e campanhas especiais do Nails by Samara.</p></div>
         <button className="adm-events-refresh" type="button" onClick={() => void load()} disabled={loading}>↻ Atualizar</button>
