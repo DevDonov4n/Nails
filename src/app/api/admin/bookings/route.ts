@@ -23,7 +23,7 @@ export async function GET() {
   if (!(await adminSession())) return NextResponse.json({ error: "Não autorizado." }, { status: 401, headers: { "Cache-Control": "no-store" } });
   try {
     const bookings = await prisma.booking.findMany({
-      select: { id: true, customerName: true, whatsapp: true, address: true, service: true, location: true, startAt: true, endAt: true, status: true, servicePrice: true, mobilityFee: true, totalPrice: true, loyaltyDiscount: true, userId: true, paymentMethod: true },
+      select: { id: true, customerName: true, whatsapp: true, address: true, service: true, location: true, startAt: true, endAt: true, status: true, servicePrice: true, mobilityFee: true, totalPrice: true, loyaltyDiscount: true, promotionalDiscount: true, userId: true, paymentMethod: true },
       orderBy: { startAt: "desc" },
     });
     return NextResponse.json({ bookings: bookings.map((booking) => ({ ...booking, startAt: booking.startAt.toISOString(), endAt: booking.endAt.toISOString() })) }, { headers: { "Cache-Control": "no-store" } });
