@@ -45,6 +45,15 @@ export default function AgendamentoPage() {
 
   useEffect(() => {
     let active = true;
+    fetch("/api/platform-status", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => { if (active) setCampaign(data?.campaign ?? null); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
     fetch("/api/auth/me", { cache: "no-store" })
       .then((response) => response.json())
       .then((data) => {
