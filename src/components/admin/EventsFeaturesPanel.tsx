@@ -67,6 +67,27 @@ export default function EventsFeaturesPanel() {
     }
   }
 
+  async function toggleEvent(item: PlatformEvent) {
+    setSavingKey(item.id);
+    setError("");
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin/platform-settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId: item.id, active: !item.active }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Não foi possível atualizar o evento.");
+      setEvents((current) => current.map((event) => event.id === item.id ? data.event : event));
+      setMessage(item.active ? "Evento pausado." : "Evento reativado.");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Falha ao atualizar evento.");
+    } finally {
+      setSavingKey("");
+    }
+  }
+
   async function createEvent(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSavingEvent(true);
@@ -108,7 +129,7 @@ export default function EventsFeaturesPanel() {
             return <article className="adm-feature-card" key={feature.key}>
               <div className="adm-feature-card-top"><span className={feature.enabled ? "adm-feature-indicator is-on" : "adm-feature-indicator"} /> <span className={feature.enabled ? "adm-feature-state is-on" : "adm-feature-state"}>{feature.enabled ? "Ativo" : "Desativado"}</span></div>
               <h3>{meta.title}</h3><p>{meta.description}</p>
-              <button type="button" className={feature.enabled ? "adm-feature-toggle is-on" : "adm-feature-toggle"} disabled={savingKey === feature.key} onClick={() => void toggleFeature(feature)}>{savingKey === feature.key ? "Salvando…" : feature.enabled ? "Desativar recurso" : "Ativar recurso"}</button>
+              <button type="button" className={feature.enabled ? "adm-feature-toggle is-on" : "adm-feature-toggle"} disabled={savingKey === feature.key || feature.key === "referrals"} onClick={() => void toggleFeature(feature)}>{feature.key === "referrals" ? "Em preparação" : savingKey === feature.key ? "Salvando…" : feature.enabled ? "Desativar recurso" : "Ativar recurso"}</button>
             </article>;
           })}
         </div>}
@@ -130,7 +151,7 @@ export default function EventsFeaturesPanel() {
         {events.length === 0 ? <div className="adm-empty">Nenhum evento cadastrado até o momento.</div> : <div className="adm-event-list">{events.map((item) => {
           const start = new Date(item.startsAt).getTime(), end = new Date(item.endsAt).getTime();
           const status = !item.active || now > end ? "Encerrado" : now < start ? "Agendado" : "Em andamento";
-          return <article className="adm-event-item" key={item.id}><div className="adm-event-item-main"><span className="adm-panel-overline">{item.type === "LAUNCH_DISCOUNT" ? "DESCONTO PROMOCIONAL" : "INDIQUE E GANHE"}</span><h3>{item.title}</h3>{item.description && <p>{item.description}</p>}<small>{formatDate(item.startsAt)} — {formatDate(item.endsAt)}</small></div><div className="adm-event-item-side">{item.discountPercent && <strong>{item.discountPercent}% OFF</strong>}<span className={status === "Em andamento" ? "adm-event-status is-live" : "adm-event-status"}>{status}</span></div></article>;
+          return <article className="adm-event-item" key={item.id}><div className="adm-event-item-main"><span className="adm-panel-overline">{item.type === "LAUNCH_DISCOUNT" ? "DESCONTO PROMOCIONAL" : "INDIQUE E GANHE"}</span><h3>{item.title}</h3>{item.description && <p>{item.description}</p>}<small>{formatDate(item.startsAt)} — {formatDate(item.endsAt)}</small></div><div className="adm-event-item-side">{item.discountPercent && <strong>{item.discountPercent}% OFF</strong>}<span className={status === "Em andamento" ? "adm-event-status is-live" : "adm-event-status"}>{status}</span><button type="button" className="adm-event-toggle" disabled={savingKey === item.id} onClick={() => void toggleEvent(item)}>{savingKey === item.id ? "Salvando…" : item.active ? "Pausar evento" : "Reativar evento"}</button></div></article>;
         })}</div>}
       </section>
     </div>
