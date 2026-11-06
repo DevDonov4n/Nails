@@ -15,7 +15,7 @@ type Booking = {
 };
 type AccountData = {
   bookings: Booking[];
-  loyalty: { completedCount: number; visitsUntilReward: number; rewardsEarned: number; rewardsAvailable: number; progress: number };
+  loyalty: { enabled: boolean; completedCount: number; visitsUntilReward: number; rewardsEarned: number; rewardsAvailable: number; progress: number };
 };
 
 const statusLabels: Record<Booking["status"], string> = {
@@ -52,7 +52,7 @@ export default function MinhaContaPage() {
           setName(me.user.name);
           setData(result);
           const rewardKey = `nbs-loyalty-reward-${result.loyalty.rewardsEarned}`;
-          const hasUnseenReward = result.loyalty.rewardsAvailable > 0
+          const hasUnseenReward = result.loyalty.enabled && result.loyalty.rewardsAvailable > 0
             && window.localStorage.getItem(rewardKey) !== "seen";
           const recentDecision = (result.bookings ?? []).find((booking: Booking) => {
             if (booking.status !== "CONFIRMED" && booking.status !== "CANCELLED") return false;
@@ -95,9 +95,10 @@ export default function MinhaContaPage() {
       <div className="container account-shell">
         <p className="eyebrow">NAILS BY SAMARA · ÁREA DO CLIENTE</p>
         <h1>Olá, <em>{name ? name.split(" ")[0] : "que bom ter você aqui"}.</em></h1>
-        <p className="account-intro">Aqui você acompanha seus horários e seu progresso no programa de fidelidade.</p>
+        <p className="account-intro">Aqui você acompanha seus horários e as informações da sua conta.</p>
         {loading ? <p className="booking-muted" role="status">Carregando sua conta…</p> : error ? <p className="booking-feedback booking-feedback--error" role="alert">{error}</p> : data && (
           <>
+            {data.loyalty.enabled && <>
             <div className="account-stats">
               <article className="account-stat"><span>Atendimentos concluídos</span><strong>{data.loyalty.completedCount}</strong><small>Visitas registradas</small></article>
               <article className="account-stat"><span>Recompensas conquistadas</span><strong>{data.loyalty.rewardsEarned}</strong><small>50% de desconto a cada 5 atendimentos concluídos</small></article>
@@ -111,6 +112,7 @@ export default function MinhaContaPage() {
                 <div className="loyalty-track"><span style={{ width: `${data.loyalty.progress * 20}%` }} /></div>
               </div>
             </section>
+            </>}
             <section className="account-bookings">
               <div className="account-section-heading"><div><p className="eyebrow">SEUS HORÁRIOS</p><h2>Meus agendamentos</h2></div><Link className="button button--primary" href="/agendamento">Novo agendamento ↗</Link></div>
               {data.bookings.length === 0 ? <div className="account-empty"><p>Você ainda não tem agendamentos associados à sua conta.</p><Link href="/agendamento">Escolher meu primeiro horário</Link></div> : <div className="account-booking-list">{data.bookings.map((booking) => (
