@@ -38,6 +38,7 @@ type AdminBooking = {
   mobilityFee: number;
   totalPrice: number;
   loyaltyDiscount: number;
+  promotionalDiscount: number;
   userId: string | null;
   paymentMethod: string | null;
 };
@@ -935,7 +936,7 @@ export default function AdminPage() {
                                     ? "Domicílio"
                                     : "Salão"}
                                 </td>
-                                <td>{currency(item.totalPrice / 100)}{item.loyaltyDiscount > 0 && <small className="adm-discount-note">−{currency(item.loyaltyDiscount / 100)} fidelidade</small>}</td>
+                                <td>{currency(item.totalPrice / 100)}{item.loyaltyDiscount > 0 && <small className="adm-discount-note">−{currency(item.loyaltyDiscount / 100)} fidelidade</small>}{item.promotionalDiscount > 0 && <small className="adm-discount-note">−{currency(item.promotionalDiscount / 100)} promoção</small>}</td>
                                 <td>
                                   <span
                                     className={`adm-status-pill ${item.status.toLowerCase()}`}
