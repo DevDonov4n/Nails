@@ -11,6 +11,7 @@ type Booking = {
   status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
   totalPriceLabel: string;
   loyaltyDiscountLabel: string;
+  promotionalDiscountLabel: string;
   updatedAt: string;
 };
 type AccountData = {
