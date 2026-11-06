@@ -151,7 +151,7 @@ export default function EventsFeaturesPanel() {
         <div className="adm-events-heading"><div><span className="adm-panel-overline">ACOMPANHAMENTO</span><h2>Eventos cadastrados</h2><p>Confira campanhas futuras, em andamento e encerradas.</p></div><span className="adm-events-count">{events.length} eventos</span></div>
         {events.length === 0 ? <div className="adm-empty">Nenhum evento cadastrado até o momento.</div> : <div className="adm-event-list">{events.map((item) => {
           const start = new Date(item.startsAt).getTime(), end = new Date(item.endsAt).getTime();
-          const status = !item.active || now > end ? "Encerrado" : now < start ? "Agendado" : "Em andamento";
+          const status = !item.active ? "Pausado" : now > end ? "Encerrado" : now < start ? "Agendado" : "Em andamento";
           return <article className="adm-event-item" key={item.id}><div className="adm-event-item-main"><span className="adm-panel-overline">{item.type === "LAUNCH_DISCOUNT" ? "DESCONTO PROMOCIONAL" : "INDIQUE E GANHE"}</span><h3>{item.title}</h3>{item.description && <p>{item.description}</p>}<small>{formatDate(item.startsAt)} — {formatDate(item.endsAt)}</small></div><div className="adm-event-item-side">{item.discountPercent && <strong>{item.discountPercent}% OFF</strong>}<span className={status === "Em andamento" ? "adm-event-status is-live" : "adm-event-status"}>{status}</span><button type="button" className="adm-event-toggle" disabled={savingKey === item.id} onClick={() => void toggleEvent(item)}>{savingKey === item.id ? "Salvando…" : item.active ? "Pausar evento" : "Reativar evento"}</button></div></article>;
         })}</div>}
       </section>
