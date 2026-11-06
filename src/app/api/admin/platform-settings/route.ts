@@ -105,8 +105,8 @@ export async function POST(request: NextRequest) {
   const startsAtRaw = typeof body.startsAt === "string" ? body.startsAt : "";
   const endsAtRaw = typeof body.endsAt === "string" ? body.endsAt : "";
   const discountPercent = body.discountPercent === undefined || body.discountPercent === null ? null : Number(body.discountPercent);
-  if (title.length < 3 || title.length > 100 || !["LAUNCH_DISCOUNT", "REFERRAL"].includes(String(type))) {
-    return NextResponse.json({ error: "Informe um título e um tipo de evento válido." }, { status: 400 });
+  if (title.length < 3 || title.length > 100 || type !== "LAUNCH_DISCOUNT") {
+    return NextResponse.json({ error: "Informe um título e um tipo de evento válido. A campanha Indique e Ganhe será liberada em uma etapa futura." }, { status: 400 });
   }
   if (type === "LAUNCH_DISCOUNT" && (!Number.isInteger(discountPercent) || (discountPercent as number) < 1 || (discountPercent as number) > 90)) {
     return NextResponse.json({ error: "Informe um percentual de desconto entre 1% e 90%." }, { status: 400 });
