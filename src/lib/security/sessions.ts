@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 export const CUSTOMER_SESSION_COOKIE = "nbs_session";
 export const ADMIN_SESSION_COOKIE = "nbs_admin_session";
 
-const CUSTOMER_TTL_SECONDS = 60 * 60 * 24 * 7;
+const CUSTOMER_TTL_SECONDS = 60 * 60 * 24 * 30;
 const ADMIN_TTL_SECONDS = 60 * 60 * 8;
 
 function hashToken(token: string) {
