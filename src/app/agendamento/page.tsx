@@ -131,6 +131,13 @@ export default function AgendamentoPage() {
           <h1>Seu momento<br /><em>começa aqui.</em></h1>
           <p>Escolha o serviço que deseja, veja os horários disponíveis e solicite seu agendamento. {loggedIn ? "Seus dados de contato serão usados automaticamente pela sua conta." : "Você pode agendar como visitante ou entrar na sua conta para agilizar o processo."}</p>
         </div>
+        {campaign && <aside className="booking-account-promo">
+          <span className="booking-promo-icon" aria-hidden="true">✦</span>
+          <div>
+            <strong>{campaign.title}: {campaign.discountPercent}% OFF</strong>
+            <p>{campaign.active ? "O desconto já está ativo para solicitações criadas agora. Ele vale sobre o valor dos serviços, não sobre a taxa de mobilidade." : `Agendamentos criados de ${new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "America/Sao_Paulo" }).format(new Date(campaign.startsAt))} a ${new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "America/Sao_Paulo" }).format(new Date(campaign.endsAt))} recebem o desconto nos serviços. A taxa de mobilidade não participa da promoção.`}</p>
+          </div>
+        </aside>
         {!loggedIn && <aside className="booking-account-promo">
           <span className="booking-promo-icon" aria-hidden="true">✦</span>
           <div>
