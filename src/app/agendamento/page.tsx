@@ -1,3 +1,4 @@
+
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
@@ -5,14 +6,29 @@ import Link from "next/link";
 
 type ServiceId = "HAND" | "FOOT" | "BOTH";
 type LocationId = "SALON" | "HOME";
-type CampaignNotice = { title: string; discountPercent: number | null; startsAt: string; endsAt: string; active: boolean } | null;
+
+type CampaignNotice = {
+  title: string;
+  discountPercent: number | null;
+  startsAt: string;
+  endsAt: string;
+  active: boolean;
+} | null;
+
 const serviceOptions: { id: ServiceId; name: string; price: number }[] = [
   { id: "HAND", name: "Mão", price: 30 },
   { id: "FOOT", name: "Pé", price: 35 },
   { id: "BOTH", name: "Pé + mão", price: 60 },
 ];
-const money = (value: number) => value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-const dateValue = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+const money = (value: number) =>
+  value.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+
+const dateValue = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
 export default function AgendamentoPage() {
   const [date, setDate] = useState("");
@@ -33,10 +49,20 @@ export default function AgendamentoPage() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [campaign, setCampaign] = useState<CampaignNotice>(null);
 
-  const selectedService = useMemo(() => serviceOptions.find((item) => item.id === service)!, [service]);
+  const selectedService = useMemo(
+    () => serviceOptions.find((item) => item.id === service)!,
+    [service]
+  );
+
   const baseTotal = selectedService.price + (location === "HOME" ? 5 : 0);
-  const promotionalDiscount = campaign?.active && campaign.discountPercent ? selectedService.price * campaign.discountPercent / 100 : 0;
+
+  const promotionalDiscount =
+    campaign?.active && campaign.discountPercent
+      ? (selectedService.price * campaign.discountPercent) / 100
+      : 0;
+
   const total = baseTotal - promotionalDiscount;
+
   useEffect(() => {
     const today = dateValue(new Date());
     setMinimumDate(today);
@@ -45,78 +71,172 @@ export default function AgendamentoPage() {
 
   useEffect(() => {
     let active = true;
+
     fetch("/api/platform-status", { cache: "no-store" })
-      .then((response) => response.ok ? response.json() : null)
-      .then((data) => { if (active) setCampaign(data?.campaign ?? null); })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (active) setCampaign(data?.campaign ?? null);
+      })
       .catch(() => {});
-    return () => { active = false; };
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
     let active = true;
+
     fetch("/api/auth/me", { cache: "no-store" })
       .then((response) => response.json())
       .then((data) => {
         if (!active || !data.user) return;
+
         setLoggedIn(true);
         setName(data.user.name ?? "");
         setWhatsapp(data.user.whatsapp ?? "");
       })
-      .catch(() => { /* Permite agendamento como visitante se a consulta de sessão falhar. */ })
-      .finally(() => { if (active) setAccountLoading(false); });
-    return () => { active = false; };
+      .catch(() => {
+        // Permite agendamento como visitante se a consulta de sessão falhar.
+      })
+      .finally(() => {
+        if (active) setAccountLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
     if (!date) return;
+
     let active = true;
     const controller = new AbortController();
-    queueMicrotask(() => { if (active) setLoadingSlots(true); });
+
+    queueMicrotask(() => {
+      if (active) setLoadingSlots(true);
+    });
+
     setTime("");
     setError("");
     setSuccess("");
-    fetch(`/api/availability?date=${encodeURIComponent(date)}`, { cache: "no-store", signal: controller.signal })
+
+    fetch(`/api/availability?date=${encodeURIComponent(date)}`, {
+      cache: "no-store",
+      signal: controller.signal,
+    })
       .then(async (response) => {
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error ?? "Não foi possível consultar os horários.");
-        if (active) setSlots(Array.isArray(data.slots) ? data.slots.filter((slot: unknown) => typeof slot === "string") : []);
-      })
-      .catch((reason: unknown) => {
-        if (active && !(reason instanceof DOMException && reason.name === "AbortError")) {
-          setSlots([]);
-          setError(reason instanceof Error ? reason.message : "Erro ao consultar horários.");
+
+        if (!response.ok) {
+          throw new Error(
+            data.error ?? "Não foi possível consultar os horários."
+          );
+        }
+
+        if (active) {
+          setSlots(
+            Array.isArray(data.slots)
+              ? data.slots.filter(
+                  (slot: unknown) => typeof slot === "string"
+                )
+              : []
+          );
         }
       })
-      .finally(() => { if (active) setLoadingSlots(false); });
-    return () => { active = false; controller.abort(); };
+      .catch((reason: unknown) => {
+        if (
+          active &&
+          !(reason instanceof DOMException && reason.name === "AbortError")
+        ) {
+          setSlots([]);
+          setError(
+            reason instanceof Error
+              ? reason.message
+              : "Erro ao consultar horários."
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setLoadingSlots(false);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [date]);
 
   async function submitBooking(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
     if (sending) return;
+
     setError("");
     setSuccess("");
+
     if (!time || !slots.includes(time)) {
       setError("Escolha um horário disponível antes de continuar.");
       return;
     }
+
     setSending(true);
+
     try {
       const response = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, whatsapp, address, service, location, date, time }),
+        body: JSON.stringify({
+          name,
+          whatsapp,
+          address,
+          service,
+          location,
+          date,
+          time,
+        }),
       });
+
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? "Não foi possível solicitar o agendamento.");
-      setSuccess(`${data.message} Código: ${data.booking.id}. ${data.booking.loyaltyDiscount > 0 ? `Desconto de fidelidade aplicado: −${data.booking.loyaltyDiscountLabel}. ` : ""}${data.booking.promotionalDiscount > 0 ? `Desconto promocional aplicado: −${data.booking.promotionalDiscountLabel}. ` : ""}Total: ${data.booking.totalPriceLabel ?? money(total)}.`);
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ?? "Não foi possível solicitar o agendamento."
+        );
+      }
+
+      setSuccess(
+        `${data.message} Código: ${data.booking.id}. ${
+          data.booking.loyaltyDiscount > 0
+            ? `Desconto de fidelidade aplicado: −${data.booking.loyaltyDiscountLabel}. `
+            : ""
+        }${
+          data.booking.promotionalDiscount > 0
+            ? `Desconto promocional aplicado: −${data.booking.promotionalDiscountLabel}. `
+            : ""
+        }Total: ${data.booking.totalPriceLabel ?? money(total)}.`
+      );
+
       setRequestModal(true);
       setTime("");
-      const refreshedResponse = await fetch(`/api/availability?date=${encodeURIComponent(date)}`, { cache: "no-store" });
+
+      const refreshedResponse = await fetch(
+        `/api/availability?date=${encodeURIComponent(date)}`,
+        { cache: "no-store" }
+      );
+
       const refreshed = await refreshedResponse.json();
-      if (refreshedResponse.ok && Array.isArray(refreshed.slots)) setSlots(refreshed.slots);
+
+      if (refreshedResponse.ok && Array.isArray(refreshed.slots)) {
+        setSlots(refreshed.slots);
+      }
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Ocorreu um erro inesperado.");
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : "Ocorreu um erro inesperado."
+      );
     } finally {
       setSending(false);
     }
@@ -125,68 +245,420 @@ export default function AgendamentoPage() {
   return (
     <main className="booking-page">
       <div className="booking-shell">
-        <Link className="booking-back" href="/">← Voltar ao início</Link>
+        <Link className="booking-back" href="/">
+          ← Voltar ao início
+        </Link>
+
         <div className="booking-heading">
           <p className="eyebrow">NAILS BY SAMARA · RESERVAS</p>
-          <h1>Seu momento<br /><em>começa aqui.</em></h1>
-          <p>Escolha o serviço que deseja, veja os horários disponíveis e solicite seu agendamento. {loggedIn ? "Seus dados de contato serão usados automaticamente pela sua conta." : "Você pode agendar como visitante ou entrar na sua conta para agilizar o processo."}</p>
+
+          <h1>
+            Seu momento
+            <br />
+            <em>começa aqui.</em>
+          </h1>
+
+          <p>
+            Escolha o serviço que deseja, veja os horários disponíveis e
+            solicite seu agendamento.{" "}
+            {loggedIn
+              ? "Seus dados de contato serão usados automaticamente pela sua conta."
+              : "Você pode agendar como visitante ou entrar na sua conta para agilizar o processo."}
+          </p>
         </div>
-        {campaign && <aside className="booking-account-promo">
-          <span className="booking-promo-icon" aria-hidden="true">✦</span>
-          <div>
-            <strong>{campaign.title}: {campaign.discountPercent}% OFF</strong>
-            <p>{campaign.active ? "O desconto já está ativo para solicitações criadas agora. Ele vale sobre o valor dos serviços, não sobre a taxa de mobilidade." : `Agendamentos criados de ${new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "America/Sao_Paulo" }).format(new Date(campaign.startsAt))} a ${new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "America/Sao_Paulo" }).format(new Date(campaign.endsAt))} recebem o desconto nos serviços. A taxa de mobilidade não participa da promoção.`}</p>
-          </div>
-        </aside>
-        {!loggedIn && <aside className="booking-account-promo">
-          <span className="booking-promo-icon" aria-hidden="true">✦</span>
-          <div>
-            <strong>Quer deixar os próximos agendamentos mais práticos?</strong>
-            <p>Na sua área de cliente, você poderá acompanhar os agendamentos vinculados à sua conta e os avisos do salão.</p>
-          </div>
-          <Link href="/cadastro">Conhecer o cadastro <span aria-hidden="true">↗</span></Link>
-        </aside>}
+
+        {/* Banner promocional */}
+        {campaign && (
+          <aside className="booking-account-promo">
+            <span className="booking-promo-icon" aria-hidden="true">
+              ✦
+            </span>
+
+            <div>
+              <strong>
+                {campaign.title}: {campaign.discountPercent}% OFF
+              </strong>
+
+              <p>
+                {campaign.active
+                  ? "O desconto já está ativo para solicitações criadas agora. Ele vale sobre o valor dos serviços, não sobre a taxa de mobilidade."
+                  : `Agendamentos criados de ${new Intl.DateTimeFormat(
+                      "pt-BR",
+                      {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        timeZone: "America/Sao_Paulo",
+                      }
+                    ).format(new Date(campaign.startsAt))} a ${new Intl.DateTimeFormat(
+                      "pt-BR",
+                      {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        timeZone: "America/Sao_Paulo",
+                      }
+                    ).format(new Date(campaign.endsAt))} recebem o desconto nos serviços. A taxa de mobilidade não participa da promoção.`}
+              </p>
+            </div>
+          </aside>
+        )}
+
+        {/* Aviso de cadastro para visitantes */}
+        {!loggedIn && (
+          <aside className="booking-account-promo">
+            <span className="booking-promo-icon" aria-hidden="true">
+              ✦
+            </span>
+
+            <div>
+              <strong>
+                Quer deixar os próximos agendamentos mais práticos?
+              </strong>
+
+              <p>
+                Na sua área de cliente, você poderá acompanhar os
+                agendamentos vinculados à sua conta e os avisos do salão.
+              </p>
+            </div>
+
+            <Link href="/cadastro">
+              Conhecer o cadastro{" "}
+              <span aria-hidden="true">↗</span>
+            </Link>
+          </aside>
+        )}
+
         <form className="booking-card" onSubmit={submitBooking}>
           <section className="booking-section">
             <span className="booking-step">01</span>
-            <div><h2>Escolha o tratamento</h2><p>Veja as opções abaixo e selecione o atendimento que prefere. Todos os atendimentos têm duração reservada de duas horas.</p></div>
+
+            <div>
+              <h2>Escolha o tratamento</h2>
+              <p>
+                Veja as opções abaixo e selecione o atendimento que prefere.
+                Todos os atendimentos têm duração reservada de duas horas.
+              </p>
+            </div>
+
             <div className="booking-service-options">
               {serviceOptions.map((option) => (
-                <button key={option.id} type="button" className={service === option.id ? "booking-service is-selected" : "booking-service"} onClick={() => setService(option.id)} aria-pressed={service === option.id}>
-                  <span>{option.name}</span><strong>{money(option.price)}</strong><small>2 horas reservadas</small>
+                <button
+                  key={option.id}
+                  type="button"
+                  className={
+                    service === option.id
+                      ? "booking-service is-selected"
+                      : "booking-service"
+                  }
+                  onClick={() => setService(option.id)}
+                  aria-pressed={service === option.id}
+                >
+                  <span>{option.name}</span>
+                  <strong>{money(option.price)}</strong>
+                  <small>2 horas reservadas</small>
                 </button>
               ))}
             </div>
           </section>
+
           <section className="booking-section">
             <span className="booking-step">02</span>
-            <div><h2>Onde você prefere?</h2><p>Escolha entre atendimento no salão ou em domicílio. Para a visita em casa, há uma taxa fixa de mobilidade de R$ 5,00.</p></div>
-            <div className="booking-location-options">
-              <label className={location === "SALON" ? "booking-location is-selected" : "booking-location"}><input type="radio" name="location" value="SALON" checked={location === "SALON"} onChange={() => setLocation("SALON")} /><span><strong>No salão</strong><small>Sem taxa de mobilidade</small></span></label>
-              <label className={location === "HOME" ? "booking-location is-selected" : "booking-location"}><input type="radio" name="location" value="HOME" checked={location === "HOME"} onChange={() => setLocation("HOME")} /><span><strong>Em domicílio</strong><small>Acrescenta R$ 5,00 de mobilidade</small></span></label>
+
+            <div>
+              <h2>Onde você prefere?</h2>
+              <p>
+                Escolha entre atendimento no salão ou em domicílio. Para a
+                visita em casa, há uma taxa fixa de mobilidade de R$ 5,00.
+              </p>
             </div>
-            {location === "HOME" && <label className="booking-field">Endereço completo<input required maxLength={300} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Informe rua, número, bairro e cidade" autoComplete="street-address" /></label>}
+
+            <div className="booking-location-options">
+              <label
+                className={
+                  location === "SALON"
+                    ? "booking-location is-selected"
+                    : "booking-location"
+                }
+              >
+                <input
+                  type="radio"
+                  name="location"
+                  value="SALON"
+                  checked={location === "SALON"}
+                  onChange={() => setLocation("SALON")}
+                />
+                <span>
+                  <strong>No salão</strong>
+                  <small>Sem taxa de mobilidade</small>
+                </span>
+              </label>
+
+              <label
+                className={
+                  location === "HOME"
+                    ? "booking-location is-selected"
+                    : "booking-location"
+                }
+              >
+                <input
+                  type="radio"
+                  name="location"
+                  value="HOME"
+                  checked={location === "HOME"}
+                  onChange={() => setLocation("HOME")}
+                />
+                <span>
+                  <strong>Em domicílio</strong>
+                  <small>Acrescenta R$ 5,00 de mobilidade</small>
+                </span>
+              </label>
+            </div>
+
+            {location === "HOME" && (
+              <label className="booking-field">
+                Endereço completo
+                <input
+                  required
+                  maxLength={300}
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Informe rua, número, bairro e cidade"
+                  autoComplete="street-address"
+                />
+              </label>
+            )}
           </section>
+
           <section className="booking-section">
             <span className="booking-step">03</span>
-            <div><h2>Escolha a data e o horário</h2><p>Selecione o dia desejado e depois escolha um dos horários livres. Cada atendimento reserva duas horas. O atendimento funciona de segunda a sexta, das 16h às 20h, e aos sábados e domingos, das 9h às 18h.</p></div>
-            <label className="booking-field">Data do atendimento<input type="date" min={minimumDate} value={date} onChange={(e) => setDate(e.target.value)} required /></label>
-            <div className="booking-slots-label">Horários disponíveis</div>
-            {loadingSlots ? <p className="booking-muted" role="status">Estamos consultando os horários para essa data. Só um instante, por favor.</p> : slots.length ? <div className="booking-slots">{slots.map((slot) => <button type="button" key={slot} onClick={() => setTime(slot)} className={time === slot ? "booking-slot is-selected" : "booking-slot"} aria-pressed={time === slot}>{slot}</button>)}</div> : <p className="booking-muted">Não encontramos horários livres para esse dia. Você pode escolher outra data para consultar novas opções.</p>}
+
+            <div>
+              <h2>Escolha a data e o horário</h2>
+              <p>
+                Selecione o dia desejado e depois escolha um dos horários
+                livres. Cada atendimento reserva duas horas. O atendimento
+                funciona de segunda a sexta, das 16h às 20h, e aos sábados e
+                domingos, das 9h às 18h.
+              </p>
+            </div>
+
+            <label className="booking-field">
+              Data do atendimento
+              <input
+                type="date"
+                min={minimumDate}
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                required
+              />
+            </label>
+
+            <div className="booking-slots-label">
+              Horários disponíveis
+            </div>
+
+            {loadingSlots ? (
+              <p className="booking-muted" role="status">
+                Estamos consultando os horários para essa data. Só um
+                instante, por favor.
+              </p>
+            ) : slots.length ? (
+              <div className="booking-slots">
+                {slots.map((slot) => (
+                  <button
+                    type="button"
+                    key={slot}
+                    onClick={() => setTime(slot)}
+                    className={
+                      time === slot
+                        ? "booking-slot is-selected"
+                        : "booking-slot"
+                    }
+                    aria-pressed={time === slot}
+                  >
+                    {slot}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="booking-muted">
+                Não encontramos horários livres para esse dia. Você pode
+                escolher outra data para consultar novas opções.
+              </p>
+            )}
           </section>
+
           <section className="booking-section">
             <span className="booking-step">04</span>
-            <div><h2>{loggedIn ? "Dados da sua conta" : "Seus dados para contato"}</h2><p>{loggedIn ? "Vamos usar o nome e WhatsApp cadastrados na sua conta. Não é necessário preenchê-los novamente." : "Preencha seu nome e WhatsApp com DDD para que o salão possa identificar sua solicitação e conversar com você sobre a confirmação do atendimento."}</p></div>
-            {accountLoading ? <p className="booking-muted" role="status">Conferindo sua conta...</p> : loggedIn ? <div className="booking-account-details"><p><strong>Nome:</strong> {name}</p><p><strong>WhatsApp:</strong> {whatsapp}</p><small>Para alterar esses dados, atualize seu cadastro antes de agendar.</small></div> : <><label className="booking-field">Nome completo<input required minLength={2} maxLength={120} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="Informe seu nome e sobrenome" /></label><label className="booking-field">WhatsApp com DDD<input required type="tel" maxLength={20} value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} autoComplete="tel" placeholder="Ex.: (11) 99999-9999" /></label></> }
+
+            <div>
+              <h2>
+                {loggedIn ? "Dados da sua conta" : "Seus dados para contato"}
+              </h2>
+
+              <p>
+                {loggedIn
+                  ? "Vamos usar o nome e WhatsApp cadastrados na sua conta. Não é necessário preenchê-los novamente."
+                  : "Preencha seu nome e WhatsApp com DDD para que o salão possa identificar sua solicitação e conversar com você sobre a confirmação do atendimento."}
+              </p>
+            </div>
+
+            {accountLoading ? (
+              <p className="booking-muted" role="status">
+                Conferindo sua conta...
+              </p>
+            ) : loggedIn ? (
+              <div className="booking-account-details">
+                <p>
+                  <strong>Nome:</strong> {name}
+                </p>
+                <p>
+                  <strong>WhatsApp:</strong> {whatsapp}
+                </p>
+                <small>
+                  Para alterar esses dados, atualize seu cadastro antes de
+                  agendar.
+                </small>
+              </div>
+            ) : (
+              <>
+                <label className="booking-field">
+                  Nome completo
+                  <input
+                    required
+                    minLength={2}
+                    maxLength={120}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    autoComplete="name"
+                    placeholder="Informe seu nome e sobrenome"
+                  />
+                </label>
+
+                <label className="booking-field">
+                  WhatsApp com DDD
+                  <input
+                    required
+                    type="tel"
+                    maxLength={20}
+                    value={whatsapp}
+                    onChange={(e) => setWhatsapp(e.target.value)}
+                    autoComplete="tel"
+                    placeholder="Ex.: (11) 99999-9999"
+                  />
+                </label>
+              </>
+            )}
           </section>
-          <aside className="booking-total"><div><span>Valor do tratamento</span><strong>{money(selectedService.price)}</strong></div>{promotionalDiscount > 0 && <div><span>Desconto promocional ({campaign?.discountPercent}%)</span><strong>−{money(promotionalDiscount)}</strong></div>}<div><span>Taxa de mobilidade</span><strong>{money(location === "HOME" ? 5 : 0)}</strong></div><div className="booking-total-final"><span>Valor total estimado</span><strong>{money(total)}</strong></div></aside>
-          {error && <p className="booking-feedback booking-feedback--error" role="alert">{error}</p>}
-          {success && <p className="booking-feedback booking-feedback--success" role="status">{success}</p>}
-          {requestModal && <div className="customer-notice-backdrop" role="presentation"><section className="customer-notice" role="alertdialog" aria-modal="true"><button type="button" onClick={() => setRequestModal(false)} aria-label="Fechar">×</button><p className="eyebrow">SOLICITAÇÃO ENVIADA</p><h2>Seu pedido chegou à Diva!</h2><p>Aguarde a análise da disponibilidade. Assim que seu horário for confirmado ou cancelado, você verá um aviso na sua área de cliente.</p><button className="button button--primary" type="button" onClick={() => setRequestModal(false)}>Entendi</button></section></div>}
-          <button className="button button--primary booking-submit" type="submit" disabled={sending || loadingSlots}>{sending ? "Enviando solicitação…" : "Solicitar agendamento ↗"}</button>
-          <p className="booking-disclaimer">Após enviar, sua solicitação será registrada. O horário ainda precisará ser aprovado pelo salão, para que você tenha certeza de que está tudo combinado.</p>
+
+          <aside className="booking-total">
+            <div>
+              <span>Valor do tratamento</span>
+              <strong>{money(selectedService.price)}</strong>
+            </div>
+
+            {promotionalDiscount > 0 && (
+              <div>
+                <span>
+                  Desconto promocional ({campaign?.discountPercent}%)
+                </span>
+                <strong>−{money(promotionalDiscount)}</strong>
+              </div>
+            )}
+
+            <div>
+              <span>Taxa de mobilidade</span>
+              <strong>{money(location === "HOME" ? 5 : 0)}</strong>
+            </div>
+
+            <div className="booking-total-final">
+              <span>Valor total estimado</span>
+              <strong>{money(total)}</strong>
+            </div>
+          </aside>
+
+          {error && (
+            <p
+              className="booking-feedback booking-feedback--error"
+              role="alert"
+            >
+              {error}
+            </p>
+          )}
+
+          {success && (
+            <p
+              className="booking-feedback booking-feedback--success"
+              role="status"
+            >
+              {success}
+            </p>
+          )}
+
+          {requestModal && (
+            <div
+              className="customer-notice-backdrop"
+              role="presentation"
+            >
+              <section
+                className="customer-notice"
+                role="alertdialog"
+                aria-modal="true"
+              >
+                <button
+                  type="button"
+                  onClick={() => setRequestModal(false)}
+                  aria-label="Fechar"
+                >
+                  ×
+                </button>
+
+                <p className="eyebrow">SOLICITAÇÃO ENVIADA</p>
+
+                <h2>Seu pedido chegou à Diva!</h2>
+
+                <p>
+                  Aguarde a análise da disponibilidade. Assim que seu horário
+                  for confirmado ou cancelado, você verá um aviso na sua área
+                  de cliente.
+                </p>
+
+                <button
+                  className="button button--primary"
+                  type="button"
+                  onClick={() => setRequestModal(false)}
+                >
+                  Entendi
+                </button>
+              </section>
+            </div>
+          )}
+
+          <button
+            className="button button--primary booking-submit"
+            type="submit"
+            disabled={sending || loadingSlots}
+          >
+            {sending
+              ? "Enviando solicitação…"
+              : "Solicitar agendamento ↗"}
+          </button>
+
+          <p className="booking-disclaimer">
+            Após enviar, sua solicitação será registrada. O horário ainda
+            precisará ser aprovado pelo salão, para que você tenha certeza
+            de que está tudo combinado.
+          </p>
         </form>
-        {!loggedIn && <p className="booking-login-prompt">Já tem uma conta? <Link href="/login">Acesse seu login</Link> para agilizar seus próximos agendamentos.</p>}
+
+        {!loggedIn && (
+          <p className="booking-login-prompt">
+            Já tem uma conta?{" "}
+            <Link href="/login">Acesse seu login</Link> para agilizar seus
+            próximos agendamentos.
+          </p>
+        )}
       </div>
     </main>
   );
