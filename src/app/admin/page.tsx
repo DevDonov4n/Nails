@@ -971,14 +971,13 @@ export default function AdminPage() {
               <div className="adm-welcome-row">
                 <div>
                   <p className="adm-eyebrow">
-                    RELACIONAMENTO · NAILS BY SAMARA
+                    ATENDIMENTOS · NAILS BY SAMARA
                   </p>
                   <h1>
-                    Fidelidade das <em>clientes.</em>
+                    Seus <em>atendimentos.</em>
                   </h1>
                   <p className="adm-subtitle">
-                    Histórico de serviços concluídos e frequência de retorno de
-                    cada cliente.
+                    Conclua os serviços realizados, registre a forma de pagamento e acompanhe o histórico de cada cliente.
                   </p>
                 </div>
                 <button
