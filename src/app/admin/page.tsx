@@ -966,7 +966,7 @@ export default function AdminPage() {
                 </div>
               )}
             </>
-          ) : nav === "Fidelidade" ? (
+          ) : nav === "Atendimentos" ? (
             <>
               <div className="adm-welcome-row">
                 <div>
