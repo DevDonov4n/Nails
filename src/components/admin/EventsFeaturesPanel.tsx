@@ -10,7 +10,14 @@ const featureLabels: Record<string, { title: string; description: string }> = {
   "promotional-discounts": { title: "Descontos promocionais", description: "Aplicação automática de descontos em campanhas ativas." },
 };
 const formatDate = (value: string) => new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Sao_Paulo" }).format(new Date(value));
-const localInput = (value: string) => value;
+const localInput = (value: string) => {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).formatToParts(new Date(value));
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? "";
+  return `${part("year")}-${part("month")}-${part("day")}T${part("hour")}:${part("minute")}`;
+};
 const saoPauloIso = (value: string) => new Date(value + ":00-03:00").toISOString();
 
 export default function EventsFeaturesPanel() {
@@ -19,6 +26,12 @@ export default function EventsFeaturesPanel() {
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState("");
   const [savingEvent, setSavingEvent] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<PlatformEvent | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editDiscount, setEditDiscount] = useState("10");
+  const [editStartsAt, setEditStartsAt] = useState("");
+  const [editEndsAt, setEditEndsAt] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [title, setTitle] = useState("");
@@ -45,6 +58,48 @@ export default function EventsFeaturesPanel() {
   }, []);
 
   useEffect(() => { void load(); }, [load]);
+
+  function openEdit(item: PlatformEvent) {
+    setEditingEvent(item);
+    setEditTitle(item.title);
+    setEditDescription(item.description ?? "");
+    setEditDiscount(String(item.discountPercent ?? 10));
+    setEditStartsAt(localInput(item.startsAt));
+    setEditEndsAt(localInput(item.endsAt));
+    setError("");
+    setMessage("");
+  }
+
+  async function saveEditedEvent(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!editingEvent) return;
+    setSavingEvent(true);
+    setError("");
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin/platform-settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventId: editingEvent.id,
+          title: editTitle,
+          description: editDescription,
+          discountPercent: Number(editDiscount),
+          startsAt: saoPauloIso(editStartsAt),
+          endsAt: saoPauloIso(editEndsAt),
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Não foi possível salvar as alterações.");
+      setEvents((current) => current.map((item) => item.id === editingEvent.id ? data.event : item));
+      setEditingEvent(null);
+      setMessage("Evento atualizado com sucesso.");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Falha ao editar evento.");
+    } finally {
+      setSavingEvent(false);
+    }
+  }
 
   async function toggleFeature(feature: Feature) {
     setSavingKey(feature.key);
@@ -141,9 +196,9 @@ export default function EventsFeaturesPanel() {
           <label>Tipo de evento<select value={type} onChange={(event) => setType(event.target.value)}><option value="LAUNCH_DISCOUNT">Desconto promocional</option><option value="REFERRAL" disabled>Indique e Ganhe (em preparação)</option></select></label>
           {type === "LAUNCH_DISCOUNT" && <label>Desconto (%)<input type="number" min="1" max="90" step="1" value={discountPercent} onChange={(event) => setDiscountPercent(event.target.value)} required /></label>}
           <label className="adm-event-form-wide">Descrição<textarea value={description} onChange={(event) => setDescription(event.target.value)} maxLength={500} rows={2} /></label>
-          <label>Início<input type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(localInput(event.target.value))} required /></label>
-          <label>Encerramento<input type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(localInput(event.target.value))} required /></label>
-          <div className="adm-event-form-wide adm-event-form-footer"><p>Os horários são interpretados no fuso local do navegador. Para esta operação, utilize o horário de Brasília.</p><button type="submit" disabled={savingEvent}>{savingEvent ? "Salvando…" : "＋ Cadastrar evento"}</button></div>
+          <label>Início<input type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} required /></label>
+          <label>Encerramento<input type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} required /></label>
+          <div className="adm-event-form-wide adm-event-form-footer"><p>Os horários são interpretados no horário de Brasília.</p><button type="submit" disabled={savingEvent}>{savingEvent ? "Salvando…" : "＋ Cadastrar evento"}</button></div>
         </form>
       </section>
       <section className="adm-events-section">
@@ -151,9 +206,27 @@ export default function EventsFeaturesPanel() {
         {events.length === 0 ? <div className="adm-empty">Nenhum evento cadastrado até o momento.</div> : <div className="adm-event-list">{events.map((item) => {
           const start = new Date(item.startsAt).getTime(), end = new Date(item.endsAt).getTime();
           const status = !item.active ? "Pausado" : now > end ? "Encerrado" : now < start ? "Agendado" : "Em andamento";
-          return <article className="adm-event-item" key={item.id}><div className="adm-event-item-main"><span className="adm-panel-overline">{item.type === "LAUNCH_DISCOUNT" ? "DESCONTO PROMOCIONAL" : "INDIQUE E GANHE"}</span><h3>{item.title}</h3>{item.description && <p>{item.description}</p>}<small>{formatDate(item.startsAt)} — {formatDate(item.endsAt)}</small></div><div className="adm-event-item-side">{item.discountPercent && <strong>{item.discountPercent}% OFF</strong>}<span className={status === "Em andamento" ? "adm-event-status is-live" : "adm-event-status"}>{status}</span><button type="button" className="adm-event-toggle" disabled={savingKey === item.id} onClick={() => void toggleEvent(item)}>{savingKey === item.id ? "Salvando…" : item.active ? "Pausar evento" : "Reativar evento"}</button></div></article>;
+          return <article className="adm-event-item" key={item.id}><div className="adm-event-item-main"><span className="adm-panel-overline">{item.type === "LAUNCH_DISCOUNT" ? "DESCONTO PROMOCIONAL" : "INDIQUE E GANHE"}</span><h3>{item.title}</h3>{item.description && <p>{item.description}</p>}<small>{formatDate(item.startsAt)} — {formatDate(item.endsAt)}</small></div><div className="adm-event-item-side">{item.discountPercent && <strong>{item.discountPercent}% OFF</strong>}<span className={status === "Em andamento" ? "adm-event-status is-live" : "adm-event-status"}>{status}</span><button type="button" className="adm-event-edit" disabled={savingEvent || item.type !== "LAUNCH_DISCOUNT"} onClick={() => openEdit(item)}>Editar evento</button><button type="button" className="adm-event-toggle" disabled={savingKey === item.id} onClick={() => void toggleEvent(item)}>{savingKey === item.id ? "Salvando…" : item.active ? "Pausar evento" : "Reativar evento"}</button></div></article>;
         })}</div>}
       </section>
+
+      {editingEvent && <div className="adm-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !savingEvent) setEditingEvent(null); }}>
+        <section className="adm-event-modal" role="dialog" aria-modal="true" aria-labelledby="adm-event-modal-title">
+          <button className="adm-modal-close" type="button" aria-label="Fechar edição" onClick={() => setEditingEvent(null)} disabled={savingEvent}>×</button>
+          <span className="adm-panel-overline">ALTERAR CAMPANHA</span>
+          <h2 id="adm-event-modal-title">Editar evento</h2>
+          <p>Altere as informações abaixo. As mudanças serão aplicadas aos novos agendamentos dentro do período atualizado.</p>
+          <form className="adm-event-form" onSubmit={saveEditedEvent}>
+            <label className="adm-event-form-wide">Nome do evento<input value={editTitle} onChange={(event) => setEditTitle(event.target.value)} minLength={3} maxLength={100} required /></label>
+            <label className="adm-event-form-wide">Descrição<textarea value={editDescription} onChange={(event) => setEditDescription(event.target.value)} maxLength={500} rows={3} /></label>
+            <label>Desconto (%)<input type="number" min="1" max="90" step="1" value={editDiscount} onChange={(event) => setEditDiscount(event.target.value)} required /></label>
+            <label>Início<input type="datetime-local" value={editStartsAt} onChange={(event) => setEditStartsAt(event.target.value)} required /></label>
+            <label className="adm-event-form-wide">Encerramento<input type="datetime-local" value={editEndsAt} onChange={(event) => setEditEndsAt(event.target.value)} required /></label>
+            {error && <p className="adm-event-modal-error adm-event-form-wide" role="alert">{error}</p>}
+            <div className="adm-event-modal-actions adm-event-form-wide"><button type="button" className="adm-secondary-btn" onClick={() => setEditingEvent(null)} disabled={savingEvent}>Cancelar</button><button type="submit" className="adm-primary-btn" disabled={savingEvent}>{savingEvent ? "Salvando…" : "Salvar alterações"}</button></div>
+          </form>
+        </section>
+      </div>}
     </div>
   );
 }
