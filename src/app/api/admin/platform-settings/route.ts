@@ -25,6 +25,23 @@ async function adminSession() {
   } catch { return false; }
 }
 
+const serializeEvent = (event: {
+  id: string;
+  title: string;
+  description: string | null;
+  type: string;
+  discountPercent: number | null;
+  startsAt: Date;
+  endsAt: Date;
+  active: boolean;
+  createdAt: Date;
+}) => ({
+  ...event,
+  startsAt: event.startsAt.toISOString(),
+  endsAt: event.endsAt.toISOString(),
+  createdAt: event.createdAt.toISOString(),
+});
+
 export async function GET() {
   if (!(await adminSession())) return NextResponse.json({ error: "Não autorizado." }, { status: 401, headers: { "Cache-Control": "no-store" } });
   try {
@@ -39,7 +56,7 @@ export async function GET() {
     ]);
     return NextResponse.json({
       features,
-      events: events.map((event) => ({ ...event, startsAt: event.startsAt.toISOString(), endsAt: event.endsAt.toISOString(), createdAt: event.createdAt.toISOString() })),
+      events: events.map(serializeEvent),
     }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("Erro ao carregar eventos e funcionalidades:", error);
@@ -57,17 +74,65 @@ export async function PATCH(request: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Dados inválidos." }, { status: 400 });
   }
+
   if (typeof body.eventId === "string" && typeof body.active === "boolean") {
     try {
       const event = await prisma.platformEvent.update({
         where: { id: body.eventId },
         data: { active: body.active },
       });
-      return NextResponse.json({ event: { ...event, startsAt: event.startsAt.toISOString(), endsAt: event.endsAt.toISOString(), createdAt: event.createdAt.toISOString() } }, { headers: { "Cache-Control": "no-store" } });
+      return NextResponse.json({ event: serializeEvent(event) }, { headers: { "Cache-Control": "no-store" } });
     } catch {
-      return NextResponse.json({ error: "Não foi possível atualizar o evento." }, { status: 404 });
+      return NextResponse.json({ error: "Não foi possível atualizar o estado do evento." }, { status: 404 });
     }
   }
+
+  if (typeof body.eventId === "string") {
+    const title = typeof body.title === "string" ? body.title.trim() : "";
+    const description = typeof body.description === "string" ? body.description.trim() : "";
+    const discountPercent = Number(body.discountPercent);
+    const startsAt = typeof body.startsAt === "string" ? new Date(body.startsAt) : new Date(Number.NaN);
+    const endsAt = typeof body.endsAt === "string" ? new Date(body.endsAt) : new Date(Number.NaN);
+
+    if (title.length < 3 || title.length > 100) {
+      return NextResponse.json({ error: "O nome do evento deve ter entre 3 e 100 caracteres." }, { status: 400 });
+    }
+    if (description.length > 500) {
+      return NextResponse.json({ error: "A descrição deve ter no máximo 500 caracteres." }, { status: 400 });
+    }
+    if (!Number.isInteger(discountPercent) || discountPercent < 1 || discountPercent > 90) {
+      return NextResponse.json({ error: "Informe um desconto entre 1% e 90%." }, { status: 400 });
+    }
+    if (Number.isNaN(startsAt.getTime()) || Number.isNaN(endsAt.getTime()) || endsAt <= startsAt) {
+      return NextResponse.json({ error: "O encerramento deve ser posterior ao início do evento." }, { status: 400 });
+    }
+
+    try {
+      const current = await prisma.platformEvent.findUnique({
+        where: { id: body.eventId },
+        select: { id: true, type: true },
+      });
+      if (!current) return NextResponse.json({ error: "Evento não encontrado." }, { status: 404 });
+      if (current.type !== "LAUNCH_DISCOUNT") {
+        return NextResponse.json({ error: "Este tipo de evento não pode ser editado por esta tela." }, { status: 400 });
+      }
+      const event = await prisma.platformEvent.update({
+        where: { id: body.eventId },
+        data: {
+          title,
+          description: description || null,
+          discountPercent,
+          startsAt,
+          endsAt,
+        },
+      });
+      return NextResponse.json({ event: serializeEvent(event) }, { headers: { "Cache-Control": "no-store" } });
+    } catch (error) {
+      console.error("Erro ao editar evento:", error);
+      return NextResponse.json({ error: "Não foi possível salvar as alterações do evento." }, { status: 503 });
+    }
+  }
+
   const key = body.key;
   const enabled = body.enabled;
   if (!["loyalty", "referrals", "promotional-discounts"].includes(String(key)) || typeof enabled !== "boolean") {
@@ -120,7 +185,7 @@ export async function POST(request: NextRequest) {
     const event = await prisma.platformEvent.create({
       data: { title, description: description || null, type: String(type), discountPercent: type === "LAUNCH_DISCOUNT" ? discountPercent : null, startsAt, endsAt },
     });
-    return NextResponse.json({ event: { ...event, startsAt: event.startsAt.toISOString(), endsAt: event.endsAt.toISOString(), createdAt: event.createdAt.toISOString() } }, { status: 201 });
+    return NextResponse.json({ event: serializeEvent(event) }, { status: 201 });
   } catch (error) {
     console.error("Erro ao criar evento:", error);
     return NextResponse.json({ error: "Não foi possível salvar o evento." }, { status: 503 });
